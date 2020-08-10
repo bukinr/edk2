@@ -367,13 +367,31 @@ ASM_PFX(CommonExceptionEntry):
   isb
 
   EL1_OR_EL2_OR_EL3(x28)
-1:msr      elr_el1, x29  // Exception Link Register
+1:
+#if !defined(ENABLE_MORELLO_CAP)
+  msr      elr_el1, x29  // Exception Link Register
+#else
+  cvtp     c29, x29
+  msr      celr_el1, c29
+#endif
   msr      spsr_el1, x30 // Saved Processor Status Register 32bit
   b        4f
-2:msr      elr_el2, x29  // Exception Link Register
+2:
+#if !defined(ENABLE_MORELLO_CAP)
+  msr      elr_el2, x29  // Exception Link Register
+#else
+  cvtp     c29, x29
+  msr      celr_el2, c29
+#endif
   msr      spsr_el2, x30 // Saved Processor Status Register 32bit
   b        4f
-3:msr      elr_el3, x29  // Exception Link Register
+3:
+#if !defined(ENABLE_MORELLO_CAP)
+  msr      elr_el3, x29  // Exception Link Register
+#else
+  cvtp     c29, x29
+  msr      celr_el3, c29
+#endif
   msr      spsr_el3, x30 // Saved Processor Status Register 32bit
 4:
 

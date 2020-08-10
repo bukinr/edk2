@@ -374,11 +374,29 @@ ASM_FUNC(ArmInstructionSynchronizationBarrier)
 
 ASM_FUNC(ArmWriteVBar)
    EL1_OR_EL2_OR_EL3(x1)
-1: msr   vbar_el1, x0            // Set the Address of the EL1 Vector Table in the VBAR register
+1:
+#if !defined(ENABLE_MORELLO_CAP)
+   msr   vbar_el1, x0            // Set the Address of the EL1 Vector Table in the VBAR register
+#else
+   cvtp  c0, x0
+   msr   cvbar_el1, c0
+#endif
    b     4f
-2: msr   vbar_el2, x0            // Set the Address of the EL2 Vector Table in the VBAR register
+2:
+#if !defined(ENABLE_MORELLO_CAP)
+   msr   vbar_el2, x0            // Set the Address of the EL2 Vector Table in the VBAR register
+#else
+   cvtp  c0, x0
+   msr   cvbar_el2, c0
+#endif
    b     4f
-3: msr   vbar_el3, x0            // Set the Address of the EL3 Vector Table in the VBAR register
+3:
+#if !defined(ENABLE_MORELLO_CAP)
+   msr   vbar_el3, x0            // Set the Address of the EL3 Vector Table in the VBAR register
+#else
+   cvtp  c0, x0
+   msr   cvbar_el3, c0
+#endif
 4: isb
    ret
 
