@@ -1,7 +1,7 @@
 /** @file
 SMM MP service implementation
 
-Copyright (c) 2009 - 2020, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2009 - 2021, Intel Corporation. All rights reserved.<BR>
 Copyright (c) 2017, AMD Incorporated. All rights reserved.<BR>
 
 SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -22,6 +22,9 @@ UINTN                                       mSemaphoreSize;
 SPIN_LOCK                                   *mPFLock = NULL;
 SMM_CPU_SYNC_MODE                           mCpuSmmSyncMode;
 BOOLEAN                                     mMachineCheckSupported = FALSE;
+MM_COMPLETION                               mSmmStartupThisApToken;
+
+extern UINTN mSmmShadowStackSize;
 
 /**
   Performs an atomic compare exchange operation to get semaphore.
@@ -40,14 +43,18 @@ WaitForSemaphore (
 {
   UINT32                            Value;
 
-  do {
+  for (;;) {
     Value = *Sem;
-  } while (Value == 0 ||
-           InterlockedCompareExchange32 (
-             (UINT32*)Sem,
-             Value,
-             Value - 1
-             ) != Value);
+    if (Value != 0 &&
+        InterlockedCompareExchange32 (
+          (UINT32*)Sem,
+          Value,
+          Value - 1
+          ) == Value) {
+      break;
+    }
+    CpuPause ();
+  }
   return Value - 1;
 }
 
@@ -433,26 +440,10 @@ ResetTokens (
   VOID
   )
 {
-  LIST_ENTRY            *Link;
-  PROCEDURE_TOKEN       *ProcToken;
-
-  Link = GetFirstNode (&gSmmCpuPrivate->TokenList);
-  while (!IsNull (&gSmmCpuPrivate->TokenList, Link)) {
-    ProcToken = PROCEDURE_TOKEN_FROM_LINK (Link);
-
-    ProcToken->RunningApCount = 0;
-    ProcToken->Used = FALSE;
-
-    //
-    // Check the spinlock status and release it if not released yet.
-    //
-    if (!AcquireSpinLockOrFail(ProcToken->SpinLock)) {
-      DEBUG((DEBUG_ERROR, "Risk::SpinLock still not released!"));
-    }
-    ReleaseSpinLock (ProcToken->SpinLock);
-
-    Link = GetNextNode (&gSmmCpuPrivate->TokenList, Link);
-  }
+  //
+  // Reset the FirstFreeToken to the beginning of token list upon exiting SMI.
+  //
+  gSmmCpuPrivate->FirstFreeToken = GetFirstNode (&gSmmCpuPrivate->TokenList);
 }
 
 /**
@@ -932,7 +923,7 @@ Gen4GPageTable (
     // Add two more pages for known good stack and stack guard page,
     // then find the lower 2MB aligned address.
     //
-    High2MBoundary = (mSmmStackArrayEnd - mSmmStackSize + EFI_PAGE_SIZE * 2) & ~(SIZE_2MB-1);
+    High2MBoundary = (mSmmStackArrayEnd - mSmmStackSize - mSmmShadowStackSize + EFI_PAGE_SIZE * 2) & ~(SIZE_2MB-1);
     PagesNeeded = ((High2MBoundary - Low2MBoundary) / SIZE_2MB) + 1;
   }
   //
@@ -983,7 +974,7 @@ Gen4GPageTable (
           // Mark the guard page as non-present
           //
           Pte[Index] = PageAddress | mAddressEncMask;
-          GuardPage += mSmmStackSize;
+          GuardPage += (mSmmStackSize + mSmmShadowStackSize);
           if (GuardPage > mSmmStackArrayEnd) {
             GuardPage = 0;
           }
@@ -1044,10 +1035,13 @@ IsTokenInUse (
   }
 
   Link = GetFirstNode (&gSmmCpuPrivate->TokenList);
-  while (!IsNull (&gSmmCpuPrivate->TokenList, Link)) {
+  //
+  // Only search used tokens.
+  //
+  while (Link != gSmmCpuPrivate->FirstFreeToken) {
     ProcToken = PROCEDURE_TOKEN_FROM_LINK (Link);
 
-    if (ProcToken->Used && ProcToken->SpinLock == Token) {
+    if (ProcToken->SpinLock == Token) {
       return TRUE;
     }
 
@@ -1060,23 +1054,21 @@ IsTokenInUse (
 /**
   Allocate buffer for the SPIN_LOCK and PROCEDURE_TOKEN.
 
+  @return First token of the token buffer.
 **/
-VOID
+LIST_ENTRY *
 AllocateTokenBuffer (
   VOID
   )
 {
   UINTN               SpinLockSize;
   UINT32              TokenCountPerChunk;
-  UINTN               ProcTokenSize;
   UINTN               Index;
-  PROCEDURE_TOKEN     *ProcToken;
   SPIN_LOCK           *SpinLock;
   UINT8               *SpinLockBuffer;
-  UINT8               *ProcTokenBuffer;
+  PROCEDURE_TOKEN     *ProcTokens;
 
   SpinLockSize = GetSpinLockProperties ();
-  ProcTokenSize = sizeof (PROCEDURE_TOKEN);
 
   TokenCountPerChunk = FixedPcdGet32 (PcdCpuSmmMpTokenCountPerChunk);
   ASSERT (TokenCountPerChunk != 0);
@@ -1092,49 +1084,21 @@ AllocateTokenBuffer (
   SpinLockBuffer = AllocatePool (SpinLockSize * TokenCountPerChunk);
   ASSERT (SpinLockBuffer != NULL);
 
-  ProcTokenBuffer = AllocatePool (ProcTokenSize * TokenCountPerChunk);
-  ASSERT (ProcTokenBuffer != NULL);
+  ProcTokens = AllocatePool (sizeof (PROCEDURE_TOKEN) * TokenCountPerChunk);
+  ASSERT (ProcTokens != NULL);
 
   for (Index = 0; Index < TokenCountPerChunk; Index++) {
     SpinLock = (SPIN_LOCK *)(SpinLockBuffer + SpinLockSize * Index);
     InitializeSpinLock (SpinLock);
 
-    ProcToken = (PROCEDURE_TOKEN *)(ProcTokenBuffer + ProcTokenSize * Index);
-    ProcToken->Signature = PROCEDURE_TOKEN_SIGNATURE;
-    ProcToken->SpinLock = SpinLock;
-    ProcToken->Used = FALSE;
-    ProcToken->RunningApCount = 0;
+    ProcTokens[Index].Signature      = PROCEDURE_TOKEN_SIGNATURE;
+    ProcTokens[Index].SpinLock       = SpinLock;
+    ProcTokens[Index].RunningApCount = 0;
 
-    InsertTailList (&gSmmCpuPrivate->TokenList, &ProcToken->Link);
-  }
-}
-
-/**
-  Find first free token in the allocated token list.
-
-  @retval    return the first free PROCEDURE_TOKEN.
-
-**/
-PROCEDURE_TOKEN *
-FindFirstFreeToken (
-  VOID
-  )
-{
-  LIST_ENTRY        *Link;
-  PROCEDURE_TOKEN   *ProcToken;
-
-  Link = GetFirstNode (&gSmmCpuPrivate->TokenList);
-  while (!IsNull (&gSmmCpuPrivate->TokenList, Link)) {
-    ProcToken = PROCEDURE_TOKEN_FROM_LINK (Link);
-
-    if (!ProcToken->Used) {
-      return ProcToken;
-    }
-
-    Link = GetNextNode (&gSmmCpuPrivate->TokenList, Link);
+    InsertTailList (&gSmmCpuPrivate->TokenList, &ProcTokens[Index].Link);
   }
 
-  return NULL;
+  return &ProcTokens[0].Link;
 }
 
 /**
@@ -1154,14 +1118,16 @@ GetFreeToken (
 {
   PROCEDURE_TOKEN  *NewToken;
 
-  NewToken = FindFirstFreeToken ();
-  if (NewToken == NULL) {
-    AllocateTokenBuffer ();
-    NewToken = FindFirstFreeToken ();
+  //
+  // If FirstFreeToken meets the end of token list, enlarge the token list.
+  // Set FirstFreeToken to the first free token.
+  //
+  if (gSmmCpuPrivate->FirstFreeToken == &gSmmCpuPrivate->TokenList) {
+    gSmmCpuPrivate->FirstFreeToken = AllocateTokenBuffer ();
   }
-  ASSERT (NewToken != NULL);
+  NewToken = PROCEDURE_TOKEN_FROM_LINK (gSmmCpuPrivate->FirstFreeToken);
+  gSmmCpuPrivate->FirstFreeToken = GetNextNode (&gSmmCpuPrivate->TokenList, gSmmCpuPrivate->FirstFreeToken);
 
-  NewToken->Used = TRUE;
   NewToken->RunningApCount = RunningApsCount;
   AcquireSpinLock (NewToken->SpinLock);
 
@@ -1275,9 +1241,26 @@ InternalSmmStartupThisAp (
   mSmmMpSyncData->CpuData[CpuIndex].Procedure = Procedure;
   mSmmMpSyncData->CpuData[CpuIndex].Parameter = ProcArguments;
   if (Token != NULL) {
-    ProcToken= GetFreeToken (1);
-    mSmmMpSyncData->CpuData[CpuIndex].Token = ProcToken;
-    *Token = (MM_COMPLETION)ProcToken->SpinLock;
+    if (Token != &mSmmStartupThisApToken) {
+      //
+      // When Token points to mSmmStartupThisApToken, this routine is called
+      // from SmmStartupThisAp() in non-blocking mode (PcdCpuSmmBlockStartupThisAp == FALSE).
+      //
+      // In this case, caller wants to startup AP procedure in non-blocking
+      // mode and cannot get the completion status from the Token because there
+      // is no way to return the Token to caller from SmmStartupThisAp().
+      // Caller needs to use its implementation specific way to query the completion status.
+      //
+      // There is no need to allocate a token for such case so the 3 overheads
+      // can be avoided:
+      // 1. Call AllocateTokenBuffer() when there is no free token.
+      // 2. Get a free token from the token buffer.
+      // 3. Call ReleaseToken() in APHandler().
+      //
+      ProcToken = GetFreeToken (1);
+      mSmmMpSyncData->CpuData[CpuIndex].Token = ProcToken;
+      *Token = (MM_COMPLETION)ProcToken->SpinLock;
+    }
   }
   mSmmMpSyncData->CpuData[CpuIndex].Status    = CpuStatus;
   if (mSmmMpSyncData->CpuData[CpuIndex].Status != NULL) {
@@ -1509,8 +1492,6 @@ SmmStartupThisAp (
   IN OUT  VOID                      *ProcArguments OPTIONAL
   )
 {
-  MM_COMPLETION               Token;
-
   gSmmCpuPrivate->ApWrapperFunc[CpuIndex].Procedure = Procedure;
   gSmmCpuPrivate->ApWrapperFunc[CpuIndex].ProcedureArgument = ProcArguments;
 
@@ -1521,7 +1502,7 @@ SmmStartupThisAp (
     ProcedureWrapper,
     CpuIndex,
     &gSmmCpuPrivate->ApWrapperFunc[CpuIndex],
-    FeaturePcdGet (PcdCpuSmmBlockStartupThisAp) ? NULL : &Token,
+    FeaturePcdGet (PcdCpuSmmBlockStartupThisAp) ? NULL : &mSmmStartupThisApToken,
     0,
     NULL
     );
@@ -1781,7 +1762,7 @@ InitializeDataForMmMp (
 
   InitializeListHead (&gSmmCpuPrivate->TokenList);
 
-  AllocateTokenBuffer ();
+  gSmmCpuPrivate->FirstFreeToken = AllocateTokenBuffer ();
 }
 
 /**

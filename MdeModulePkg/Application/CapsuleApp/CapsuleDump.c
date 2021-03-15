@@ -38,7 +38,7 @@ DumpUxCapsule (
 {
   EFI_DISPLAY_CAPSULE                           *DisplayCapsule;
   DisplayCapsule = (EFI_DISPLAY_CAPSULE *)CapsuleHeader;
-  Print(L"[UxCapusule]\n");
+  Print(L"[UxCapsule]\n");
   Print(L"CapsuleHeader:\n");
   Print(L"  CapsuleGuid      - %g\n", &DisplayCapsule->CapsuleHeader.CapsuleGuid);
   Print(L"  HeaderSize       - 0x%x\n", DisplayCapsule->CapsuleHeader.HeaderSize);
@@ -96,8 +96,11 @@ DumpFmpCapsule (
     Print(L"  UpdateImageIndex       - 0x%x\n", FmpImageHeader->UpdateImageIndex);
     Print(L"  UpdateImageSize        - 0x%x\n", FmpImageHeader->UpdateImageSize);
     Print(L"  UpdateVendorCodeSize   - 0x%x\n", FmpImageHeader->UpdateVendorCodeSize);
-    if (FmpImageHeader->Version >= EFI_FIRMWARE_MANAGEMENT_CAPSULE_IMAGE_HEADER_INIT_VERSION) {
+    if (FmpImageHeader->Version >= 2) {
       Print(L"  UpdateHardwareInstance - 0x%lx\n", FmpImageHeader->UpdateHardwareInstance);
+      if (FmpImageHeader->Version >= EFI_FIRMWARE_MANAGEMENT_CAPSULE_IMAGE_HEADER_INIT_VERSION) {
+        Print(L"  ImageCapsuleSupport    - 0x%lx\n", FmpImageHeader->ImageCapsuleSupport);
+      }
     }
   }
 }
@@ -199,7 +202,7 @@ DumpCapsule (
     DumpFmpCapsule(CapsuleHeader);
   }
   if (IsNestedFmpCapsule(CapsuleHeader)) {
-    Print(L"[NestedCapusule]\n");
+    Print(L"[NestedCapsule]\n");
     Print(L"CapsuleHeader:\n");
     Print(L"  CapsuleGuid      - %g\n", &CapsuleHeader->CapsuleGuid);
     Print(L"  HeaderSize       - 0x%x\n", CapsuleHeader->HeaderSize);

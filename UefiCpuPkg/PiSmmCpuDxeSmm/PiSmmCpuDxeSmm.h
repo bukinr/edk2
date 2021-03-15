@@ -1,7 +1,7 @@
 /** @file
 Agent Module to load other modules to deploy SMM Entry Vector for X86 CPU.
 
-Copyright (c) 2009 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2009 - 2020, Intel Corporation. All rights reserved.<BR>
 Copyright (c) 2017, AMD Incorporated. All rights reserved.<BR>
 
 SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -214,7 +214,6 @@ typedef struct {
 
   SPIN_LOCK               *SpinLock;
   volatile UINT32         RunningApCount;
-  BOOLEAN                 Used;
 } PROCEDURE_TOKEN;
 
 #define PROCEDURE_TOKEN_FROM_LINK(a)  CR (a, PROCEDURE_TOKEN, Link, PROCEDURE_TOKEN_SIGNATURE)
@@ -255,6 +254,7 @@ typedef struct {
 
   PROCEDURE_WRAPPER               *ApWrapperFunc;
   LIST_ENTRY                      TokenList;
+  LIST_ENTRY                      *FirstFreeToken;
 } SMM_CPU_PRIVATE_DATA;
 
 extern SMM_CPU_PRIVATE_DATA  *gSmmCpuPrivate;
@@ -263,6 +263,7 @@ extern UINTN                  mMaxNumberOfCpus;
 extern UINTN                  mNumberOfCpus;
 extern EFI_SMM_CPU_PROTOCOL   mSmmCpu;
 extern EFI_MM_MP_PROTOCOL     mSmmMp;
+extern UINTN                  mInternalCr3;
 
 ///
 /// The mode of the CPU at the time an SMI occurs
@@ -284,7 +285,7 @@ extern UINT8  mSmmSaveStateRegisterLma;
 
   @retval EFI_SUCCESS   The register was read from Save State
   @retval EFI_NOT_FOUND The register is not defined for the Save State of Processor
-  @retval EFI_INVALID_PARAMTER   This or Buffer is NULL.
+  @retval EFI_INVALID_PARAMETER   This or Buffer is NULL.
 
 **/
 EFI_STATUS
@@ -308,7 +309,7 @@ SmmReadSaveState (
 
   @retval EFI_SUCCESS   The register was written from Save State
   @retval EFI_NOT_FOUND The register is not defined for the Save State of Processor
-  @retval EFI_INVALID_PARAMTER   ProcessorIndex or Width is not correct
+  @retval EFI_INVALID_PARAMETER   ProcessorIndex or Width is not correct
 
 **/
 EFI_STATUS
@@ -336,7 +337,7 @@ This function supports reading a CPU Save State register in SMBase relocation ha
 
 @retval EFI_SUCCESS           The register was read from Save State.
 @retval EFI_NOT_FOUND         The register is not defined for the Save State of Processor.
-@retval EFI_INVALID_PARAMTER  This or Buffer is NULL.
+@retval EFI_INVALID_PARAMETER  This or Buffer is NULL.
 
 **/
 EFI_STATUS
@@ -363,7 +364,7 @@ This function supports writing a CPU Save State register in SMBase relocation ha
 
 @retval EFI_SUCCESS           The register was written to Save State.
 @retval EFI_NOT_FOUND         The register is not defined for the Save State of Processor.
-@retval EFI_INVALID_PARAMTER  ProcessorIndex or Width is not correct.
+@retval EFI_INVALID_PARAMETER  ProcessorIndex or Width is not correct.
 
 **/
 EFI_STATUS
@@ -942,13 +943,15 @@ SetPageTableAttributes (
   );
 
 /**
-  Return page table base.
+  Get page table base address and the depth of the page table.
 
-  @return page table base.
+  @param[out] Base        Page table base address.
+  @param[out] FiveLevels  TRUE means 5 level paging. FALSE means 4 level paging.
 **/
-UINTN
-GetPageTableBase (
-  VOID
+VOID
+GetPageTable (
+  OUT UINTN   *Base,
+  OUT BOOLEAN *FiveLevels OPTIONAL
   );
 
 /**
@@ -1263,7 +1266,7 @@ EdkiiSmmGetMemoryAttributes (
 
 /**
   This function fixes up the address of the global variable or function
-  referred in SmmInit assembly files to be the absoute address.
+  referred in SmmInit assembly files to be the absolute address.
 **/
 VOID
 EFIAPI
@@ -1272,7 +1275,7 @@ PiSmmCpuSmmInitFixupAddress (
 
 /**
   This function fixes up the address of the global variable or function
-  referred in SmiEntry assembly files to be the absoute address.
+  referred in SmiEntry assembly files to be the absolute address.
 **/
 VOID
 EFIAPI

@@ -103,6 +103,8 @@
   DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
   DtPlatformDtbLoaderLib|EmbeddedPkg/Library/DxeDtPlatformDtbLoaderLibDefault/DxeDtPlatformDtbLoaderLibDefault.inf
 
+  TimeBaseLib|EmbeddedPkg/Library/TimeBaseLib/TimeBaseLib.inf
+
 [LibraryClasses.common.DXE_DRIVER]
   PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
   ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
@@ -225,10 +227,6 @@
 
   EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
 
-  # Drivers
-  EmbeddedPkg/Drivers/Lan9118Dxe/Lan9118Dxe.inf
-  EmbeddedPkg/Drivers/SataSiI3132Dxe/SataSiI3132Dxe.inf
-
   EmbeddedPkg/Library/AcpiLib/AcpiLib.inf
   EmbeddedPkg/Library/DebugAgentTimerLibNull/DebugAgentTimerLibNull.inf
   EmbeddedPkg/Library/FdtLib/FdtLib.inf
@@ -242,9 +240,6 @@
     <LibraryClasses>
       DmaLib|EmbeddedPkg/Library/NonCoherentDmaLib/NonCoherentDmaLib.inf
   }
-
-[Components.ARM]
-  EmbeddedPkg/Drivers/Isp1761UsbDxe/Isp1761UsbDxe.inf
 
 [Components.ARM, Components.AARCH64]
   EmbeddedPkg/Application/AndroidBoot/AndroidBootApp.inf

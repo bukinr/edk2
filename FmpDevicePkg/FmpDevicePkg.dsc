@@ -6,8 +6,9 @@
 # Capsules.  The behavior of the Firmware Management Protocol instance is
 # customized using libraries and PCDs.
 #
-# Copyright (c) 2016, Microsoft Corporation. All rights reserved.<BR>
-# Copyright (c) 2018 - 2019, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) Microsoft Corporation.<BR>
+# Copyright (c) 2018 - 2020, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2020, Hewlett Packard Enterprise Development LP. All rights reserved.<BR>
 #
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -19,7 +20,7 @@
   PLATFORM_VERSION               = 0.1
   DSC_SPECIFICATION              = 0x00010005
   OUTPUT_DIRECTORY               = Build/FmpDevicePkg
-  SUPPORTED_ARCHITECTURES        = IA32|X64|ARM|AARCH64
+  SUPPORTED_ARCHITECTURES        = IA32|X64|ARM|AARCH64|RISCV64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
 
@@ -34,6 +35,8 @@
   # FALSE - Build FmpDxe module for with storage access disabled
   #
   DEFINE DEVICE_FMP_STORAGE_ACCESS_ENABLE = TRUE
+
+!include UnitTestFrameworkPkg/UnitTestFrameworkPkgTarget.dsc.inc
 
 [LibraryClasses]
   UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
@@ -54,11 +57,15 @@
   IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
   OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLib.inf
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  RngLib|MdePkg/Library/BaseRngLibNull/BaseRngLibNull.inf
 !endif
   FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
   CapsuleUpdatePolicyLib|FmpDevicePkg/Library/CapsuleUpdatePolicyLibNull/CapsuleUpdatePolicyLibNull.inf
   FmpPayloadHeaderLib|FmpDevicePkg/Library/FmpPayloadHeaderLibV1/FmpPayloadHeaderLibV1.inf
   FmpDeviceLib|FmpDevicePkg/Library/FmpDeviceLibNull/FmpDeviceLibNull.inf
+  FmpDependencyLib|FmpDevicePkg/Library/FmpDependencyLib/FmpDependencyLib.inf
+  FmpDependencyCheckLib|FmpDevicePkg/Library/FmpDependencyCheckLibNull/FmpDependencyCheckLibNull.inf
+  FmpDependencyDeviceLib|FmpDevicePkg/Library/FmpDependencyDeviceLibNull/FmpDependencyDeviceLibNull.inf
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
 
 [LibraryClasses.ARM, LibraryClasses.AARCH64]
@@ -87,6 +94,10 @@
   FmpDevicePkg/Library/CapsuleUpdatePolicyLibOnProtocol/CapsuleUpdatePolicyLibOnProtocol.inf
   FmpDevicePkg/Library/FmpPayloadHeaderLibV1/FmpPayloadHeaderLibV1.inf
   FmpDevicePkg/Library/FmpDeviceLibNull/FmpDeviceLibNull.inf
+  FmpDevicePkg/Library/FmpDependencyLib/FmpDependencyLib.inf
+  FmpDevicePkg/Library/FmpDependencyCheckLib/FmpDependencyCheckLib.inf
+  FmpDevicePkg/Library/FmpDependencyCheckLibNull/FmpDependencyCheckLibNull.inf
+  FmpDevicePkg/Library/FmpDependencyDeviceLibNull/FmpDependencyDeviceLibNull.inf
   FmpDevicePkg/FmpDxe/FmpDxeLib.inf
 
   #
@@ -159,6 +170,11 @@
       #
       CapsuleUpdatePolicyLib|FmpDevicePkg/Library/CapsuleUpdatePolicyLibNull/CapsuleUpdatePolicyLibNull.inf
   }
+
+  #
+  # Add UEFI Target Based Unit Tests
+  #
+  FmpDevicePkg/Test/UnitTest/Library/FmpDependencyLib/FmpDependencyLibUnitTestsUefi.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

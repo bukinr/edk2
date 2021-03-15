@@ -1,7 +1,7 @@
 ## @file
 #  MP Initialize Library instance for PEI driver.
 #
-#  Copyright (c) 2016 - 2020, Intel Corporation. All rights reserved.<BR>
+#  Copyright (c) 2016 - 2021, Intel Corporation. All rights reserved.<BR>
 #  SPDX-License-Identifier: BSD-2-Clause-Patent
 #
 ##
@@ -22,14 +22,13 @@
 #
 
 [Sources.IA32]
-  Ia32/MpEqu.inc
   Ia32/MpFuncs.nasm
 
 [Sources.X64]
-  X64/MpEqu.inc
   X64/MpFuncs.nasm
 
 [Sources.common]
+  MpEqu.inc
   PeiMpLib.c
   MpLib.c
   MpLib.h
@@ -50,6 +49,8 @@
   UefiCpuLib
   SynchronizationLib
   PeiServicesLib
+  PcdLib
+  VmgExitLib
 
 [Pcd]
   gUefiCpuPkgTokenSpaceGuid.PcdCpuMaxLogicalProcessorNumber        ## CONSUMES
@@ -60,7 +61,12 @@
   gUefiCpuPkgTokenSpaceGuid.PcdCpuMicrocodePatchRegionSize         ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApLoopMode                       ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApTargetCstate                   ## SOMETIMES_CONSUMES
-  gUefiCpuPkgTokenSpaceGuid.PcdCpuShadowMicrocodeByFit             ## CONSUMES
+  gUefiCpuPkgTokenSpaceGuid.PcdSevEsIsEnabled                      ## CONSUMES
+  gUefiCpuPkgTokenSpaceGuid.PcdSevEsWorkAreaBase                   ## SOMETIMES_CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdGhcbBase                       ## CONSUMES
+
+[Ppis]
+  gEdkiiPeiShadowMicrocodePpiGuid        ## SOMETIMES_CONSUMES
 
 [Guids]
   gEdkiiS3SmmInitDoneGuid

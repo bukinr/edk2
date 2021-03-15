@@ -1,7 +1,7 @@
 /** @file
 
   Copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
-  Copyright (c) 2011 - 2014, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) 2011 - 2021, ARM Ltd. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -10,8 +10,6 @@
 #include <Base.h>
 
 #include <Library/ArmLib.h>
-#include <Library/DebugLib.h>
-#include <Library/PcdLib.h>
 
 #include "ArmLibPrivate.h"
 
@@ -21,9 +19,7 @@ ArmSetAuxCrBit (
   IN  UINT32    Bits
   )
 {
-  UINT32 val = ArmReadAuxCr();
-  val |= Bits;
-  ArmWriteAuxCr(val);
+  ArmWriteAuxCr(ArmReadAuxCr() | Bits);
 }
 
 VOID
@@ -32,9 +28,7 @@ ArmUnsetAuxCrBit (
   IN  UINT32    Bits
   )
 {
-  UINT32 val = ArmReadAuxCr();
-  val &= ~Bits;
-  ArmWriteAuxCr(val);
+  ArmWriteAuxCr(ArmReadAuxCr() & ~Bits);
 }
 
 //
@@ -47,10 +41,7 @@ ArmSetCpuActlrBit (
   IN  UINTN    Bits
   )
 {
-  UINTN Value;
-  Value =  ArmReadCpuActlr ();
-  Value |= Bits;
-  ArmWriteCpuActlr (Value);
+  ArmWriteCpuActlr (ArmReadCpuActlr () | Bits);
 }
 
 VOID
@@ -59,10 +50,7 @@ ArmUnsetCpuActlrBit (
   IN  UINTN    Bits
   )
 {
-  UINTN Value;
-  Value = ArmReadCpuActlr ();
-  Value &= ~Bits;
-  ArmWriteCpuActlr (Value);
+  ArmWriteCpuActlr (ArmReadCpuActlr () & ~Bits);
 }
 
 UINTN
