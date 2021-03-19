@@ -2,6 +2,7 @@
 # Build cache intermediate result and state
 #
 # Copyright (c) 2019 - 2020, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2020, ARM Limited. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
 from Common.caching import cached_property
@@ -12,20 +13,6 @@ from Common.Misc import SaveFileOnChange, PathClass
 from Common.Misc import TemplateString
 import sys
 gIsFileMap = {}
-if sys.platform == "win32":
-    _INCLUDE_DEPS_TEMPLATE = TemplateString('''
-${BEGIN}
-!IF EXIST(${deps_file})
-!INCLUDE ${deps_file}
-!ENDIF
-${END}
-        ''')
-else:
-    _INCLUDE_DEPS_TEMPLATE = TemplateString('''
-${BEGIN}
--include ${deps_file}
-${END}
-        ''')
 
 DEP_FILE_TAIL = "# Updated \n"
 
@@ -59,6 +46,25 @@ class IncludesAutoGen():
 
     def CreateDepsInclude(self):
         deps_file = {'deps_file':self.deps_files}
+
+        MakePath = self.module_autogen.BuildOption.get('MAKE', {}).get('PATH')
+        if not MakePath:
+            EdkLogger.error("build", PARAMETER_MISSING, Message="No Make path available.")
+        elif "nmake" in MakePath:
+            _INCLUDE_DEPS_TEMPLATE = TemplateString('''
+${BEGIN}
+!IF EXIST(${deps_file})
+!INCLUDE ${deps_file}
+!ENDIF
+${END}
+               ''')
+        else:
+            _INCLUDE_DEPS_TEMPLATE = TemplateString('''
+${BEGIN}
+-include ${deps_file}
+${END}
+               ''')
+
         try:
             deps_include_str = _INCLUDE_DEPS_TEMPLATE.Replace(deps_file)
         except Exception as e:
@@ -97,7 +103,7 @@ class IncludesAutoGen():
                     if os.path.normpath(dependency_file +".deps") == abspath:
                         continue
                     filename = os.path.basename(dependency_file).strip()
-                    if filename not in self.SourceFileList and filename not in targetname:
+                    if filename not in targetname:
                         includes.add(dependency_file.strip())
 
                 for item in lines[1:]:
@@ -105,11 +111,11 @@ class IncludesAutoGen():
                         continue
                     dependency_file = item.strip(" \\\n")
                     dependency_file = dependency_file.strip('''"''')
+                    if dependency_file == '':
+                        continue
                     if os.path.normpath(dependency_file +".deps") == abspath:
                         continue
                     filename = os.path.basename(dependency_file).strip()
-                    if filename in self.SourceFileList:
-                        continue
                     if filename in targetname:
                         continue
                     includes.add(dependency_file.strip())
@@ -195,7 +201,17 @@ class IncludesAutoGen():
                             cc_options = line[len(cc_cmd)+2:].split()
                         else:
                             cc_options = line[len(cc_cmd):].split()
-                        SourceFileAbsPathMap = {os.path.basename(item):item for item in cc_options if not item.startswith("/") and os.path.exists(item)}
+                        for item in cc_options:
+                            if not item.startswith("/"):
+                                if item.endswith(".txt") and item.startswith("@"):
+                                    with open(item[1:], "r") as file:
+                                        source_files = file.readlines()[0].split()
+                                        SourceFileAbsPathMap = {os.path.basename(file): file for file in source_files if
+                                                                os.path.exists(file)}
+                                else:
+                                    if os.path.exists(item):
+                                        SourceFileAbsPathMap.update({os.path.basename(item): item.strip()})
+                        # SourceFileAbsPathMap = {os.path.basename(item):item for item in cc_options if not item.startswith("/") and os.path.exists(item)}
             if line in SourceFileAbsPathMap:
                 current_source = line
                 if current_source not in ModuleDepDict:
@@ -275,7 +291,8 @@ class IncludesAutoGen():
                 targetitem = self.GetRealTarget(source_abs.strip(" :"))
 
                 targetitem += ": "
-                targetitem += lines[1]
+                if len(lines)>=2:
+                    targetitem += lines[1]
                 newcontent.append(targetitem)
                 newcontent.extend(lines[2:])
                 newcontent.append("\n")

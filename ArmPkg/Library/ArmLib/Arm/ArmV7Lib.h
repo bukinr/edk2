@@ -30,5 +30,39 @@ ArmV7AllDataCachesOperation (
   IN  ARM_V7_CACHE_OPERATION  DataCacheOperation
   );
 
+VOID
+EFIAPI
+ArmInvalidateDataCacheEntryBySetWay (
+  IN  UINTN  SetWayFormat
+  );
+
+VOID
+EFIAPI
+ArmCleanDataCacheEntryBySetWay (
+  IN  UINTN  SetWayFormat
+  );
+
+VOID
+EFIAPI
+ArmCleanInvalidateDataCacheEntryBySetWay (
+  IN  UINTN   SetWayFormat
+  );
+
+/** Reads the ID_MMFR4 register.
+
+   @return The contents of the ID_MMFR4 register.
+**/
+UINT32
+EFIAPI
+ArmReadIdMmfr4 (
+  VOID
+  );
+
+UINTN
+EFIAPI
+ArmReadIdPfr1 (
+  VOID
+  );
+
 #endif // __ARM_V7_LIB_H__
 

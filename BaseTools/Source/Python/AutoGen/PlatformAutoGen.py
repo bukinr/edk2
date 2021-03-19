@@ -2,6 +2,7 @@
 # Create makefile for MS nmake and GNU make
 #
 # Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+#  Copyright (c) 2020, ARM Limited. All rights reserved.<BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
 
@@ -106,8 +107,9 @@ class PlatformAutoGen(AutoGen):
         self.BuildDatabase = Workspace.BuildDatabase
         self.DscBuildDataObj = Workspace.Platform
 
-        # flag indicating if the makefile/C-code file has been created or not
-        self.IsMakeFileCreated  = False
+        # MakeFileName is used to get the Makefile name and as a flag
+        # indicating whether the file has been created.
+        self.MakeFileName = ""
 
         self._DynamicPcdList = None    # [(TokenCName1, TokenSpaceGuidCName1), (TokenCName2, TokenSpaceGuidCName2), ...]
         self._NonDynamicPcdList = None # [(TokenCName1, TokenSpaceGuidCName1), (TokenCName2, TokenSpaceGuidCName2), ...]
@@ -191,16 +193,15 @@ class PlatformAutoGen(AutoGen):
         self.CreateLibModuelDirs()
 
     def CreateLibModuelDirs(self):
-        # no need to create makefile for the platform more than once
-        if self.IsMakeFileCreated:
+        # No need to create makefile for the platform more than once.
+        if self.MakeFileName:
             return
 
         # create library/module build dirs for platform
         Makefile = GenMake.PlatformMakefile(self)
         self.LibraryBuildDirectoryList = Makefile.GetLibraryBuildDirectoryList()
         self.ModuleBuildDirectoryList = Makefile.GetModuleBuildDirectoryList()
-
-        self.IsMakeFileCreated = True
+        self.MakeFileName = Makefile.getMakefileName()
 
     @property
     def AllPcdList(self):
@@ -252,7 +253,7 @@ class PlatformAutoGen(AutoGen):
         VariableInfo.SetVpdRegionMaxSize(VpdRegionSize)
         VariableInfo.SetVpdRegionOffset(VpdRegionBase)
         Index = 0
-        for Pcd in DynamicPcdSet:
+        for Pcd in sorted(DynamicPcdSet):
             pcdname = ".".join((Pcd.TokenSpaceGuidCName, Pcd.TokenCName))
             for SkuName in Pcd.SkuInfoList:
                 Sku = Pcd.SkuInfoList[SkuName]
@@ -865,7 +866,8 @@ class PlatformAutoGen(AutoGen):
                             Value += " " + self._BuildOptionWithToolDef(RetVal)[Tool][Attr]
                         else:
                             Value = self._BuildOptionWithToolDef(RetVal)[Tool][Attr]
-
+                            Def = '_'.join([self.BuildTarget, self.ToolChain, self.Arch, Tool, Attr])
+                            self.Workspace.ToolDef.ToolsDefTxtDictionary[Def] = Value
                 if Attr == "PATH":
                     # Don't put MAKE definition in the file
                     if Tool != "MAKE":
@@ -1035,13 +1037,18 @@ class PlatformAutoGen(AutoGen):
                 TokenNumber += 1
 
         for Pcd in self.NonDynamicPcdList:
-            RetVal[Pcd.TokenCName, Pcd.TokenSpaceGuidCName] = TokenNumber
-            TokenNumber += 1
+            RetVal[Pcd.TokenCName, Pcd.TokenSpaceGuidCName] = 0
         return RetVal
 
     @cached_property
     def _MbList(self):
-        return [self.BuildDatabase[m, self.Arch, self.BuildTarget, self.ToolChain] for m in self.Platform.Modules]
+        ModuleList = []
+        for m in self.Platform.Modules:
+            component = self.Platform.Modules[m]
+            module = self.BuildDatabase[m, self.Arch, self.BuildTarget, self.ToolChain]
+            module.Guid = component.Guid
+            ModuleList.append(module)
+        return ModuleList
 
     @cached_property
     def _MaList(self):
