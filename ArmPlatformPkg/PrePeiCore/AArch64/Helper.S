@@ -28,7 +28,12 @@ ASM_FUNC(SetupExceptionLevel2)
    orr     x0, x0, #(1 << 5)      // Enable EL2 SError and Abort
    msr     hcr_el2, x0            // Write back our settings
 
+#if defined(ENABLE_MORELLO_CAP)
    msr     cptr_el2, xzr          // Disable copro traps to EL2
+#else
+   mov     x0, #(1 << 9)          // Enable Trapping of Morello instructions
+   msr     cptr_el2, x0
+#endif
 
    // Enable Timer access for non-secure EL1 and EL0
    // The cnthctl_el2 register bits are architecturally
