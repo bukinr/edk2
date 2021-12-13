@@ -17,7 +17,7 @@ parameters:
 jobs:
 
 - job: Build_${{ parameters.tool_chain_tag }}
-
+  timeoutInMinutes: 120
   #Use matrix to speed up the build process
   strategy:
     matrix:
@@ -47,6 +47,9 @@ jobs:
         Build.Targets: 'DEBUG,RELEASE,NO-TARGET,NOOPT'
       TARGET_SECURITY:
         Build.Pkgs: 'SecurityPkg'
+        Build.Targets: 'DEBUG,RELEASE,NO-TARGET'
+      TARGET_UEFIPAYLOAD:
+        Build.Pkgs: 'UefiPayloadPkg'
         Build.Targets: 'DEBUG,RELEASE,NO-TARGET'
       TARGET_PLATFORMS:
         # For Platforms only check code. Leave it to Platform CI
