@@ -1908,6 +1908,7 @@ XhcExitBootService (
 {
   USB_XHCI_INSTANCE    *Xhc;
   EFI_PCI_IO_PROTOCOL  *PciIo;
+  UINT8                 Index;
 
   Xhc   = (USB_XHCI_INSTANCE *)Context;
   PciIo = Xhc->PciIo;
@@ -1917,6 +1918,25 @@ XhcExitBootService (
   // and uninstall the XHCI protocl.
   //
   gBS->SetTimer (Xhc->PollTimer, TimerCancel, 0);
+
+  //
+  // Disable the device slots occupied by these devices on its downstream ports.
+  // Entry 0 is reserved.
+  //
+  for (Index = 0; Index < 255; Index++) {
+    if (!Xhc->UsbDevContext[Index + 1].Enabled ||
+        (Xhc->UsbDevContext[Index + 1].SlotId == 0))
+    {
+      continue;
+    }
+
+    if (Xhc->HcCParams.Data.Csz == 0) {
+      XhcDisableSlotCmd (Xhc, Xhc->UsbDevContext[Index + 1].SlotId);
+    } else {
+      XhcDisableSlotCmd64 (Xhc, Xhc->UsbDevContext[Index + 1].SlotId);
+    }
+  }
+
   XhcHaltHC (Xhc, XHC_GENERIC_TIMEOUT);
 
   if (Xhc->PollTimer != NULL) {
