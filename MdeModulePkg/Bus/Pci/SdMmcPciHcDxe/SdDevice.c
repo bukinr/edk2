@@ -1074,6 +1074,7 @@ SdGetTargetBusMode (
   @param[in] Slot           The slot number of the SD card to send the command to.
   @param[in] Rca            The relative device address to be assigned.
   @param[in] S18A           The boolean to show if it's a UHS-I SD card.
+  @param[in] SdVersion1     The boolean to show if it's a Version 1 SD card.
 
   @retval EFI_SUCCESS       The operation is done correctly.
   @retval Others            The operation fails.
@@ -1085,7 +1086,8 @@ SdCardSetBusMode (
   IN EFI_SD_MMC_PASS_THRU_PROTOCOL  *PassThru,
   IN UINT8                          Slot,
   IN UINT16                         Rca,
-  IN BOOLEAN                        S18A
+  IN BOOLEAN                        S18A,
+  IN BOOLEAN                        SdVersion1
   )
 {
   EFI_STATUS              Status;
@@ -1094,6 +1096,8 @@ SdCardSetBusMode (
   UINT8                   SwitchResp[64];
   SD_MMC_HC_PRIVATE_DATA  *Private;
   SD_MMC_BUS_SETTINGS     BusMode;
+
+  ZeroMem (SwitchResp, 64 * sizeof (UINT8));
 
   Private = SD_MMC_HC_PRIVATE_FROM_THIS (PassThru);
 
@@ -1117,10 +1121,13 @@ SdCardSetBusMode (
 
   //
   // Get the supported bus speed from SWITCH cmd return data group #1.
+  // SdVersion1 don't support the SWITCH cmd
   //
-  Status = SdCardSwitch (PassThru, Slot, 0xFF, 0xF, SdDriverStrengthIgnore, 0xF, FALSE, SwitchResp);
-  if (EFI_ERROR (Status)) {
-    return Status;
+  if (!SdVersion1) {
+    Status = SdCardSwitch (PassThru, Slot, 0xFF, 0xF, SdDriverStrengthIgnore, 0xF, FALSE, SwitchResp);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
   }
 
   SdGetTargetBusMode (Private, Slot, SwitchResp, S18A, &BusMode);
@@ -1141,9 +1148,14 @@ SdCardSetBusMode (
     }
   }
 
-  Status = SdCardSwitch (PassThru, Slot, BusMode.BusTiming, 0xF, BusMode.DriverStrength.Sd, 0xF, TRUE, SwitchResp);
-  if (EFI_ERROR (Status)) {
-    return Status;
+  //
+  // SdVersion1 don't support the SWITCH cmd
+  //
+  if (!SdVersion1) {
+    Status = SdCardSwitch (PassThru, Slot, BusMode.BusTiming, 0xF, BusMode.DriverStrength.Sd, 0xF, TRUE, SwitchResp);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
   }
 
   Status = SdMmcSetDriverStrength (Private->PciIo, Slot, BusMode.DriverStrength.Sd);
@@ -1213,9 +1225,16 @@ SdCardIdentification (
   UINT32                         PresentState;
   UINT8                          HostCtrl2;
   UINTN                          Retry;
+  BOOLEAN                        ForceVoltage33;
+  BOOLEAN                        SdVersion1;
+
+  ForceVoltage33 = FALSE;
+  SdVersion1     = FALSE;
 
   PciIo    = Private->PciIo;
   PassThru = &Private->PassThru;
+
+Voltage33Retry:
   //
   // 1. Send Cmd0 to the device
   //
@@ -1226,12 +1245,12 @@ SdCardIdentification (
   }
 
   //
-  // 2. Send Cmd8 to the device
+  // 2. Send Cmd8 to the device, the command will fail for SdVersion1
   //
   Status = SdCardVoltageCheck (PassThru, Slot, 0x1, 0xFF);
   if (EFI_ERROR (Status)) {
+    SdVersion1 = TRUE;
     DEBUG ((DEBUG_INFO, "SdCardIdentification: Executing Cmd8 fails with %r\n", Status));
-    return Status;
   }
 
   //
@@ -1292,6 +1311,13 @@ SdCardIdentification (
   } else {
     ASSERT (FALSE);
     return EFI_UNSUPPORTED;
+  }
+
+  //
+  // 1.8V had failed in the previous run, forcing a retry with 3.3V instead
+  //
+  if (ForceVoltage33 == TRUE) {
+    S18r = FALSE;
   }
 
   //
@@ -1366,9 +1392,30 @@ SdCardIdentification (
 
       SdMmcHcRwMmio (PciIo, Slot, SD_MMC_HC_PRESENT_STATE, TRUE, sizeof (PresentState), &PresentState);
       if (((PresentState >> 20) & 0xF) != 0xF) {
-        DEBUG ((DEBUG_ERROR, "SdCardIdentification: SwitchVoltage fails with PresentState = 0x%x, It should be 0xF\n", PresentState));
-        Status = EFI_DEVICE_ERROR;
-        goto Error;
+        //
+        // Delay 50 milliseconds in order for clock to stabilize, retry reading the SD_MMC_HC_PRESENT_STATE
+        //
+        gBS->Stall (50000);
+        SdMmcHcRwMmio (PciIo, Slot, SD_MMC_HC_PRESENT_STATE, TRUE, sizeof (PresentState), &PresentState);
+        if (((PresentState >> 20) & 0xF) != 0xF) {
+          DEBUG ((DEBUG_ERROR, "SdCardIdentification: SwitchVoltage fails with PresentState = 0x%x, It should be 0xF\n", PresentState));
+          //
+          // Reset and reinitialize the slot before the 3.3V retry.
+          //
+          Status = SdMmcHcReset (Private, Slot);
+          if (EFI_ERROR (Status)) {
+            goto Error;
+          }
+
+          Status = SdMmcHcInitHost (Private, Slot);
+          if (EFI_ERROR (Status)) {
+            goto Error;
+          }
+
+          DEBUG ((DEBUG_ERROR, "SdCardIdentification: Switching to 1.8V failed, forcing a retry with 3.3V instead\n"));
+          ForceVoltage33 = TRUE;
+          goto Voltage33Retry;
+        }
       }
     }
 
@@ -1393,7 +1440,7 @@ SdCardIdentification (
   DEBUG ((DEBUG_INFO, "SdCardIdentification: Found a SD device at slot [%d]\n", Slot));
   Private->Slot[Slot].CardType = SdCardType;
 
-  Status = SdCardSetBusMode (PciIo, PassThru, Slot, Rca, ((Ocr & BIT24) != 0));
+  Status = SdCardSetBusMode (PciIo, PassThru, Slot, Rca, ((Ocr & BIT24) != 0), SdVersion1);
 
   return Status;
 

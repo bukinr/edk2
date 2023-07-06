@@ -52,7 +52,7 @@
   IoLib
   HobLib
   PeCoffLib
-  UefiCpuLib
+  CpuLib
 
 [Guids]
   gEfiMemoryTypeInformationGuid

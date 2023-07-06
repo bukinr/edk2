@@ -15,7 +15,7 @@
     2) IA-32 Intel(R) Architecture Software Developer's Manual Volume 2:Instruction Set Reference, Intel
     3) IA-32 Intel(R) Architecture Software Developer's Manual Volume 3:System Programmer's Guide, Intel
 
-Copyright (c) 2006 - 2019, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2006 - 2022, Intel Corporation. All rights reserved.<BR>
 Copyright (c) 2017, AMD Incorporated. All rights reserved.<BR>
 
 SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -179,9 +179,11 @@ EnableExecuteDisableBit (
 {
   UINT64  MsrRegisters;
 
-  MsrRegisters  = AsmReadMsr64 (0xC0000080);
-  MsrRegisters |= BIT11;
-  AsmWriteMsr64 (0xC0000080, MsrRegisters);
+  MsrRegisters = AsmReadMsr64 (0xC0000080);
+  if ((MsrRegisters & BIT11) == 0) {
+    MsrRegisters |= BIT11;
+    AsmWriteMsr64 (0xC0000080, MsrRegisters);
+  }
 }
 
 /**
@@ -624,12 +626,7 @@ EnablePageTableProtection (
   }
 
   //
-  // Disable write protection, because we need to mark page table to be write
-  // protected.
-  //
-  AsmWriteCr0 (AsmReadCr0 () & ~CR0_WP);
-
-  //
+  // No need to clear CR0.WP since PageTableBase has't been written to CR3 yet.
   // SetPageTablePoolReadOnly might update mPageTablePool. It's safer to
   // remember original one in advance.
   //
@@ -742,18 +739,30 @@ CreateIdentityMappingPageTables (
     }
   }
 
-  Page5LevelSupport = FALSE;
-  if (PcdGetBool (PcdUse5LevelPageTable)) {
-    AsmCpuidEx (
-      CPUID_STRUCTURED_EXTENDED_FEATURE_FLAGS,
-      CPUID_STRUCTURED_EXTENDED_FEATURE_FLAGS_SUB_LEAF_INFO,
-      NULL,
-      &EcxFlags.Uint32,
-      NULL,
-      NULL
-      );
-    if (EcxFlags.Bits.FiveLevelPage != 0) {
-      Page5LevelSupport = TRUE;
+  if (sizeof (UINTN) == sizeof (UINT64)) {
+    //
+    // If cpu has already run in 64bit long mode PEI, Page table Level in DXE must align with previous level.
+    //
+    Cr4.UintN         = AsmReadCr4 ();
+    Page5LevelSupport = (Cr4.Bits.LA57 != 0);
+    ASSERT (PcdGetBool (PcdUse5LevelPageTable) == Page5LevelSupport);
+  } else {
+    //
+    // If cpu runs in 32bit protected mode PEI, Page table Level in DXE is decided by PCD and feature capability.
+    //
+    Page5LevelSupport = FALSE;
+    if (PcdGetBool (PcdUse5LevelPageTable)) {
+      AsmCpuidEx (
+        CPUID_STRUCTURED_EXTENDED_FEATURE_FLAGS,
+        CPUID_STRUCTURED_EXTENDED_FEATURE_FLAGS_SUB_LEAF_INFO,
+        NULL,
+        NULL,
+        &EcxFlags.Uint32,
+        NULL
+        );
+      if (EcxFlags.Bits.FiveLevelPage != 0) {
+        Page5LevelSupport = TRUE;
+      }
     }
   }
 

@@ -2,11 +2,13 @@
   Definitions based on NVMe spec. version 1.1.
 
   (C) Copyright 2016 Hewlett Packard Enterprise Development LP<BR>
-  Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2017 - 2023, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
   @par Specification Reference:
   NVMe Specification 1.1
+  NVMe Specification 1.4
+  NVMe Specification 2.0
 
 **/
 
@@ -18,18 +20,21 @@
 //
 // controller register offsets
 //
-#define NVME_CAP_OFFSET    0x0000        // Controller Capabilities
-#define NVME_VER_OFFSET    0x0008        // Version
-#define NVME_INTMS_OFFSET  0x000c        // Interrupt Mask Set
-#define NVME_INTMC_OFFSET  0x0010        // Interrupt Mask Clear
-#define NVME_CC_OFFSET     0x0014        // Controller Configuration
-#define NVME_CSTS_OFFSET   0x001c        // Controller Status
-#define NVME_NSSR_OFFSET   0x0020        // NVM Subsystem Reset
-#define NVME_AQA_OFFSET    0x0024        // Admin Queue Attributes
-#define NVME_ASQ_OFFSET    0x0028        // Admin Submission Queue Base Address
-#define NVME_ACQ_OFFSET    0x0030        // Admin Completion Queue Base Address
-#define NVME_SQ0_OFFSET    0x1000        // Submission Queue 0 (admin) Tail Doorbell
-#define NVME_CQ0_OFFSET    0x1004        // Completion Queue 0 (admin) Head Doorbell
+#define NVME_CAP_OFFSET     0x0000        // Controller Capabilities
+#define NVME_VER_OFFSET     0x0008        // Version
+#define NVME_INTMS_OFFSET   0x000c        // Interrupt Mask Set
+#define NVME_INTMC_OFFSET   0x0010        // Interrupt Mask Clear
+#define NVME_CC_OFFSET      0x0014        // Controller Configuration
+#define NVME_CSTS_OFFSET    0x001c        // Controller Status
+#define NVME_NSSR_OFFSET    0x0020        // NVM Subsystem Reset
+#define NVME_AQA_OFFSET     0x0024        // Admin Queue Attributes
+#define NVME_ASQ_OFFSET     0x0028        // Admin Submission Queue Base Address
+#define NVME_ACQ_OFFSET     0x0030        // Admin Completion Queue Base Address
+#define NVME_BPINFO_OFFSET  0x0040        // Boot Partition Information
+#define NVME_BPRSEL_OFFSET  0x0044        // Boot Partition Read Select
+#define NVME_BPMBL_OFFSET   0x0048        // Boot Partition Memory Buffer Location
+#define NVME_SQ0_OFFSET     0x1000        // Submission Queue 0 (admin) Tail Doorbell
+#define NVME_CQ0_OFFSET     0x1004        // Completion Queue 0 (admin) Head Doorbell
 
 //
 // These register offsets are defined as 0x1000 + (N * (4 << CAP.DSTRD))
@@ -51,11 +56,14 @@ typedef struct {
   UINT8     To;     // Timeout
   UINT16    Dstrd  : 4;
   UINT16    Nssrs  : 1; // NVM Subsystem Reset Supported NSSRS
-  UINT16    Css    : 4; // Command Sets Supported - Bit 37
-  UINT16    Rsvd3  : 7;
+  UINT16    Css    : 8; // Command Sets Supported - Bit 37
+  UINT16    Bps    : 1; // Boot Partition Support - Bit 45 in NVMe1.4
+  UINT16    Rsvd3  : 2;
   UINT8     Mpsmin : 4;
   UINT8     Mpsmax : 4;
-  UINT8     Rsvd4;
+  UINT8     Pmrs   : 1;
+  UINT8     Cmbs   : 1;
+  UINT8     Rsvd4  : 6;
 } NVME_CAP;
 
 //
@@ -115,7 +123,36 @@ typedef struct {
 #define NVME_ACQ  UINT64
 
 //
-// 3.1.11 Offset (1000h + ((2y) * (4 << CAP.DSTRD))): SQyTDBL - Submission Queue y Tail Doorbell
+// 3.1.13 Offset 40h: BPINFO - Boot Partition Information
+//
+typedef struct {
+  UINT32    Bpsz  : 15; // Boot Partition Size
+  UINT32    Rsvd1 : 9;
+  UINT32    Brs   : 2;  // Boot Read Status
+  UINT32    Rsvd2 : 5;
+  UINT32    Abpid : 1;  // Active Boot Partition ID
+} NVME_BPINFO;
+
+//
+// 3.1.14 Offset 44h: BPRSEL - Boot Partition Read Select
+//
+typedef struct {
+  UINT32    Bprsz : 10; // Boot Partition Read Size
+  UINT32    Bprof : 20; // Boot Partition Read Offset
+  UINT32    Rsvd1 : 1;
+  UINT32    Bpid  : 1;  // Boot Partition Identifier
+} NVME_BPRSEL;
+
+//
+// 3.1.15 Offset 48h: BPMBL - Boot Partition Memory Buffer Location (Optional)
+//
+typedef struct {
+  UINT64    Rsvd1 : 12;
+  UINT64    Bmbba : 52; // Boot Partition Memory Buffer Base Address
+} NVME_BPMBL;
+
+//
+// 3.1.25 Offset (1000h + ((2y) * (4 << CAP.DSTRD))): SQyTDBL - Submission Queue y Tail Doorbell
 //
 typedef struct {
   UINT16    Sqt;
@@ -353,7 +390,7 @@ typedef struct {
   UINT8                Avscc; /* Admin Vendor Specific Command Configuration */
   UINT8                Apsta; /* Autonomous Power State Transition Attributes */
   //
-  // Below fields before Rsvd2 are defined in NVM Express 1.3 Spec
+  // Below fields before Rsvd2 are defined in NVM Express 1.4 Spec
   //
   UINT16               Wctemp;      /* Warning Composite Temperature Threshold */
   UINT16               Cctemp;      /* Critical Composite Temperature Threshold */
@@ -361,7 +398,12 @@ typedef struct {
   UINT32               Hmpre;       /* Host Memory Buffer Preferred Size */
   UINT32               Hmmin;       /* Host Memory Buffer Minimum Size */
   UINT8                Tnvmcap[16]; /* Total NVM Capacity */
-  UINT8                Rsvd2[216];  /* Reserved as of NVM Express */
+  UINT8                Unvmcap[16]; /* Unallocated NVM Capacity */
+  UINT32               Rpmbs;       /* Replay Protected Memory Block Support */
+  UINT16               Edstt;       /* Extended Device Self-test Time */
+  UINT8                Dsto;        /* Device Self-test Options  */
+  UINT8                Fwug;        /* Firmware Update Granularity */
+  UINT8                Rsvd2[192];  /* Reserved as of Nvm Express 1.4 Spec */
   //
   // NVM Command Set Attributes
   //
@@ -432,6 +474,90 @@ typedef struct {
   UINT8             Rsvd2[192];       /* Reserved as of Nvm Express 1.1 Spec */
   UINT8             VendorData[3712]; /* Vendor specific data */
 } NVME_ADMIN_NAMESPACE_DATA;
+
+//
+// RPMB Device Configuration Block Data Structure as of Nvm Express 1.4 Spec
+//
+typedef struct {
+  UINT8    Bppe;       /* Boot Partition Protection Enable */
+  UINT8    Bpl;        /* Boot Partition Lock */
+  UINT8    Nwpac;      /* Namespace Write Protection Authentication Control */
+  UINT8    Rsvd1[509]; /* Reserved as of Nvm Express 1.4 Spec */
+} NVME_RPMB_CONFIGURATION_DATA;
+
+#define RPMB_FRAME_STUFF_BYTES  223
+
+//
+// RPMB Data Frame as of Nvm Express 1.4 Spec
+//
+typedef struct {
+  UINT8     Sbakamc[RPMB_FRAME_STUFF_BYTES]; /* [222-N:00] Stuff Bytes */
+                                             /* [222:222-(N-1)] Authentication Key or Message Authentication Code (MAC) */
+  UINT8     Rpmbt;                           /* RPMB Target */
+  UINT64    Nonce[2];
+  UINT32    Wcounter;                        /* Write Counter */
+  UINT32    Address;                         /* Starting address of data to be programmed to or read from the RPMB. */
+  UINT32    Scount;                          /* Sector Count */
+  UINT16    Result;
+  UINT16    Rpmessage;                       /* Request/Response Message */
+  // UINT8    *Data;                         /* Data to be written or read by signed access where M = 512 * Sector Count. */
+} NVME_RPMB_DATA_FRAME;
+
+//
+// RPMB Device Configuration Block Data Structure.
+// (ref. NVMe Base spec. v2.0 Figure 460).
+//
+typedef struct {
+  UINT8    BPPEnable;     /* Boot Partition Protection Enabled */
+  UINT8    BPLock;        /* Boot Partition Lock */
+  UINT8    NameSpaceWrP;  /* Namespace Write Protection */
+  UINT8    Rsvd1[509];    /* Reserved as of Nvm Express 2.0 Spec */
+} NVME_RPMB_DCB;
+
+//
+// RPMB Request and Response Message Types.
+// (ref. NVMe Base spec. v2.0 Figure 461).
+//
+#define NVME_RPMB_AUTHKEY_PROGRAM           0x0001
+#define NVME_RPMB_COUNTER_READ              0x0002
+#define NVME_RPMB_AUTHDATA_WRITE            0x0003
+#define NVME_RPMB_AUTHDATA_READ             0x0004
+#define NVME_RPMB_RESULT_READ               0x0005
+#define NVME_RPMB_DCB_WRITE                 0x0006
+#define NVME_RPMB_DCB_READ                  0x0007
+#define NVME_RPMB_AUTHKEY_PROGRAM_RESPONSE  0x0100
+#define NVME_RPMB_COUNTER_READ_RESPONSE     0x0200
+#define NVME_RPMB_AUTHDATA_WRITE_RESPONSE   0x0300
+#define NVME_RPMB_AUTHDATA_READ_RESPONSE    0x0400
+#define NVME_RPMB_DCB_WRITE_RESPONSE        0x0600
+#define NVME_RPMB_DCB_READ_RESPONSE         0x0700
+
+//
+// RPMB Operation Result.
+// (ref. NVMe Base spec. v2.0 Figure 462).
+//
+#define NVME_RPMB_RESULT_SUCCESS                 0x00
+#define NVME_RPMB_RESULT_GENERAL_FAILURE         0x01
+#define NVME_RPMB_RESULT_AHTHENTICATION_FAILURE  0x02
+#define NVME_RPMB_RESULT_COUNTER_FAILURE         0x03
+#define NVME_RPMB_RESULT_ADDRESS_FAILURE         0x04
+#define NVME_RPMB_RESULT_WRITE_FAILURE           0x05
+#define NVME_RPMB_RESULT_READ_FAILURE            0x06
+#define NVME_RPMB_RESULT_AUTHKEY_NOT_PROGRAMMED  0x07
+#define NVME_RPMB_RESULT_INVALID_DCB             0x08
+
+//
+// Get Log Page - Boot Partition Log Header.
+// (ref. NVMe Base spec. v2.0 Figure 262).
+//
+typedef struct {
+  UINT8     LogIdentifier;   /* Log Identifier, shall be set to 15h */
+  UINT8     Rsvd1[3];
+  UINT32    Bpsz  : 15;      /* Boot Partition Size */
+  UINT32    Rsvd2 : 16;
+  UINT32    Abpid : 1;       /* Active Boot Partition ID */
+  UINT8     Rsvd3[8];
+} NVME_BOOT_PARTITION_HEADER;
 
 //
 // NvmExpress Admin Identify Cmd
@@ -564,6 +690,7 @@ typedef struct {
   #define LID_ERROR_INFO    0x1
   #define LID_SMART_INFO    0x2
   #define LID_FW_SLOT_INFO  0x3
+  #define LID_BP_INFO       0x15
   UINT32    Rsvd1 : 8;
   UINT32    Numd  : 12;       /* Number of Dwords */
   UINT32    Rsvd2 : 4;        /* Reserved as of Nvm Express 1.1 Spec */

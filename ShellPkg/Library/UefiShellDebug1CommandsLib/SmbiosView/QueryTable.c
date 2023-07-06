@@ -4,6 +4,7 @@
 
   Copyright (c) 2005 - 2021, Intel Corporation. All rights reserved.<BR>
   (C) Copyright 2016-2019 Hewlett Packard Enterprise Development LP<BR>
+  Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -601,6 +602,42 @@ TABLE_ITEM  ProcessorUpgradeTable[] = {
   {
     0x3F,
     L"Socket LGA4677"
+  },
+  {
+    0x40,
+    L"Socket LGA1700"
+  },
+  {
+    0x41,
+    L"Socket BGA1744"
+  },
+  {
+    0x42,
+    L"Socket BGA1781"
+  },
+  {
+    0x43,
+    L"Socket BGA1211"
+  },
+  {
+    0x44,
+    L"Socket BGA2422"
+  },
+  {
+    0x45,
+    L"Socket LGA1211"
+  },
+  {
+    0x46,
+    L"Socket LGA2422"
+  },
+  {
+    0x47,
+    L"Socket LGA5773"
+  },
+  {
+    0x48,
+    L"Socket BGA5773"
   }
 };
 
@@ -1448,6 +1485,26 @@ TABLE_ITEM  SystemSlotTypeTable[] = {
     L"PCI Express Mini 76-pin (CEM spec. 2.0) Corresponds to Display-Mini card"
   },
   {
+    0x24,
+    L"PCI Express Gen 4 SFF-8639 (U.2)"
+  },
+  {
+    0x25,
+    L"PCI Express Gen 5 SFF-8639 (U.2)"
+  },
+  {
+    0x26,
+    L"OCP NIC 3.0 Small Form Factor (SFF)"
+  },
+  {
+    0x27,
+    L"OCP NIC 3.0 Large Form Factor (LFF)"
+  },
+  {
+    0x28,
+    L"OCP NIC Prior to 3.0"
+  },
+  {
     SlotTypeCXLFlexbus10,
     L"CXL Flexbus 1.0"
   },
@@ -1566,6 +1623,42 @@ TABLE_ITEM  SystemSlotTypeTable[] = {
   {
     SlotTypePciExpressGen4X16,
     L"PCI Express Gen 4 X16"
+  },
+  {
+    SlotTypePCIExpressGen5,
+    L"PCI Express Gen 5"
+  },
+  {
+    SlotTypePCIExpressGen5X1,
+    L"PCI Express Gen 5 x1"
+  },
+  {
+    SlotTypePCIExpressGen5X2,
+    L"PCI Express Gen 5 x2"
+  },
+  {
+    SlotTypePCIExpressGen5X4,
+    L"PCI Express Gen 5 x4"
+  },
+  {
+    SlotTypePCIExpressGen5X8,
+    L"PCI Express Gen 5 x8"
+  },
+  {
+    SlotTypePCIExpressGen5X16,
+    L"PCI Express Gen 5 x16"
+  },
+  {
+    SlotTypePCIExpressGen6andBeyond,
+    L"PCI Express Gen 6 and Beyond"
+  },
+  {
+    SlotTypeEnterpriseandDatacenter1UE1FormFactorSlot,
+    L"Enterprise and Datacenter 1U E1 Form Factor Slot"
+  },
+  {
+    SlotTypeEnterpriseandDatacenter3E3FormFactorSlot,
+    L"Enterprise and Datacenter 3'E3 Form Factor Slot"
   }
 };
 
@@ -1628,6 +1721,96 @@ TABLE_ITEM  SystemSlotDataBusWidthTable[] = {
   }
 };
 
+TABLE_ITEM  SystemSlotPhysicalWidthTable[] = {
+  {
+    0x01,
+    L" Other"
+  },
+  {
+    0x02,
+    L" Unknown"
+  },
+  {
+    0x03,
+    L" 8 bit"
+  },
+  {
+    0x04,
+    L" 16 bit"
+  },
+  {
+    0x05,
+    L" 32 bit"
+  },
+  {
+    0x06,
+    L" 64 bit"
+  },
+  {
+    0x07,
+    L" 128 bit"
+  },
+  {
+    0x08,
+    L" 1x or x1"
+  },
+  {
+    0x09,
+    L" 2x or x2"
+  },
+  {
+    0x0A,
+    L" 4x or x4"
+  },
+  {
+    0x0B,
+    L" 8x or x8"
+  },
+  {
+    0x0C,
+    L" 12x or x12"
+  },
+  {
+    0x0D,
+    L" 16x or x16"
+  },
+  {
+    0x0E,
+    L" 32x or x32"
+  }
+};
+
+TABLE_ITEM  SystemSlotInformationTable[] = {
+  {
+    0x00,
+    L" Others"
+  },
+  {
+    0x01,
+    L" Gen 1"
+  },
+  {
+    0x02,
+    L" Gen 2"
+  },
+  {
+    0x03,
+    L" Gen 3"
+  },
+  {
+    0x04,
+    L" Gen 4"
+  },
+  {
+    0x05,
+    L" Gen 5"
+  },
+  {
+    0x06,
+    L" Gen 6"
+  }
+};
+
 TABLE_ITEM  SystemSlotCurrentUsageTable[] = {
   {
     0x01,
@@ -1667,6 +1850,29 @@ TABLE_ITEM  SystemSlotLengthTable[] = {
   {
     0x04,
     L" Long Length"
+  },
+};
+
+TABLE_ITEM  SystemSlotHeightTable[] = {
+  {
+    0x00,
+    L" Not applicable"
+  },
+  {
+    0x01,
+    L" Other"
+  },
+  {
+    0x02,
+    L" Unkown"
+  },
+  {
+    0x03,
+    L" Full height"
+  },
+  {
+    0x04,
+    L" Low-Profile"
   },
 };
 
@@ -1722,6 +1928,22 @@ TABLE_ITEM  SlotCharacteristics2Table[] = {
   {
     3,
     L" PCIe slot supports bifurcation"
+  },
+  {
+    4,
+    L" Slot supports async/surprise removal"
+  },
+  {
+    5,
+    L" Flexbus slot, CXL 1.0 capable"
+  },
+  {
+    6,
+    L" Flexbus slot, CXL 2.0 capable"
+  },
+  {
+    7,
+    L" Reserved"
   }
 };
 
@@ -1766,6 +1988,30 @@ TABLE_ITEM  OnboardDeviceTypesTable[] = {
     0x0A,
     L"  Sas Controller"
   },
+  {
+    0x0B,
+    L"  Wireless LAN"
+  },
+  {
+    0x0C,
+    L"  Bluetooth"
+  },
+  {
+    0x0D,
+    L"  WWAN"
+  },
+  {
+    0x0E,
+    L"  embedded Multi-Media Controller"
+  },
+  {
+    0x0F,
+    L"  NVMe Controller"
+  },
+  {
+    0x10,
+    L"  UFS Controller"
+  }
 };
 
 TABLE_ITEM  SELTypesTable[] = {
@@ -3377,6 +3623,52 @@ TABLE_ITEM  ProcessorArchitectureTypesTable[] = {
   }
 };
 
+TABLE_ITEM  FirmwareInventoryCharTable[] = {
+  {
+    0,
+    L"Updatable"
+  },
+  {
+    1,
+    L"Write-Protect"
+  }
+};
+
+TABLE_ITEM  FirmwareInventoryStateTable[] = {
+  {
+    1,
+    L"  Other"
+  },
+  {
+    2,
+    L"  Unknown "
+  },
+  {
+    3,
+    L"  Disabled: This firmware component is disabled. "
+  },
+  {
+    4,
+    L"  Enabled: This firmware component is enabled. "
+  },
+  {
+    5,
+    L"  Absent: This firmware component is either not present or not detected "
+  },
+  {
+    6,
+    L"  StandbyOffline: This firmware is enabled but awaits an external action to activate it. "
+  },
+  {
+    7,
+    L"  StandbySpare: This firmware is part of a redundancy set and awaits a failover or other external action to activate it. "
+  },
+  {
+    8,
+    L"  UnavailableOffline: This firmware component is present but cannot be used. "
+  },
+};
+
 TABLE_ITEM  StructureTypeInfoTable[] = {
   {
     0,
@@ -4209,6 +4501,57 @@ DisplaySlotCharacteristics2 (
 }
 
 /**
+  Display System Slots (Type 9) Information.
+
+  @param[in] Width      The key of the structure.
+  @param[in] Option     The optional information.
+**/
+VOID
+DisplaySystemSlotInformation (
+  IN UINT8  Width,
+  IN UINT8  Option
+  )
+{
+  ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_QUERYTABLE_SYSTEM_SLOT_INFORMATION), gShellDebug1HiiHandle);
+  PRINT_INFO_OPTION (Width, Option);
+  PRINT_TABLE_ITEM (SystemSlotInformationTable, Width);
+}
+
+/**
+  Display System Slots (Type 9) Physical Width.
+
+  @param[in] Width      The key of the structure.
+  @param[in] Option     The optional information.
+**/
+VOID
+DisplaySystemSlotPhysicalWidth (
+  IN UINT8  Width,
+  IN UINT8  Option
+  )
+{
+  ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_QUERYTABLE_SYSTEM_SLOT_PHYSICAL_WIDTH), gShellDebug1HiiHandle);
+  PRINT_INFO_OPTION (Width, Option);
+  PRINT_TABLE_ITEM (SystemSlotPhysicalWidthTable, Width);
+}
+
+/**
+  Display System Slots (Type 9) slot height.
+
+  @param[in] Length     The key of the structure.
+  @param[in] Option     The optional information.
+**/
+VOID
+DisplaySystemSlotHeight (
+  IN UINT8  Length,
+  IN UINT8  Option
+  )
+{
+  ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_QUERYTABLE_SYSTEM_SLOT_HEIGHT), gShellDebug1HiiHandle);
+  PRINT_INFO_OPTION (Length, Option);
+  PRINT_TABLE_ITEM (SystemSlotHeightTable, Length);
+}
+
+/**
   Display On Board Devices Information (Type 10) types.
 
   @param[in] Type       The key of the structure.
@@ -4828,6 +5171,40 @@ DisplayProcessorArchitectureType (
   ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_QUERYTABLE_PROCESSOR_ARCH_TYPE), gShellDebug1HiiHandle);
   PRINT_INFO_OPTION (Key, Option);
   PRINT_TABLE_ITEM (ProcessorArchitectureTypesTable, Key);
+}
+
+/**
+  Display Firmware Characteristics (Type 45) details.
+
+  @param[in] Chara    The information bits.
+  @param[in] Option   The optional information.
+**/
+VOID
+DisplayFirmwareCharacteristics (
+  IN UINT16  Chara,
+  IN UINT8   Option
+  )
+{
+  ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_QUERYTABLE_FIRMWARE_INVENTORY_CHAR), gShellDebug1HiiHandle);
+  PRINT_INFO_OPTION (Chara, Option);
+  PRINT_BITS_INFO (FirmwareInventoryCharTable, Chara);
+}
+
+/**
+  Display Firmware state (Type 45) details.
+
+  @param[in] Key            The key of the structure.
+  @param[in] Option         The optional information.
+**/
+VOID
+DisplayFirmwareState (
+  IN UINT8  Key,
+  IN UINT8  Option
+  )
+{
+  ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_QUERYTABLE_FIRMWARE_INVENTORY_STATE), gShellDebug1HiiHandle);
+  PRINT_INFO_OPTION (Key, Option);
+  PRINT_TABLE_ITEM (FirmwareInventoryStateTable, Key);
 }
 
 /**

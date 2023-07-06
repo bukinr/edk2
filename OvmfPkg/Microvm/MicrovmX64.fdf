@@ -11,7 +11,7 @@
 ################################################################################
 
 [Defines]
-!include OvmfPkg/OvmfPkgDefines.fdf.inc
+!include OvmfPkg/Include/Fdf/OvmfPkgDefines.fdf.inc
 
 #
 # Build the variable store and the firmware code as one unified flash device
@@ -24,38 +24,12 @@ ErasePolarity = 1
 BlockSize     = $(BLOCK_SIZE)
 NumBlocks     = $(FW_BLOCKS)
 
-!include OvmfPkg/VarStore.fdf.inc
+!include OvmfPkg/Include/Fdf/VarStore.fdf.inc
 
 $(VARS_SIZE)|$(FVMAIN_SIZE)
 FV = FVMAIN_COMPACT
 
 $(SECFV_OFFSET)|$(SECFV_SIZE)
-FV = SECFV
-
-#
-# Build the variable store and the firmware code as separate flash device
-# images.
-#
-[FD.MICROVM_VARS]
-BaseAddress   = $(FW_BASE_ADDRESS)
-Size          = $(VARS_SIZE)
-ErasePolarity = 1
-BlockSize     = $(BLOCK_SIZE)
-NumBlocks     = $(VARS_BLOCKS)
-
-!include OvmfPkg/VarStore.fdf.inc
-
-[FD.MICROVM_CODE]
-BaseAddress   = $(CODE_BASE_ADDRESS)
-Size          = $(CODE_SIZE)
-ErasePolarity = 1
-BlockSize     = $(BLOCK_SIZE)
-NumBlocks     = $(CODE_BLOCKS)
-
-0x00000000|$(FVMAIN_SIZE)
-FV = FVMAIN_COMPACT
-
-$(FVMAIN_SIZE)|$(SECFV_SIZE)
 FV = SECFV
 
 ################################################################################
@@ -215,7 +189,7 @@ INF  MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
 INF  MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
 INF  MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
 INF  MdeModulePkg/Universal/EbcDxe/EbcDxe.inf
-INF  OvmfPkg/XenTimerDxe/XenTimerDxe.inf
+INF  OvmfPkg/LocalApicTimerDxe/LocalApicTimerDxe.inf
 INF  UefiCpuPkg/CpuIo2Dxe/CpuIo2Dxe.inf
 INF  UefiCpuPkg/CpuDxe/CpuDxe.inf
 INF  OvmfPkg/IncompatiblePciDeviceSupportDxe/IncompatiblePciDeviceSupport.inf
@@ -231,6 +205,11 @@ INF  OvmfPkg/Virtio10Dxe/Virtio10.inf
 INF  OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
 INF  OvmfPkg/VirtioScsiDxe/VirtioScsi.inf
 INF  OvmfPkg/VirtioRngDxe/VirtioRng.inf
+INF  OvmfPkg/VirtioSerialDxe/VirtioSerial.inf
+
+!if $(SECURE_BOOT_ENABLE) == TRUE
+  INF  SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/SecureBootConfigDxe.inf
+!endif
 
 INF  MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 INF  MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf
@@ -244,14 +223,13 @@ INF  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
 INF  MdeModulePkg/Application/UiApp/UiApp.inf
 INF  OvmfPkg/QemuKernelLoaderFsDxe/QemuKernelLoaderFsDxe.inf
 INF  MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
-INF  MdeModulePkg/Universal/PrintDxe/PrintDxe.inf
 INF  MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
 INF  MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
 INF  MdeModulePkg/Universal/Disk/RamDiskDxe/RamDiskDxe.inf
 INF  MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 INF  MdeModulePkg/Bus/Scsi/ScsiBusDxe/ScsiBusDxe.inf
 INF  MdeModulePkg/Bus/Scsi/ScsiDiskDxe/ScsiDiskDxe.inf
-INF  OvmfPkg/SataControllerDxe/SataControllerDxe.inf
+INF  MdeModulePkg/Bus/Pci/SataControllerDxe/SataControllerDxe.inf
 INF  MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
 INF  MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
 INF  MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
@@ -268,7 +246,7 @@ INF  MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
 INF  OvmfPkg/SmbiosPlatformDxe/SmbiosPlatformDxe.inf
 
 INF  MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
-INF  OvmfPkg/AcpiPlatformDxe/QemuFwCfgAcpiPlatformDxe.inf
+INF  OvmfPkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
 INF  MdeModulePkg/Universal/Acpi/S3SaveStateDxe/S3SaveStateDxe.inf
 INF  MdeModulePkg/Universal/Acpi/BootScriptExecutorDxe/BootScriptExecutorDxe.inf
 INF  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
@@ -276,6 +254,9 @@ INF  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResour
 INF  FatPkg/EnhancedFatDxe/Fat.inf
 INF  MdeModulePkg/Universal/Disk/UdfDxe/UdfDxe.inf
 INF  OvmfPkg/VirtioFsDxe/VirtioFsDxe.inf
+
+INF  EmbeddedPkg/Drivers/FdtClientDxe/FdtClientDxe.inf
+INF  OvmfPkg/Fdt/VirtioFdtDxe/VirtioFdtDxe.inf
 
 !if $(TOOL_CHAIN_TAG) != "XCODE5"
 INF  ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf
@@ -355,7 +336,7 @@ FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
    }
  }
 
-!include OvmfPkg/FvmainCompactScratchEnd.fdf.inc
+!include OvmfPkg/Include/Fdf/FvmainCompactScratchEnd.fdf.inc
 
 ################################################################################
 

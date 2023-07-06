@@ -1,5 +1,6 @@
 /** @file
 *
+*  Copyright (c) 2022, Ampere Computing LLC. All rights reserved.
 *  Copyright (c) 2021, NUVIA Inc. All rights reserved.
 *  Copyright (c) 2015, Hisilicon Limited. All rights reserved.
 *  Copyright (c) 2015, Linaro Limited. All rights reserved.
@@ -36,15 +37,19 @@ typedef struct {
 } OEM_MISC_PROCESSOR_DATA;
 
 typedef enum {
+  BiosVersionType00,
   ProductNameType01,
   SerialNumType01,
   UuidType01,
   SystemManufacturerType01,
+  VersionType01,
   SkuNumberType01,
   FamilyType01,
-  AssertTagType02,
+  AssetTagType02,
   SerialNumberType02,
   BoardManufacturerType02,
+  ProductNameType02,
+  VersionType02,
   SkuNumberType02,
   ChassisLocationType02,
   AssetTagType03,
@@ -53,6 +58,9 @@ typedef enum {
   ChassisTypeType03,
   ManufacturerType03,
   SkuNumberType03,
+  ProcessorPartNumType04,
+  ProcessorSerialNumType04,
+  ProcessorVersionType04,
   SmbiosHiiStringFieldMax
 } OEM_MISC_SMBIOS_HII_STRING_FIELD;
 
@@ -225,6 +233,38 @@ OemGetChassisHeight (
 UINT8
 EFIAPI
 OemGetChassisNumPowerCords (
+  VOID
+  );
+
+/**
+  Fetches the system UUID.
+
+  @param[out] SystemUuid     The pointer to the buffer to store the System UUID.
+
+**/
+VOID
+EFIAPI
+OemGetSystemUuid (
+  OUT GUID  *SystemUuid
+  );
+
+/** Fetches the BIOS release.
+
+  @return The BIOS release.
+**/
+UINT16
+EFIAPI
+OemGetBiosRelease (
+  VOID
+  );
+
+/** Fetches the embedded controller firmware release.
+
+  @return The embedded controller firmware release.
+**/
+UINT16
+EFIAPI
+OemGetEmbeddedControllerFirmwareRelease (
   VOID
   );
 

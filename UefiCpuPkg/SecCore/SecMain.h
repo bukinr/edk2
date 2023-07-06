@@ -19,11 +19,12 @@
 
 #include <Guid/FirmwarePerformance.h>
 
+#include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/PcdLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/PlatformSecLib.h>
-#include <Library/UefiCpuLib.h>
+#include <Library/CpuLib.h>
 #include <Library/PeCoffGetEntryPointLib.h>
 #include <Library/PeCoffExtraActionLib.h>
 #include <Library/DebugAgentLib.h>
@@ -32,6 +33,9 @@
 #include <Library/PeiServicesTablePointerLib.h>
 #include <Library/HobLib.h>
 #include <Library/PeiServicesLib.h>
+#include <Library/CpuPageTableLib.h>
+#include <Register/Intel/Cpuid.h>
+#include <Register/Intel/Msr.h>
 
 #define SEC_IDT_ENTRY_COUNT  34
 
@@ -42,8 +46,8 @@ typedef struct _SEC_IDT_TABLE {
   // Note: For IA32, only the 4 bytes immediately preceding IDT is used to store
   // EFI_PEI_SERVICES**
   //
-  UINT64    PeiService;
-  UINT64    IdtTable[SEC_IDT_ENTRY_COUNT];
+  UINT64                      PeiService;
+  IA32_IDT_GATE_DESCRIPTOR    IdtTable[SEC_IDT_ENTRY_COUNT];
 } SEC_IDT_TABLE;
 
 /**

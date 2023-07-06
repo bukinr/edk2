@@ -31,7 +31,14 @@ QemuVideoCompleteModeInfo (
     Info->PixelInformation.ReservedMask = 0;
   } else if (ModeData->ColorDepth == 32) {
     DEBUG ((DEBUG_INFO, "PixelBlueGreenRedReserved8BitPerColor\n"));
-    Info->PixelFormat = PixelBlueGreenRedReserved8BitPerColor;
+    Info->PixelFormat                   = PixelBlueGreenRedReserved8BitPerColor;
+    Info->PixelInformation.RedMask      = 0;
+    Info->PixelInformation.GreenMask    = 0;
+    Info->PixelInformation.BlueMask     = 0;
+    Info->PixelInformation.ReservedMask = 0;
+  } else {
+    DEBUG ((DEBUG_ERROR, "%a: Invalid ColorDepth %u", __func__, ModeData->ColorDepth));
+    ASSERT (FALSE);
   }
 
   Info->PixelsPerScanLine = Info->HorizontalResolution;
@@ -177,7 +184,7 @@ Routine Description:
       break;
     case QEMU_VIDEO_BOCHS_MMIO:
     case QEMU_VIDEO_BOCHS:
-      InitializeBochsGraphicsMode (Private, &QemuVideoBochsModes[ModeData->InternalModeIndex]);
+      InitializeBochsGraphicsMode (Private, ModeData);
       break;
     default:
       ASSERT (FALSE);
