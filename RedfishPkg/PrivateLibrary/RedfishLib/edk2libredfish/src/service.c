@@ -428,7 +428,7 @@ getUriFromService (
     return NULL;
   }
 
-  DEBUG ((DEBUG_INFO, "libredfish: getUriFromService(): %a\n", url));
+  DEBUG ((DEBUG_MANAGEABILITY, "libredfish: getUriFromService(): %a\n", url));
 
   //
   // Step 1: Create HTTP request message with 4 headers:
@@ -521,7 +521,7 @@ getUriFromService (
       //
       Status = DecodeResponseContent (ContentEncodedHeader->FieldValue, &ResponseMsg.Body, &ResponseMsg.BodyLength);
       if (EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_ERROR, "%a: Failed to decompress the response content %r\n.", __FUNCTION__, Status));
+        DEBUG ((DEBUG_ERROR, "%a: Failed to decompress the response content %r\n.", __func__, Status));
         ret = NULL;
         goto ON_EXIT;
       }
@@ -587,7 +587,7 @@ patchUriFromService (
     return NULL;
   }
 
-  DEBUG ((DEBUG_INFO, "libredfish: patchUriFromService(): %a\n", url));
+  DEBUG ((DEBUG_MANAGEABILITY, "libredfish: patchUriFromService(): %a\n", url));
 
   //
   // Step 1: Create HTTP request message with 4 headers:
@@ -656,11 +656,11 @@ patchUriFromService (
   //
   Status = EncodeRequestContent ((CHAR8 *)HTTP_CONTENT_ENCODING_GZIP, (CHAR8 *)content, (VOID **)&EncodedContent, &EncodedContentLen);
   if (Status == EFI_INVALID_PARAMETER) {
-    DEBUG ((DEBUG_ERROR, "%a: Error to encode content.\n", __FUNCTION__));
+    DEBUG ((DEBUG_ERROR, "%a: Error to encode content.\n", __func__));
     ret = NULL;
     goto ON_EXIT;
   } else if (Status == EFI_UNSUPPORTED) {
-    DEBUG ((DEBUG_INFO, "No content coding for %a! Use raw data instead.\n", HTTP_CONTENT_ENCODING_GZIP));
+    DEBUG ((DEBUG_MANAGEABILITY, "No content coding for %a! Use raw data instead.\n", HTTP_CONTENT_ENCODING_GZIP));
     Status = HttpIoSetHeader (HttpIoHeader, "Content-Encoding", HTTP_CONTENT_ENCODING_IDENTITY);
     ASSERT_EFI_ERROR (Status);
   } else {
@@ -769,7 +769,7 @@ postUriFromService (
     return NULL;
   }
 
-  DEBUG ((DEBUG_INFO, "libredfish: postUriFromService(): %a\n", url));
+  DEBUG ((DEBUG_MANAGEABILITY, "libredfish: postUriFromService(): %a\n", url));
 
   if (contentLength == 0) {
     contentLength = strlen (content);
@@ -924,9 +924,10 @@ ON_EXIT:
 }
 
 json_t *
-deleteUriFromService (
+deleteUriFromServiceEx (
   redfishService        *service,
   const char            *uri,
+  const char            *content,
   EFI_HTTP_STATUS_CODE  **StatusCode
   )
 {
@@ -937,6 +938,8 @@ deleteUriFromService (
   EFI_HTTP_REQUEST_DATA  *RequestData = NULL;
   EFI_HTTP_MESSAGE       *RequestMsg  = NULL;
   EFI_HTTP_MESSAGE       ResponseMsg;
+  CHAR8                  ContentLengthStr[80];
+  size_t                 contentLength;
 
   ret = NULL;
 
@@ -951,12 +954,12 @@ deleteUriFromService (
     return NULL;
   }
 
-  DEBUG ((DEBUG_INFO, "libredfish: deleteUriFromService(): %a\n", url));
+  DEBUG ((DEBUG_MANAGEABILITY, "libredfish: deleteUriFromService(): %a\n", url));
 
   //
   // Step 1: Create HTTP request message with 4 headers:
   //
-  HttpIoHeader = HttpIoCreateHeader ((service->sessionToken || service->basicAuthStr) ? 5 : 4);
+  HttpIoHeader = HttpIoCreateHeader ((service->sessionToken || service->basicAuthStr) ? 8 : 7);
   if (HttpIoHeader == NULL) {
     ret = NULL;
     goto ON_EXIT;
@@ -978,6 +981,23 @@ deleteUriFromService (
   ASSERT_EFI_ERROR (Status);
   Status = HttpIoSetHeader (HttpIoHeader, "Connection", "Keep-Alive");
   ASSERT_EFI_ERROR (Status);
+
+  Status = HttpIoSetHeader (HttpIoHeader, "Content-Type", "application/json");
+  ASSERT_EFI_ERROR (Status);
+
+  if (content != NULL) {
+    contentLength = strlen (content);
+    AsciiSPrint (
+      ContentLengthStr,
+      sizeof (ContentLengthStr),
+      "%lu",
+      (UINT64)contentLength
+      );
+    Status = HttpIoSetHeader (HttpIoHeader, "Content-Length", ContentLengthStr);
+    ASSERT_EFI_ERROR (Status);
+    Status = HttpIoSetHeader (HttpIoHeader, "OData-Version", "4.0");
+    ASSERT_EFI_ERROR (Status);
+  }
 
   //
   // Step 2: build the rest of HTTP request info.
@@ -1003,6 +1023,11 @@ deleteUriFromService (
   RequestMsg->Data.Request = RequestData;
   RequestMsg->HeaderCount  = HttpIoHeader->HeaderCount;
   RequestMsg->Headers      = HttpIoHeader->Headers;
+
+  if (content != NULL) {
+    RequestMsg->BodyLength = contentLength;
+    RequestMsg->Body       = (VOID *)content;
+  }
 
   ZeroMem (&ResponseMsg, sizeof (ResponseMsg));
 
@@ -1055,6 +1080,16 @@ ON_EXIT:
   RestConfigFreeHttpMessage (&ResponseMsg, FALSE);
 
   return ret;
+}
+
+json_t *
+deleteUriFromService (
+  redfishService        *service,
+  const char            *uri,
+  EFI_HTTP_STATUS_CODE  **StatusCode
+  )
+{
+  return deleteUriFromServiceEx (service, uri, NULL, StatusCode);
 }
 
 redfishPayload *

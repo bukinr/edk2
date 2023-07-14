@@ -4,6 +4,7 @@
   version of the internal test state in case the test needs to quit and restore.
 
   Copyright (c) Microsoft Corporation.<BR>
+  Copyright (c) 2022, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
@@ -16,6 +17,7 @@
 #include <Library/DevicePathLib.h>
 #include <Library/ShellLib.h>
 #include <Protocol/LoadedImage.h>
+#include <UnitTestFrameworkTypes.h>
 
 #define CACHE_FILE_SUFFIX  L"_Cache.dat"
 
@@ -59,7 +61,7 @@ GetCacheFileDevicePath (
                   (VOID **)&LoadedImage
                   );
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_WARN, "%a - Failed to locate DevicePath for loaded image. %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_WARN, "%a - Failed to locate DevicePath for loaded image. %r\n", __func__, Status));
     return NULL;
   }
 
@@ -89,7 +91,7 @@ GetCacheFileDevicePath (
   // Make sure we didn't get any weird data.
   //
   if (DirectorySlashOffset == 0) {
-    DEBUG ((DEBUG_ERROR, "%a - Weird 0-length string when processing app path.\n", __FUNCTION__));
+    DEBUG ((DEBUG_ERROR, "%a - Weird 0-length string when processing app path.\n", __func__));
     goto Exit;
   }
 
@@ -110,7 +112,7 @@ GetCacheFileDevicePath (
   // Let's check and make sure that's right.
   //
   if (AppPath[DirectorySlashOffset] != L'\\') {
-    DEBUG ((DEBUG_ERROR, "%a - Could not find a single directory separator in app path.\n", __FUNCTION__));
+    DEBUG ((DEBUG_ERROR, "%a - Could not find a single directory separator in app path.\n", __func__));
     goto Exit;
   }
 
@@ -200,7 +202,7 @@ DoesCacheExist (
     FreePool (FileDevicePath);
   }
 
-  DEBUG ((DEBUG_VERBOSE, "%a - Returning %d\n", __FUNCTION__, !EFI_ERROR (Status)));
+  DEBUG ((DEBUG_VERBOSE, "%a - Returning %d\n", __func__, !EFI_ERROR (Status)));
 
   return (!EFI_ERROR (Status));
 }
@@ -213,6 +215,7 @@ DoesCacheExist (
   @param[in]  FrameworkHandle  A pointer to the framework that is being persisted.
   @param[in]  SaveData         A pointer to the buffer containing the serialized
                                framework internal state.
+  @param[in]  SaveStateSize    The size of SaveData in bytes.
 
   @retval  EFI_SUCCESS  Data is persisted and the test can be safely quit.
   @retval  Others       Data is not persisted and test cannot be resumed upon exit.
@@ -222,7 +225,8 @@ EFI_STATUS
 EFIAPI
 SaveUnitTestCache (
   IN UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle,
-  IN UNIT_TEST_SAVE_HEADER       *SaveData
+  IN VOID                        *SaveData,
+  IN UINTN                       SaveStateSize
   )
 {
   EFI_DEVICE_PATH_PROTOCOL  *FileDevicePath;
@@ -259,7 +263,7 @@ SaveUnitTestCache (
     //
     Status = ShellDeleteFile (&FileHandle);
     if (EFI_ERROR (Status)) {
-      DEBUG ((DEBUG_ERROR, "%a failed to delete file %r\n", __FUNCTION__, Status));
+      DEBUG ((DEBUG_ERROR, "%a failed to delete file %r\n", __func__, Status));
     }
   }
 
@@ -273,25 +277,25 @@ SaveUnitTestCache (
              0
              );
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a - Opening file for writing failed! %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Opening file for writing failed! %r\n", __func__, Status));
     goto Exit;
   }
 
   //
   // Write the data to the file.
   //
-  WriteCount = SaveData->SaveStateSize;
-  DEBUG ((DEBUG_INFO, "%a - Writing %d bytes to file...\n", __FUNCTION__, WriteCount));
+  WriteCount = SaveStateSize;
+  DEBUG ((DEBUG_INFO, "%a - Writing %d bytes to file...\n", __func__, WriteCount));
   Status = ShellWriteFile (
              FileHandle,
              &WriteCount,
              SaveData
              );
 
-  if (EFI_ERROR (Status) || (WriteCount != SaveData->SaveStateSize)) {
-    DEBUG ((DEBUG_ERROR, "%a - Writing to file failed! %r\n", __FUNCTION__, Status));
+  if (EFI_ERROR (Status) || (WriteCount != SaveStateSize)) {
+    DEBUG ((DEBUG_ERROR, "%a - Writing to file failed! %r\n", __func__, Status));
   } else {
-    DEBUG ((DEBUG_INFO, "%a - SUCCESS!\n", __FUNCTION__));
+    DEBUG ((DEBUG_INFO, "%a - SUCCESS!\n", __func__));
   }
 
   //
@@ -312,8 +316,9 @@ Exit:
   Will allocate a buffer to hold the loaded data.
 
   @param[in]  FrameworkHandle  A pointer to the framework that is being persisted.
-  @param[in]  SaveData         A pointer pointer that will be updated with the address
+  @param[out] SaveData         A pointer pointer that will be updated with the address
                                of the loaded data buffer.
+  @param[out] SaveStateSize    Return the size of SaveData in bytes.
 
   @retval  EFI_SUCCESS  Data has been loaded successfully and SaveData is updated
                         with a pointer to the buffer.
@@ -325,7 +330,8 @@ EFI_STATUS
 EFIAPI
 LoadUnitTestCache (
   IN  UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle,
-  OUT UNIT_TEST_SAVE_HEADER       **SaveData
+  OUT VOID                        **SaveData,
+  OUT UINTN                       *SaveStateSize
   )
 {
   EFI_STATUS                Status;
@@ -334,7 +340,7 @@ LoadUnitTestCache (
   BOOLEAN                   IsFileOpened;
   UINT64                    LargeFileSize;
   UINTN                     FileSize;
-  UNIT_TEST_SAVE_HEADER     *Buffer;
+  VOID                      *Buffer;
 
   IsFileOpened = FALSE;
   Buffer       = NULL;
@@ -362,7 +368,7 @@ LoadUnitTestCache (
              0
              );
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a - Opening file for writing failed! %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Opening file for writing failed! %r\n", __func__, Status));
     goto Exit;
   } else {
     IsFileOpened = TRUE;
@@ -373,17 +379,18 @@ LoadUnitTestCache (
   //
   Status = ShellGetFileSize (FileHandle, &LargeFileSize);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a - Failed to determine file size! %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Failed to determine file size! %r\n", __func__, Status));
     goto Exit;
   }
 
   //
   // Now that we know the size, let's allocated a buffer to hold the contents.
   //
-  FileSize = (UINTN)LargeFileSize;    // You know what... if it's too large, this lib don't care.
-  Buffer   = AllocatePool (FileSize);
+  FileSize       = (UINTN)LargeFileSize; // You know what... if it's too large, this lib don't care.
+  *SaveStateSize = FileSize;
+  Buffer         = AllocatePool (FileSize);
   if (Buffer == NULL) {
-    DEBUG ((DEBUG_ERROR, "%a - Failed to allocate a pool to hold the file contents! %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Failed to allocate a pool to hold the file contents! %r\n", __func__, Status));
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
@@ -393,7 +400,7 @@ LoadUnitTestCache (
   //
   Status = ShellReadFile (FileHandle, &FileSize, Buffer);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a - Failed to read the file contents! %r\n", __FUNCTION__, Status));
+    DEBUG ((DEBUG_ERROR, "%a - Failed to read the file contents! %r\n", __func__, Status));
   }
 
 Exit:

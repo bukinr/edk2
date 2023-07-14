@@ -394,87 +394,38 @@ AmlNameOpGetNextRdNode (
   return EFI_SUCCESS;
 }
 
-// DEPRECATED APIS
-#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+/** Attach a node in an AML tree.
 
-/** DEPRECATED API
+  The node will be added as the last statement of the ParentNode.
+  E.g.:
+  ASL code corresponding to NewNode:
+  Name (_UID, 0)
 
-  Get the first Resource Data element contained in a "_CRS" object.
+  ASL code corresponding to ParentNode:
+  Device (PCI0) {
+    Name(_HID, EISAID("PNP0A08"))
+  }
 
-  In the following ASL code, the function will return the Resource Data
-  node corresponding to the "QWordMemory ()" ASL macro.
-  Name (_CRS, ResourceTemplate() {
-      QWordMemory (...) {...},
-      Interrupt (...) {...}
-    }
-  )
+  "AmlAttachNode (ParentNode, NewNode)" will result in:
+  ASL code:
+  Device (PCI0) {
+    Name(_HID, EISAID("PNP0A08"))
+    Name (_UID, 0)
+  }
 
-  Note:
-   - The "_CRS" object must be declared using ASL "Name (Declare Named Object)".
-   - "_CRS" declared using ASL "Method (Declare Control Method)" is not
-     supported.
-
-  @ingroup UserApis
-
-  @param  [in] NameOpCrsNode  NameOp object node defining a "_CRS" object.
-                              Must have an OpCode=AML_NAME_OP, SubOpCode=0.
-                              NameOp object nodes are defined in ASL
-                              using the "Name ()" function.
-  @param  [out] OutRdNode     Pointer to the first Resource Data element of
-                              the "_CRS" object. A Resource Data element
-                              is stored in a data node.
+  @param  [in]  ParentNode  Pointer to the parent node.
+                            Must be a root or an object node.
+  @param  [in]  NewNode     Pointer to the node to add.
 
   @retval EFI_SUCCESS             The function completed successfully.
   @retval EFI_INVALID_PARAMETER   Invalid parameter.
 **/
 EFI_STATUS
 EFIAPI
-AmlNameOpCrsGetFirstRdNode (
-  IN  AML_OBJECT_NODE_HANDLE  NameOpCrsNode,
-  OUT AML_DATA_NODE_HANDLE    *OutRdNode
+AmlAttachNode (
+  IN  AML_NODE_HANDLE  ParentNode,
+  IN  AML_NODE_HANDLE  NewNode
   )
 {
-  return AmlNameOpGetFirstRdNode (NameOpCrsNode, OutRdNode);
+  return AmlVarListAddTail (ParentNode, NewNode);
 }
-
-/** DEPRECATED API
-
-  Get the Resource Data element following the CurrRdNode Resource Data.
-
-  In the following ASL code, if CurrRdNode corresponds to the first
-  "QWordMemory ()" ASL macro, the function will return the Resource Data
-  node corresponding to the "Interrupt ()" ASL macro.
-  Name (_CRS, ResourceTemplate() {
-      QwordMemory (...) {...},
-      Interrupt (...) {...}
-    }
-  )
-
-  The CurrRdNode Resource Data node must be defined in an object named "_CRS"
-  and defined by a "Name ()" ASL function.
-
-  @ingroup UserApis
-
-  @param  [in]  CurrRdNode   Pointer to the current Resource Data element of
-                             the "_CRS" variable.
-  @param  [out] OutRdNode    Pointer to the Resource Data element following
-                             the CurrRdNode.
-                             Contain a NULL pointer if CurrRdNode is the
-                             last Resource Data element in the list.
-                             The "End Tag" is not considered as a resource
-                             data element and is not returned.
-
-  @retval EFI_SUCCESS             The function completed successfully.
-  @retval EFI_INVALID_PARAMETER   Invalid parameter.
-**/
-EFI_STATUS
-EFIAPI
-AmlNameOpCrsGetNextRdNode (
-  IN  AML_DATA_NODE_HANDLE  CurrRdNode,
-  OUT AML_DATA_NODE_HANDLE  *OutRdNode
-  )
-{
-  return AmlNameOpGetNextRdNode (CurrRdNode, OutRdNode);
-}
-
-#endif // DISABLE_NEW_DEPRECATED_INTERFACES

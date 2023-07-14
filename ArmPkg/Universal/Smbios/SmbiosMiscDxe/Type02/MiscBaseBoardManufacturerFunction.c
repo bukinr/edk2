@@ -4,6 +4,7 @@
 
   Based on files under Nt32Pkg/MiscSubClassPlatformDxe/
 
+  Copyright (c) 2022, Ampere Computing LLC. All rights reserved.<BR>
   Copyright (c) 2021, NUVIA Inc. All rights reserved.<BR>
   Copyright (c) 2009 - 2011, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2015, Hisilicon Limited. All rights reserved.<BR>
@@ -77,34 +78,42 @@ SMBIOS_MISC_TABLE_FUNCTION (MiscBaseBoardManufacturer) {
   if (StrLen (BaseBoardManufacturer) > 0) {
     TokenToUpdate = STRING_TOKEN (STR_MISC_BASE_BOARD_MANUFACTURER);
     HiiSetString (mSmbiosMiscHiiHandle, TokenToUpdate, BaseBoardManufacturer, NULL);
+  } else {
+    OemUpdateSmbiosInfo (
+      mSmbiosMiscHiiHandle,
+      STRING_TOKEN (STR_MISC_BASE_BOARD_MANUFACTURER),
+      BoardManufacturerType02
+      );
   }
 
   BaseBoardProductName = (CHAR16 *)PcdGetPtr (PcdBaseBoardProductName);
   if (StrLen (BaseBoardProductName) > 0) {
     TokenToUpdate = STRING_TOKEN (STR_MISC_BASE_BOARD_PRODUCT_NAME);
     HiiSetString (mSmbiosMiscHiiHandle, TokenToUpdate, BaseBoardProductName, NULL);
+  } else {
+    OemUpdateSmbiosInfo (
+      mSmbiosMiscHiiHandle,
+      STRING_TOKEN (STR_MISC_BASE_BOARD_PRODUCT_NAME),
+      ProductNameType02
+      );
   }
 
   Version = (CHAR16 *)PcdGetPtr (PcdBaseBoardVersion);
   if (StrLen (Version) > 0) {
     TokenToUpdate = STRING_TOKEN (STR_MISC_BASE_BOARD_VERSION);
     HiiSetString (mSmbiosMiscHiiHandle, TokenToUpdate, Version, NULL);
+  } else {
+    OemUpdateSmbiosInfo (
+      mSmbiosMiscHiiHandle,
+      STRING_TOKEN (STR_MISC_BASE_BOARD_VERSION),
+      VersionType02
+      );
   }
 
   OemUpdateSmbiosInfo (
     mSmbiosMiscHiiHandle,
     STRING_TOKEN (STR_MISC_BASE_BOARD_ASSET_TAG),
-    AssertTagType02
-    );
-  OemUpdateSmbiosInfo (
-    mSmbiosMiscHiiHandle,
-    STRING_TOKEN (STR_MISC_BASE_BOARD_SERIAL_NUMBER),
-    SerialNumberType02
-    );
-  OemUpdateSmbiosInfo (
-    mSmbiosMiscHiiHandle,
-    STRING_TOKEN (STR_MISC_BASE_BOARD_MANUFACTURER),
-    BoardManufacturerType02
+    AssetTagType02
     );
   OemUpdateSmbiosInfo (
     mSmbiosMiscHiiHandle,
@@ -205,7 +214,7 @@ SMBIOS_MISC_TABLE_FUNCTION (MiscBaseBoardManufacturer) {
     DEBUG ((
       DEBUG_ERROR,
       "[%a]:[%dL] Smbios Type02 Table Log Failed! %r \n",
-      __FUNCTION__,
+      __func__,
       DEBUG_LINE_NUMBER,
       Status
       ));

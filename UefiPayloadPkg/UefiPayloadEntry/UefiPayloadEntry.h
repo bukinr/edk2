@@ -23,7 +23,7 @@
 #include <Library/PeCoffLib.h>
 #include <Library/BlParseLib.h>
 #include <Library/PlatformSupportLib.h>
-#include <Library/UefiCpuLib.h>
+#include <Library/CpuLib.h>
 #include <IndustryStandard/Acpi.h>
 #include <IndustryStandard/MemoryMappedConfigurationSpaceAccessTable.h>
 #include <Guid/SerialPortInfoGuid.h>

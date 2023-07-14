@@ -8,6 +8,7 @@
   @par Reference(s):
   - Arm Server Base Boot Requirements (SBBR), s4.2.1.8 "SPCR".
   - Microsoft Debug Port Table 2 (DBG2) Specification - December 10, 2015.
+  - ACPI for Arm Components 1.0 - 2020
 **/
 
 #include <IndustryStandard/DebugPort2Table.h>
@@ -85,7 +86,9 @@ ValidateSerialPortInfo (
         (SerialPortInfo->PortSubtype !=
          EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_DCC) &&
         (SerialPortInfo->PortSubtype !=
-         EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_FULL_16550))
+         EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_FULL_16550) &&
+        (SerialPortInfo->PortSubtype !=
+         EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_16550_WITH_GAS))
     {
       DEBUG ((
         DEBUG_ERROR,
@@ -147,6 +150,7 @@ FixupIds (
   // Get the _CID and _HID value to write.
   switch (SerialPortInfo->PortSubtype) {
     case EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_FULL_16550:
+    case EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_16550_WITH_GAS:
     {
       // If there is a non-BSA compliant HID, use that.
       NonBsaHid = (CONST CHAR8 *)PcdGetPtr (PcdNonBsaCompliant16550SerialHid);
@@ -173,7 +177,7 @@ FixupIds (
     case EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_ARM_SBSA_GENERIC_UART:
     case EFI_ACPI_DBG2_PORT_SUBTYPE_SERIAL_ARM_SBSA_GENERIC_UART_2X:
     {
-      HidString = "ARMH0011";
+      HidString = "ARMHB000";
       CidString = "";
       break;
     }

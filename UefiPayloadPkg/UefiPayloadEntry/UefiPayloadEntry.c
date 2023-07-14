@@ -5,9 +5,19 @@
 
 **/
 
+#include <Guid/MemoryTypeInformation.h>
 #include "UefiPayloadEntry.h"
 
 STATIC UINT32  mTopOfLowerUsableDram = 0;
+
+EFI_MEMORY_TYPE_INFORMATION  mDefaultMemoryTypeInformation[] = {
+  { EfiACPIReclaimMemory,   FixedPcdGet32 (PcdMemoryTypeEfiACPIReclaimMemory)   },
+  { EfiACPIMemoryNVS,       FixedPcdGet32 (PcdMemoryTypeEfiACPIMemoryNVS)       },
+  { EfiReservedMemoryType,  FixedPcdGet32 (PcdMemoryTypeEfiReservedMemoryType)  },
+  { EfiRuntimeServicesData, FixedPcdGet32 (PcdMemoryTypeEfiRuntimeServicesData) },
+  { EfiRuntimeServicesCode, FixedPcdGet32 (PcdMemoryTypeEfiRuntimeServicesCode) },
+  { EfiMaxMemoryType,       0                                                   }
+};
 
 /**
    Callback function to build resource descriptor HOB
@@ -437,6 +447,15 @@ _ModuleEntryPoint (
 
   // Build other HOBs required by DXE
   BuildGenericHob ();
+
+  //
+  // Create Memory Type Information HOB
+  //
+  BuildGuidDataHob (
+    &gEfiMemoryTypeInformationGuid,
+    mDefaultMemoryTypeInformation,
+    sizeof (mDefaultMemoryTypeInformation)
+    );
 
   // Load the DXE Core
   Status = LoadDxeCore (&DxeCoreEntryPoint);

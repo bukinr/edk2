@@ -5,6 +5,7 @@ Copyright (c) 2004 - 2018, Intel Corporation. All rights reserved.<BR>
 Portions Copyright (c) 2011 - 2013, ARM Ltd. All rights reserved.<BR>
 Portions Copyright (c) 2016 HP Development Company, L.P.<BR>
 Portions Copyright (c) 2020, Hewlett Packard Enterprise Development LP. All rights reserved.<BR>
+Portions Copyright (c) 2022, Loongson Technology Corporation Limited. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -13,11 +14,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 // Include files
 //
 
-#if defined(__FreeBSD__)
-#include <uuid.h>
-#elif defined(__GNUC__)
-#include <uuid/uuid.h>
-#endif
 #ifdef __GNUC__
 #include <sys/stat.h>
 #endif
@@ -29,7 +25,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Guid/FfsSectionAlignmentPadding.h>
 
-#include "WinNtInclude.h"
 #include "GenFvInternalLib.h"
 #include "FvLib.h"
 #include "PeCoffLib.h"
@@ -57,6 +52,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 BOOLEAN mArm = FALSE;
 BOOLEAN mRiscV = FALSE;
+BOOLEAN mLoongArch = FALSE;
 STATIC UINT32   MaxFfsAlignment = 0;
 BOOLEAN VtfFileFlag = FALSE;
 
@@ -1004,7 +1000,7 @@ Returns:
       if (IsUseClang) {
         sscanf (Line, "%llx %s %s %s", &TempLongAddress, KeyWord, KeyWord2, FunctionTypeName);
         FunctionAddress = (UINT64) TempLongAddress;
-        if (FunctionTypeName [0] == '_' ) {
+        if (FunctionTypeName [0] != '/' && FunctionTypeName [0] != '.' && FunctionTypeName [1] != ':') {
           fprintf (FvMapFile, "  0x%010llx    ", (unsigned long long) (ImageBaseAddress + FunctionAddress - LinkTimeBaseAddress));
           fprintf (FvMapFile, "%s\n", FunctionTypeName);
         }
@@ -1659,8 +1655,8 @@ Returns:
 
   if (
        Vtf0Detected &&
-       (MachineType == EFI_IMAGE_MACHINE_IA32 ||
-        MachineType == EFI_IMAGE_MACHINE_X64)
+       (MachineType == IMAGE_FILE_MACHINE_I386 ||
+        MachineType == IMAGE_FILE_MACHINE_X64)
      ) {
     //
     // If the SEC core code is IA32 or X64 and the VTF-0 signature
@@ -1718,7 +1714,7 @@ Returns:
     DebugMsg (NULL, 0, 9, "PeiCore physical entry point address", "Address = 0x%llX", (unsigned long long) PeiCorePhysicalAddress);
   }
 
-if (MachineType == EFI_IMAGE_MACHINE_IA32 || MachineType == EFI_IMAGE_MACHINE_X64) {
+if (MachineType == IMAGE_FILE_MACHINE_I386 || MachineType == IMAGE_FILE_MACHINE_X64) {
     if (PeiCorePhysicalAddress != 0) {
       //
       // Get the location to update
@@ -1808,12 +1804,12 @@ if (MachineType == EFI_IMAGE_MACHINE_IA32 || MachineType == EFI_IMAGE_MACHINE_X6
     //
     Ia32ResetAddressPtr   = (UINT32 *) ((UINTN) FvImage->Eof - 8);
     *Ia32ResetAddressPtr  = IpiVector;
-  } else if (MachineType == EFI_IMAGE_MACHINE_ARMT) {
+  } else if (MachineType == IMAGE_FILE_MACHINE_ARMTHUMB_MIXED) {
     //
     // Since the ARM reset vector is in the FV Header you really don't need a
     // Volume Top File, but if you have one for some reason don't crash...
     //
-  } else if (MachineType == EFI_IMAGE_MACHINE_AARCH64) {
+  } else if (MachineType == IMAGE_FILE_MACHINE_ARM64) {
     //
     // Since the AArch64 reset vector is in the FV Header you really don't need a
     // Volume Top File, but if you have one for some reason don't crash...
@@ -2208,7 +2204,7 @@ Returns:
     return EFI_SUCCESS;
   }
 
-  if (MachineType == EFI_IMAGE_MACHINE_ARMT) {
+  if (MachineType == IMAGE_FILE_MACHINE_ARMTHUMB_MIXED) {
     // ARM: Array of 4 UINT32s:
     // 0 - is branch relative to SEC entry point
     // 1 - PEI Entry Point
@@ -2262,7 +2258,7 @@ Returns:
     //
     memcpy(FvImage->FileImage, ResetVector, sizeof (ResetVector));
 
-  } else if (MachineType == EFI_IMAGE_MACHINE_AARCH64) {
+  } else if (MachineType == IMAGE_FILE_MACHINE_ARM64) {
     // AArch64: Used as UINT64 ResetVector[2]
     // 0 - is branch relative to SEC entry point
     // 1 - PEI Entry Point
@@ -2381,7 +2377,7 @@ Returns:
     return EFI_ABORTED;
   }
 
-  if (MachineType != EFI_IMAGE_MACHINE_RISCV64) {
+  if (MachineType != IMAGE_FILE_MACHINE_RISCV64) {
     Error(NULL, 0, 3000, "Invalid", "Could not update SEC core because Machine type is not RiscV.");
     return EFI_ABORTED;
   }
@@ -2395,7 +2391,7 @@ Returns:
   VerboseMsg("SecCore entry point Address = 0x%llX", (unsigned long long) SecCoreEntryAddress);
   VerboseMsg("BaseAddress = 0x%llX", (unsigned long long) FvInfo->BaseAddress);
   bSecCore = (UINT32)(SecCoreEntryAddress - FvInfo->BaseAddress);
-  VerboseMsg("offset = 0x%llX", bSecCore);
+  VerboseMsg("offset = 0x%X", bSecCore);
 
   if(bSecCore > 0x0fffff) {
     Error(NULL, 0, 3000, "Invalid", "SEC Entry point must be within 1MB of start of the FV");
@@ -2412,6 +2408,98 @@ Returns:
   bSecCore |= 0x6F; //JAL opcode
 
   memcpy(FvImage->FileImage, &bSecCore, sizeof(bSecCore));
+
+  return EFI_SUCCESS;
+}
+
+EFI_STATUS
+UpdateLoongArchResetVectorIfNeeded (
+  IN MEMORY_FILE            *FvImage,
+  IN FV_INFO                *FvInfo
+  )
+/*++
+
+Routine Description:
+  This parses the FV looking for SEC and patches that address into the
+  beginning of the FV header.
+
+  For LoongArch ISA, the reset vector is at 0x1c000000.
+
+  We relocate it to SecCoreEntry and copy the ResetVector code to the
+  beginning of the FV.
+
+Arguments:
+  FvImage       Memory file for the FV memory image
+  FvInfo        Information read from INF file.
+
+Returns:
+
+  EFI_SUCCESS             Function Completed successfully.
+  EFI_ABORTED             Error encountered.
+  EFI_INVALID_PARAMETER   A required parameter was NULL.
+  EFI_NOT_FOUND           PEI Core file not found.
+
+--*/
+{
+  EFI_STATUS                  Status;
+  EFI_FILE_SECTION_POINTER    SecPe32;
+  BOOLEAN                     UpdateVectorSec = FALSE;
+  UINT16                      MachineType = 0;
+  EFI_PHYSICAL_ADDRESS        SecCoreEntryAddress = 0;
+
+  //
+  // Verify input parameters
+  //
+  if (FvImage == NULL || FvInfo == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
+  // Locate an SEC Core instance and if found extract the machine type and entry point address
+  //
+  Status = FindCorePeSection(FvImage->FileImage, FvInfo->Size, EFI_FV_FILETYPE_SECURITY_CORE, &SecPe32);
+  if (!EFI_ERROR(Status)) {
+
+    Status = GetCoreMachineType(SecPe32, &MachineType);
+    if (EFI_ERROR(Status)) {
+      Error(NULL, 0, 3000, "Invalid", "Could not get the PE32 machine type for SEC Core.");
+      return EFI_ABORTED;
+    }
+
+    Status = GetCoreEntryPointAddress(FvImage->FileImage, FvInfo, SecPe32, &SecCoreEntryAddress);
+    if (EFI_ERROR(Status)) {
+      Error(NULL, 0, 3000, "Invalid", "Could not get the PE32 entry point address for SEC Core.");
+      return EFI_ABORTED;
+    }
+
+    UpdateVectorSec = TRUE;
+  }
+
+  if (!UpdateVectorSec)
+    return EFI_SUCCESS;
+
+  if (MachineType == IMAGE_FILE_MACHINE_LOONGARCH64) {
+    UINT32                      ResetVector[1];
+
+    memset(ResetVector, 0, sizeof (ResetVector));
+
+    /* if we found an SEC core entry point then generate a branch instruction */
+    if (UpdateVectorSec) {
+      VerboseMsg("UpdateLoongArchResetVectorIfNeeded updating LOONGARCH64 SEC vector");
+
+      ResetVector[0] = ((SecCoreEntryAddress - FvInfo->BaseAddress) & 0x3FFFFFF) >> 2;
+      ResetVector[0] = ((ResetVector[0] & 0x0FFFF) << 10) | ((ResetVector[0] >> 16) & 0x3FF);
+      ResetVector[0] |= 0x50000000; /* b offset */
+    }
+
+    //
+    // Copy to the beginning of the FV
+    //
+    memcpy(FvImage->FileImage, ResetVector, sizeof (ResetVector));
+  } else {
+    Error(NULL, 0, 3000, "Invalid", "Unknown machine type");
+    return EFI_ABORTED;
+  }
 
   return EFI_SUCCESS;
 }
@@ -2507,9 +2595,9 @@ Returns:
   //
   // Verify machine type is supported
   //
-  if ((*MachineType != EFI_IMAGE_MACHINE_IA32) &&  (*MachineType != EFI_IMAGE_MACHINE_X64) && (*MachineType != EFI_IMAGE_MACHINE_EBC) &&
-      (*MachineType != EFI_IMAGE_MACHINE_ARMT) && (*MachineType != EFI_IMAGE_MACHINE_AARCH64) &&
-      (*MachineType != EFI_IMAGE_MACHINE_RISCV64)) {
+  if ((*MachineType != IMAGE_FILE_MACHINE_I386) &&  (*MachineType != IMAGE_FILE_MACHINE_X64) && (*MachineType != IMAGE_FILE_MACHINE_EBC) &&
+      (*MachineType != IMAGE_FILE_MACHINE_ARMTHUMB_MIXED) && (*MachineType != IMAGE_FILE_MACHINE_ARM64) &&
+      (*MachineType != IMAGE_FILE_MACHINE_RISCV64) && (*MachineType != IMAGE_FILE_MACHINE_LOONGARCH64)) {
     Error (NULL, 0, 3000, "Invalid", "Unrecognized machine type in the PE32 file.");
     return EFI_UNSUPPORTED;
   }
@@ -2953,7 +3041,7 @@ Returns:
       goto Finish;
     }
 
-    if (!mArm && !mRiscV) {
+    if (!mArm && !mRiscV && !mLoongArch) {
       //
       // Update reset vector (SALE_ENTRY for IPF)
       // Now for IA32 and IA64 platform, the fv which has bsf file must have the
@@ -2996,6 +3084,19 @@ Returns:
      if (EFI_ERROR (Status)) {
        Error (NULL, 0, 3000, "Invalid", "Could not update the reset vector for RISC-V.");
        goto Finish;
+    }
+    //
+    // Update Checksum for FvHeader
+    //
+    FvHeader->Checksum = 0;
+    FvHeader->Checksum = CalculateChecksum16 ((UINT16 *) FvHeader, FvHeader->HeaderLength / sizeof (UINT16));
+  }
+
+  if (mLoongArch) {
+    Status = UpdateLoongArchResetVectorIfNeeded (&FvImageMemoryFile, &mFvDataInfo);
+    if (EFI_ERROR (Status)) {
+      Error (NULL, 0, 3000, "Invalid", "Could not update the reset vector.");
+      goto Finish;
     }
     //
     // Update Checksum for FvHeader
@@ -3446,9 +3547,15 @@ Returns:
       }
 
       // machine type is ARM, set a flag so ARM reset vector processing occurs
-      if ((MachineType == EFI_IMAGE_MACHINE_ARMT) || (MachineType == EFI_IMAGE_MACHINE_AARCH64)) {
+      if ((MachineType == IMAGE_FILE_MACHINE_ARMTHUMB_MIXED) || (MachineType == IMAGE_FILE_MACHINE_ARM64)) {
         VerboseMsg("Located ARM/AArch64 SEC/PEI core in child FV");
         mArm = TRUE;
+      }
+
+      // Machine type is LOONGARCH64, set a flag so LoongArch64 reset vector processed.
+      if (MachineType == IMAGE_FILE_MACHINE_LOONGARCH64) {
+        VerboseMsg("Located LoongArch64 SEC core in child FV");
+        mLoongArch = TRUE;
       }
     }
 
@@ -3599,13 +3706,17 @@ Returns:
       return Status;
     }
 
-    if ( (ImageContext.Machine == EFI_IMAGE_MACHINE_ARMT) ||
-         (ImageContext.Machine == EFI_IMAGE_MACHINE_AARCH64) ) {
+    if ( (ImageContext.Machine == IMAGE_FILE_MACHINE_ARMTHUMB_MIXED) ||
+         (ImageContext.Machine == IMAGE_FILE_MACHINE_ARM64) ) {
       mArm = TRUE;
     }
 
-    if (ImageContext.Machine == EFI_IMAGE_MACHINE_RISCV64) {
+    if (ImageContext.Machine == IMAGE_FILE_MACHINE_RISCV64) {
       mRiscV = TRUE;
+    }
+
+    if (ImageContext.Machine == IMAGE_FILE_MACHINE_LOONGARCH64) {
+      mLoongArch = TRUE;
     }
 
     //
@@ -3880,9 +3991,13 @@ Returns:
       return Status;
     }
 
-    if ( (ImageContext.Machine == EFI_IMAGE_MACHINE_ARMT) ||
-         (ImageContext.Machine == EFI_IMAGE_MACHINE_AARCH64) ) {
+    if ( (ImageContext.Machine == IMAGE_FILE_MACHINE_ARMTHUMB_MIXED) ||
+         (ImageContext.Machine == IMAGE_FILE_MACHINE_ARM64) ) {
       mArm = TRUE;
+    }
+
+    if (ImageContext.Machine == IMAGE_FILE_MACHINE_LOONGARCH64) {
+      mLoongArch = TRUE;
     }
 
     //

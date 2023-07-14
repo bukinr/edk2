@@ -21,7 +21,7 @@
 #include <Library/IoLib.h>
 #include <Library/TimerLib.h>
 #include <Library/PcdLib.h>
-#include <Library/UefiCpuLib.h>
+#include <Library/CpuLib.h>
 
 //
 // Library internal functions
