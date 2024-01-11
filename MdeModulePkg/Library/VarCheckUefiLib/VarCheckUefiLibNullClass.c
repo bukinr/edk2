@@ -56,13 +56,13 @@ InternalVarCheckLoadOption (
   CHAR16                    *Description;
   EFI_DEVICE_PATH_PROTOCOL  *FilePathList;
 
-  FilePathListLength = *((UINT16 *)((UINTN)Data + sizeof (UINT32)));
+  FilePathListLength = *((UINT16 *)((UINTPTR_T)Data + sizeof (UINT32)));
 
   //
   // Check Description
   //
-  Description = (CHAR16 *)((UINTN)Data + sizeof (UINT32) + sizeof (UINT16));
-  while (Description < (CHAR16 *)((UINTN)Data + DataSize)) {
+  Description = (CHAR16 *)((UINTPTR_T)Data + sizeof (UINT32) + sizeof(UINT16));
+  while (Description < (CHAR16 *)((UINTPTR_T)Data + DataSize)) {
     if (*Description == L'\0') {
       break;
     }

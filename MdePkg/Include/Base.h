@@ -608,7 +608,7 @@ typedef __builtin_ms_va_list VA_LIST;
 
 #define VA_START(Marker, Parameter)  __builtin_ms_va_start (Marker, Parameter)
 
-#define VA_ARG(Marker, TYPE)  ((sizeof (TYPE) < sizeof (UINTN)) ? (TYPE)(__builtin_va_arg (Marker, UINTN)) : (TYPE)(__builtin_va_arg (Marker, TYPE)))
+#define VA_ARG(Marker, TYPE)  ((sizeof (TYPE) < sizeof (UINTPTR_T)) ? (TYPE)(__builtin_va_arg (Marker, UINTPTR_T)) : (TYPE)(__builtin_va_arg (Marker, TYPE)))
 
 #define VA_END(Marker)  __builtin_ms_va_end (Marker)
 
@@ -627,7 +627,7 @@ typedef __builtin_va_list VA_LIST;
 
 #define VA_START(Marker, Parameter)  __builtin_va_start (Marker, Parameter)
 
-#define VA_ARG(Marker, TYPE)  ((sizeof (TYPE) < sizeof (UINTN)) ? (TYPE)(__builtin_va_arg (Marker, UINTN)) : (TYPE)(__builtin_va_arg (Marker, TYPE)))
+#define VA_ARG(Marker, TYPE)  ((sizeof (TYPE) < sizeof (UINTPTR_T)) ? (TYPE)(__builtin_va_arg (Marker, UINTPTR_T)) : (TYPE)(__builtin_va_arg (Marker, TYPE)))
 
 #define VA_END(Marker)  __builtin_va_end (Marker)
 
@@ -709,6 +709,7 @@ typedef CHAR8 *VA_LIST;
 /// Pointer to the start of a variable argument list stored in a memory buffer. Same as UINT8 *.
 ///
 typedef UINTN *BASE_LIST;
+typedef        __uintcap_t     UINTPTR_T;
 
 /**
   Returns the size of a data type in sizeof(UINTN) units rounded up to the nearest UINTN boundary.

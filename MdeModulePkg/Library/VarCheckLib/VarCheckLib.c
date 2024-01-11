@@ -179,7 +179,7 @@ VariablePropertyGetFunction (
 
   for (Index = 0; Index < mNumberOfVarCheckVariable; Index++) {
     Entry        = (VAR_CHECK_VARIABLE_ENTRY *)mVarCheckVariableTable[Index];
-    VariableName = (CHAR16 *)((UINTN)Entry + sizeof (*Entry));
+    VariableName = (CHAR16 *)((UINTPTR_T)Entry + sizeof (*Entry));
     if (CompareGuid (&Entry->Guid, Guid) && (StrCmp (VariableName, Name) == 0)) {
       return &Entry->VariableProperty;
     }
@@ -521,7 +521,7 @@ VarCheckLibVariablePropertySet (
       return EFI_OUT_OF_RESOURCES;
     }
 
-    VariableName = (CHAR16 *)((UINTN)Entry + sizeof (*Entry));
+    VariableName = (CHAR16 *)((UINTPTR_T)Entry + sizeof (*Entry));
     StrCpyS (VariableName, StrSize (Name)/sizeof (CHAR16), Name);
     CopyGuid (&Entry->Guid, Guid);
     CopyMem (&Entry->VariableProperty, VariableProperty, sizeof (*VariableProperty));

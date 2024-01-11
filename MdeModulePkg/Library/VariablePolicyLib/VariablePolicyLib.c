@@ -50,7 +50,7 @@ STATIC  UINT32  mCurrentTableCount = 0;
 // NOTE: DO NOT USE THESE MACROS on any structure that has not been validated.
 //       Current table data has already been sanitized.
 #define GET_NEXT_POLICY(CurPolicy)  (VARIABLE_POLICY_ENTRY*)((UINT8*)CurPolicy + CurPolicy->Size)
-#define GET_POLICY_NAME(CurPolicy)  (CHAR16*)((UINTN)CurPolicy + CurPolicy->OffsetToName)
+#define GET_POLICY_NAME(CurPolicy)  (CHAR16*)((UINTPTR_T)CurPolicy + CurPolicy->OffsetToName)
 
 #define MATCH_PRIORITY_EXACT  0
 #define MATCH_PRIORITY_MAX    MATCH_PRIORITY_EXACT
@@ -173,7 +173,7 @@ IsValidVariablePolicyStructure (
   // before the end of the structure.
   // We've already checked that the name is within the bounds of the structure.
   if (NewPolicy->Size != NewPolicy->OffsetToName) {
-    CheckChar     = (CHAR16 *)((UINTN)NewPolicy + NewPolicy->OffsetToName);
+    CheckChar     = (CHAR16 *)((UINTPTR_T)NewPolicy + NewPolicy->OffsetToName);
     WildcardCount = 0;
     while (*CheckChar != CHAR_NULL) {
       // Make sure there aren't excessive wildcards.

@@ -45,7 +45,7 @@ InternalAllocatePages (
     return NULL;
   }
 
-  return (VOID *)(UINTN)Memory;
+  return (VOID *)(UINTPTR_T)Memory;
 }
 
 /**
@@ -172,7 +172,7 @@ InternalAllocateAlignedPages (
 {
   EFI_STATUS            Status;
   EFI_PHYSICAL_ADDRESS  Memory;
-  UINTN                 AlignedMemory;
+  UINTPTR_T             AlignedMemory;
   UINTN                 AlignmentMask;
   UINTN                 UnalignedPages;
   UINTN                 RealPages;

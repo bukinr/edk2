@@ -387,6 +387,18 @@ IoWriteFifo32 (
   ASSERT (FALSE);
 }
 
+UINTPTR_T
+MakeCap(UINTN addr)
+{
+  UINTPTR_T Ptr;
+
+  /* TODO */
+
+  Ptr = 0;
+
+  return (Ptr);
+}
+
 /**
   Reads an 8-bit MMIO register.
 
@@ -412,7 +424,7 @@ MmioRead8 (
 
   Flag = FilterBeforeMmIoRead (FilterWidth8, Address, &Value);
   if (Flag) {
-    Value = *(volatile UINT8 *)Address;
+    Value = *(volatile UINT8 *)MakeCap(Address);
   }
 
   FilterAfterMmIoRead (FilterWidth8, Address, &Value);
@@ -441,10 +453,12 @@ MmioWrite8 (
   )
 {
   BOOLEAN  Flag;
+  UINTPTR_T Ptr;
 
+  Ptr = MakeCap(Address);
   Flag = FilterBeforeMmIoWrite (FilterWidth8, Address, &Value);
   if (Flag) {
-    *(volatile UINT8 *)Address = Value;
+    *(volatile UINT8 *)Ptr = Value;
   }
 
   FilterAfterMmIoWrite (FilterWidth8, Address, &Value);
@@ -479,7 +493,7 @@ MmioRead16 (
 
   Flag = FilterBeforeMmIoRead (FilterWidth16, Address, &Value);
   if (Flag) {
-    Value = *(volatile UINT16 *)Address;
+    Value = *(volatile UINT16 *)MakeCap(Address);
   }
 
   FilterAfterMmIoRead (FilterWidth16, Address, &Value);
@@ -508,12 +522,14 @@ MmioWrite16 (
   )
 {
   BOOLEAN  Flag;
+  UINTPTR_T Ptr;
 
   ASSERT ((Address & 1) == 0);
 
+  Ptr = MakeCap(Address);
   Flag = FilterBeforeMmIoWrite (FilterWidth16, Address, &Value);
   if (Flag) {
-    *(volatile UINT16 *)Address = Value;
+    *(volatile UINT16 *)Ptr = Value;
   }
 
   FilterAfterMmIoWrite (FilterWidth16, Address, &Value);
@@ -548,7 +564,7 @@ MmioRead32 (
 
   Flag = FilterBeforeMmIoRead (FilterWidth32, Address, &Value);
   if (Flag) {
-    Value = *(volatile UINT32 *)Address;
+    Value = *(volatile UINT32 *)MakeCap(Address);
   }
 
   FilterAfterMmIoRead (FilterWidth32, Address, &Value);
@@ -577,12 +593,14 @@ MmioWrite32 (
   )
 {
   BOOLEAN  Flag;
+  UINTPTR_T Ptr;
 
   ASSERT ((Address & 3) == 0);
 
+  Ptr = MakeCap(Address);
   Flag = FilterBeforeMmIoWrite (FilterWidth32, Address, &Value);
   if (Flag) {
-    *(volatile UINT32 *)Address = Value;
+    *(volatile UINT32 *)Ptr = Value;
   }
 
   FilterAfterMmIoWrite (FilterWidth32, Address, &Value);
@@ -617,7 +635,7 @@ MmioRead64 (
 
   Flag = FilterBeforeMmIoRead (FilterWidth64, Address, &Value);
   if (Flag) {
-    Value = *(volatile UINT64 *)Address;
+    Value = *(volatile UINT64 *)MakeCap(Address);
   }
 
   FilterAfterMmIoRead (FilterWidth64, Address, &Value);
@@ -646,12 +664,14 @@ MmioWrite64 (
   )
 {
   BOOLEAN  Flag;
+  UINTPTR_T Ptr;
 
   ASSERT ((Address & 7) == 0);
 
+  Ptr = MakeCap(Address);
   Flag = FilterBeforeMmIoWrite (FilterWidth64, Address, &Value);
   if (Flag) {
-    *(volatile UINT64 *)Address = Value;
+    *(volatile UINT64 *)Ptr = Value;
   }
 
   FilterAfterMmIoWrite (FilterWidth64, Address, &Value);

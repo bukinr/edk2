@@ -3237,16 +3237,16 @@ NetLibGetSystemGuid (
   SmbiosTable = NULL;
   Status      = EfiGetSystemConfigurationTable (&gEfiSmbios3TableGuid, (VOID **)&Smbios30Table);
   if (!(EFI_ERROR (Status) || (Smbios30Table == NULL))) {
-    Smbios.Hdr    = (SMBIOS_STRUCTURE *)(UINTN)Smbios30Table->TableAddress;
-    SmbiosEnd.Raw = (UINT8 *)(UINTN)(Smbios30Table->TableAddress + Smbios30Table->TableMaximumSize);
+    Smbios.Hdr    = (SMBIOS_STRUCTURE *)(UINTPTR_T)Smbios30Table->TableAddress;
+    SmbiosEnd.Raw = (UINT8 *)(UINTPTR_T)(Smbios30Table->TableAddress + Smbios30Table->TableMaximumSize);
   } else {
     Status = EfiGetSystemConfigurationTable (&gEfiSmbiosTableGuid, (VOID **)&SmbiosTable);
     if (EFI_ERROR (Status) || (SmbiosTable == NULL)) {
       return EFI_NOT_FOUND;
     }
 
-    Smbios.Hdr    = (SMBIOS_STRUCTURE *)(UINTN)SmbiosTable->TableAddress;
-    SmbiosEnd.Raw = (UINT8 *)((UINTN)SmbiosTable->TableAddress + SmbiosTable->TableLength);
+    Smbios.Hdr    = (SMBIOS_STRUCTURE *)(UINTPTR_T)SmbiosTable->TableAddress;
+    SmbiosEnd.Raw = (UINT8 *)((UINTPTR_T)SmbiosTable->TableAddress + SmbiosTable->TableLength);
   }
 
   do {

@@ -39,8 +39,8 @@ ScanTableInSDT (
 {
   UINTN                   Index;
   UINTN                   EntryCount;
-  UINT64                  EntryPtr;
-  UINTN                   BasePtr;
+  UINTPTR_T               EntryPtr;
+  UINTPTR_T               BasePtr;
   EFI_ACPI_COMMON_HEADER  *Table;
 
   if (PreviousTableLocated != NULL) {
@@ -56,11 +56,11 @@ ScanTableInSDT (
 
   EntryCount = (Sdt->Length - sizeof (EFI_ACPI_DESCRIPTION_HEADER)) / TablePointerSize;
 
-  BasePtr = (UINTN)(Sdt + 1);
+  BasePtr = (UINTPTR_T)(Sdt + 1);
   for (Index = 0; Index < EntryCount; Index++) {
     EntryPtr = 0;
     CopyMem (&EntryPtr, (VOID *)(BasePtr + Index * TablePointerSize), TablePointerSize);
-    Table = (EFI_ACPI_COMMON_HEADER *)((UINTN)(EntryPtr));
+    Table = (EFI_ACPI_COMMON_HEADER *)((UINTPTR_T)(EntryPtr));
     if ((Table != NULL) && (Table->Signature == Signature)) {
       if (PreviousTable != NULL) {
         if (Table == PreviousTable) {
@@ -104,13 +104,13 @@ LocateAcpiFacsFromFadt (
   }
 
   if (Fadt->Header.Revision < EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE_REVISION) {
-    Facs = (EFI_ACPI_COMMON_HEADER *)(UINTN)Fadt->FirmwareCtrl;
+    Facs = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->FirmwareCtrl;
   } else {
     CopyMem (&Data64, &Fadt->XFirmwareCtrl, sizeof (UINT64));
     if (Data64 != 0) {
-      Facs = (EFI_ACPI_COMMON_HEADER *)(UINTN)Data64;
+      Facs = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Data64;
     } else {
-      Facs = (EFI_ACPI_COMMON_HEADER *)(UINTN)Fadt->FirmwareCtrl;
+      Facs = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->FirmwareCtrl;
     }
   }
 
@@ -138,13 +138,13 @@ LocateAcpiDsdtFromFadt (
   }
 
   if (Fadt->Header.Revision < EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE_REVISION) {
-    Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTN)Fadt->Dsdt;
+    Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->Dsdt;
   } else {
     CopyMem (&Data64, &Fadt->XDsdt, sizeof (UINT64));
     if (Data64 != 0) {
-      Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTN)Data64;
+      Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Data64;
     } else {
-      Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTN)Fadt->Dsdt;
+      Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->Dsdt;
     }
   }
 
@@ -206,7 +206,7 @@ LocateAcpiTableInAcpiConfigurationTable (
   // Search XSDT
   //
   if (Rsdp->Revision >= EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER_REVISION) {
-    Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTN)Rsdp->XsdtAddress;
+    Xsdt = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTPTR_T)Rsdp->XsdtAddress;
     if (Signature == EFI_ACPI_2_0_DIFFERENTIATED_SYSTEM_DESCRIPTION_TABLE_SIGNATURE) {
       ASSERT (PreviousTable == NULL);
       //
@@ -261,7 +261,7 @@ LocateAcpiTableInAcpiConfigurationTable (
   //
   // Search RSDT
   //
-  Rsdt = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTN)Rsdp->RsdtAddress;
+  Rsdt = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTPTR_T)Rsdp->RsdtAddress;
   if (Signature == EFI_ACPI_2_0_DIFFERENTIATED_SYSTEM_DESCRIPTION_TABLE_SIGNATURE) {
     ASSERT (PreviousTable == NULL);
     //
