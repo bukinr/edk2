@@ -34,7 +34,7 @@ SnpUndi32CallbackBlock (
 {
   SNP_DRIVER  *Snp;
 
-  Snp = (SNP_DRIVER *)(UINTN)UniqueId;
+  Snp = (SNP_DRIVER *)(UINTPTR_T)UniqueId;
   //
   // tcpip was calling snp at tpl_notify and when we acquire a lock that was
   // created at a lower level (TPL_CALLBACK) it gives an assert!
@@ -124,7 +124,7 @@ SnpUndi32CallbackMemio (
                          Snp->IoBarIndex,    // BAR 1 (for 32bit regs), IO base address
                          MemOrPortAddr,
                          1,                  // count
-                         (VOID *)(UINTN)BufferPtr
+                         (VOID *)(UINTPTR_T)BufferPtr
                          );
       }
 
@@ -139,7 +139,7 @@ SnpUndi32CallbackMemio (
                          Snp->IoBarIndex,    // BAR 1 (for 32bit regs), IO base address
                          MemOrPortAddr,
                          1,                  // count
-                         (VOID *)(UINTN)BufferPtr
+                         (VOID *)(UINTPTR_T)BufferPtr
                          );
       }
 
@@ -154,7 +154,7 @@ SnpUndi32CallbackMemio (
                           Snp->MemoryBarIndex, // BAR 0, Memory base address
                           MemOrPortAddr,
                           1,                  // count
-                          (VOID *)(UINTN)BufferPtr
+                          (VOID *)(UINTPTR_T)BufferPtr
                           );
       }
 
@@ -169,7 +169,7 @@ SnpUndi32CallbackMemio (
                           Snp->MemoryBarIndex, // BAR 0, Memory base address
                           MemOrPortAddr,
                           1,                  // count
-                          (VOID *)(UINTN)BufferPtr
+                          (VOID *)(UINTPTR_T)BufferPtr
                           );
       }
 
@@ -212,8 +212,8 @@ SnpUndi32CallbackMap (
   EFI_STATUS                     Status;
 
   BuffSize   = (UINTN)NumBytes;
-  Snp        = (SNP_DRIVER *)(UINTN)UniqueId;
-  DevAddrPtr = (EFI_PHYSICAL_ADDRESS *)(UINTN)DeviceAddrPtr;
+  Snp        = (SNP_DRIVER *)(UINTPTR_T)UniqueId;
+  DevAddrPtr = (EFI_PHYSICAL_ADDRESS *)(UINTPTR_T)DeviceAddrPtr;
 
   if (CpuAddr == 0) {
     *DevAddrPtr = 0;
@@ -261,7 +261,7 @@ SnpUndi32CallbackMap (
   Status = Snp->PciIo->Map (
                          Snp->PciIo,
                          DirectionFlag,
-                         (VOID *)(UINTN)CpuAddr,
+                         (VOID *)(UINTPTR_T)CpuAddr,
                          &BuffSize,
                          DevAddrPtr,
                          &(Snp->MapList[Index].MapCookie)
@@ -359,11 +359,11 @@ SnpUndi32CallbackSync (
 
   switch (Direction) {
     case FROM_DEVICE:
-      CopyMem ((UINT8 *)(UINTN)CpuAddr, (UINT8 *)(UINTN)DeviceAddr, NumBytes);
+      CopyMem ((UINT8 *)(UINTPTR_T)CpuAddr, (UINT8 *)(UINTPTR_T)DeviceAddr, NumBytes);
       break;
 
     case TO_DEVICE:
-      CopyMem ((UINT8 *)(UINTN)DeviceAddr, (UINT8 *)(UINTN)CpuAddr, NumBytes);
+      CopyMem ((UINT8 *)(UINTPTR_T)DeviceAddr, (UINT8 *)(UINTPTR_T)CpuAddr, NumBytes);
       break;
   }
 

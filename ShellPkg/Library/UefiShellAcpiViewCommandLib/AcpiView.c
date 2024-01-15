@@ -92,7 +92,7 @@ ProcessTableReportOptions (
   // set local variables to suppress incorrect compiler/analyzer warnings
   //
   OriginalAttribute = 0;
-  SignaturePtr      = (UINT8 *)(UINTN)&Signature;
+  SignaturePtr      = (UINT8 *)(UINTPTR_T)&Signature;
   Log               = FALSE;
   HighLight         = GetColourHighlighting ();
   GetSelectedAcpiTable (&SelectedTable);

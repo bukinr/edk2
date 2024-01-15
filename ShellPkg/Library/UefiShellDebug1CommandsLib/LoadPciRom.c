@@ -233,7 +233,7 @@ LoadEfiDriversFromRomImage (
   RomBarOffset = (UINTN)RomBar;
 
   do {
-    EfiRomHeader = (EFI_PCI_EXPANSION_ROM_HEADER *)(UINTN)RomBarOffset;
+    EfiRomHeader = (EFI_PCI_EXPANSION_ROM_HEADER *)(UINTPTR_T)RomBarOffset;
 
     if (EfiRomHeader->Signature != PCI_EXPANSION_ROM_HEADER_SIGNATURE) {
       ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_LOADPCIROM_CORRUPT), gShellDebug1HiiHandle, L"loadpcirom", FileName, ImageIndex);
@@ -252,7 +252,7 @@ LoadEfiDriversFromRomImage (
       break;
     }
 
-    Pcir = (PCI_DATA_STRUCTURE *)(UINTN)(RomBarOffset + EfiRomHeader->PcirOffset);
+    Pcir = (PCI_DATA_STRUCTURE *)(UINTPTR_T)(RomBarOffset + EfiRomHeader->PcirOffset);
     //
     // If a valid signature is not present in the PCI Data Structure, no further images can be located.
     //
@@ -274,7 +274,7 @@ LoadEfiDriversFromRomImage (
       InitializationSize = EfiRomHeader->InitializationSize * 512;
 
       if ((InitializationSize <= ImageSize) && (ImageOffset < InitializationSize)) {
-        ImageBuffer             = (VOID *)(UINTN)(RomBarOffset + ImageOffset);
+        ImageBuffer             = (VOID *)(UINTPTR_T)(RomBarOffset + ImageOffset);
         ImageLength             = InitializationSize - ImageOffset;
         DecompressedImageBuffer = NULL;
 

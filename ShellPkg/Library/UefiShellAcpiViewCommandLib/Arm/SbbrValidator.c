@@ -172,7 +172,7 @@ ArmSbbrReqsValidate (
   // Go through the list of mandatory tables for the input SBBR version
   for (Table = 0; Table < ArmSbbrReqs[Version].TableCount; Table++) {
     MandatoryTable = ArmSbbrReqs[Version].Tables[Table];
-    SignaturePtr   = (CONST UINT8 *)(UINTN)&MandatoryTable;
+    SignaturePtr   = (CONST UINT8 *)(UINTPTR_T)&MandatoryTable;
 
     // Locate the instance count for the table with the given signature
     Index = 0;

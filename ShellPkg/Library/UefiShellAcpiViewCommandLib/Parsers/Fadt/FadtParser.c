@@ -305,9 +305,9 @@ ParseAcpiFadt (
   // If X_FIRMWARE_CTRL is not zero then use X_FIRMWARE_CTRL and ignore
   // FIRMWARE_CTRL, else use FIRMWARE_CTRL.
   if ((X_FirmwareCtrl != NULL) && (*X_FirmwareCtrl != 0)) {
-    FirmwareCtrlPtr = (UINT8 *)(UINTN)(*X_FirmwareCtrl);
+    FirmwareCtrlPtr = (UINT8 *)(UINTPTR_T)(*X_FirmwareCtrl);
   } else if ((FirmwareCtrl != NULL) && (*FirmwareCtrl != 0)) {
-    FirmwareCtrlPtr = (UINT8 *)(UINTN)(*FirmwareCtrl);
+    FirmwareCtrlPtr = (UINT8 *)(UINTPTR_T)(*FirmwareCtrl);
   } else {
     FirmwareCtrlPtr = NULL;
     // if HW_REDUCED_ACPI flag is not set, both FIRMWARE_CTRL and
@@ -361,9 +361,9 @@ ParseAcpiFadt (
 
   // If X_DSDT is valid then use X_DSDT and ignore DSDT, else use DSDT.
   if ((X_DsdtAddress != NULL) && (*X_DsdtAddress != 0)) {
-    DsdtPtr = (UINT8 *)(UINTN)(*X_DsdtAddress);
+    DsdtPtr = (UINT8 *)(UINTPTR_T)(*X_DsdtAddress);
   } else if ((DsdtAddress != NULL) && (*DsdtAddress != 0)) {
-    DsdtPtr = (UINT8 *)(UINTN)(*DsdtAddress);
+    DsdtPtr = (UINT8 *)(UINTPTR_T)(*DsdtAddress);
   } else {
     // Both DSDT and X_DSDT cannot be invalid.
  #if defined (MDE_CPU_ARM) || defined (MDE_CPU_AARCH64)

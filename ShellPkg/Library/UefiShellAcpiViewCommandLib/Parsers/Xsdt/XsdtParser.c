@@ -79,11 +79,11 @@ ParseAcpiXsdt (
       CONST UINT32  *Length;
       CONST UINT8   *Revision;
 
-      if ((UINT64 *)(UINTN)(*TablePointer) != NULL) {
+      if ((UINT64 *)(UINTPTR_T)(*TablePointer) != NULL) {
         UINT8  *SignaturePtr;
 
         ParseAcpiHeader (
-          (UINT8 *)(UINTN)(*TablePointer),
+          (UINT8 *)(UINTPTR_T)(*TablePointer),
           &Signature,
           &Length,
           &Revision
@@ -114,7 +114,7 @@ ParseAcpiXsdt (
       Print (L"0x%lx\n", *TablePointer);
 
       // Validate the table pointers are not NULL
-      if ((UINT64 *)(UINTN)(*TablePointer) == NULL) {
+      if ((UINT64 *)(UINTPTR_T)(*TablePointer) == NULL) {
         IncrementErrorCount ();
         Print (
           L"ERROR: Invalid table entry at 0x%lx, table address is 0x%lx\n",
@@ -132,8 +132,8 @@ ParseAcpiXsdt (
   Offset       = TableOffset;
   TablePointer = (UINT64 *)(Ptr + TableOffset);
   while (Offset < AcpiTableLength) {
-    if ((UINT64 *)(UINTN)(*TablePointer) != NULL) {
-      ProcessAcpiTable ((UINT8 *)(UINTN)(*TablePointer));
+    if ((UINT64 *)(UINTPTR_T)(*TablePointer) != NULL) {
+      ProcessAcpiTable ((UINT8 *)(UINTPTR_T)(*TablePointer));
     }
 
     Offset += sizeof (UINT64);

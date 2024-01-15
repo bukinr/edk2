@@ -110,6 +110,7 @@ typedef signed char         INT8;
 /// 8 bytes on supported 64-bit processor instructions)
 ///
 typedef UINT64 UINTN;
+typedef __uintcap_t UINTPTR_T;
 
 ///
 /// Signed value of native width.  (4 bytes on supported 32-bit processor instructions,

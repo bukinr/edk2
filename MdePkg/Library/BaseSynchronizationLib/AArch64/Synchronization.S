@@ -47,12 +47,12 @@ ASM_PFX(InternalSyncCompareExchange16):
   dmb     sy
 
 InternalSyncCompareExchange16Again:
-  ldxrh   w3, [x0]
+  ldxrh   w3, [c0]
   cmp     w3, w1
   bne     InternalSyncCompareExchange16Fail
 
 InternalSyncCompareExchange16Exchange:
-  stxrh   w4, w2, [x0]
+  stxrh   w4, w2, [c0]
   cbnz    w4, InternalSyncCompareExchange16Again
 
 InternalSyncCompareExchange16Fail:
@@ -89,12 +89,12 @@ ASM_PFX(InternalSyncCompareExchange32):
   dmb     sy
 
 InternalSyncCompareExchange32Again:
-  ldxr    w3, [x0]
+  ldxr    w3, [c0]
   cmp     w3, w1
   bne     InternalSyncCompareExchange32Fail
 
 InternalSyncCompareExchange32Exchange:
-  stxr    w4, w2, [x0]
+  stxr    w4, w2, [c0]
   cbnz    w4, InternalSyncCompareExchange32Again
 
 InternalSyncCompareExchange32Fail:
@@ -130,17 +130,17 @@ ASM_PFX(InternalSyncCompareExchange64):
   dmb     sy
 
 InternalSyncCompareExchange64Again:
-  ldxr    x3, [x0]
+  ldxr    x3, [c0]
   cmp     x3, x1
   bne     InternalSyncCompareExchange64Fail
 
 InternalSyncCompareExchange64Exchange:
-  stxr    w4, x2, [x0]
+  stxr    w4, x2, [c0]
   cbnz    w4, InternalSyncCompareExchange64Again
 
 InternalSyncCompareExchange64Fail:
   dmb     sy
-  mov     x0, x3
+  mov     c0, c3
   ret
 
 /**
@@ -165,9 +165,9 @@ ASM_PFX(InternalSyncIncrement):
   AARCH64_BTI(c)
   dmb     sy
 TryInternalSyncIncrement:
-  ldxr    w1, [x0]
+  ldxr    w1, [c0]
   add     w1, w1, #1
-  stxr    w2, w1, [x0]
+  stxr    w2, w1, [c0]
   cbnz    w2, TryInternalSyncIncrement
   mov     w0, w1
   dmb     sy
@@ -195,9 +195,9 @@ ASM_PFX(InternalSyncDecrement):
   AARCH64_BTI(c)
   dmb     sy
 TryInternalSyncDecrement:
-  ldxr    w1, [x0]
+  ldxr    w1, [c0]
   sub     w1, w1, #1
-  stxr    w2, w1, [x0]
+  stxr    w2, w1, [c0]
   cbnz    w2, TryInternalSyncDecrement
   mov     w0, w1
   dmb     sy

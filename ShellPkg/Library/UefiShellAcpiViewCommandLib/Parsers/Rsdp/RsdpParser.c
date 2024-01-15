@@ -162,5 +162,5 @@ ParseAcpiRsdp (
     return;
   }
 
-  ProcessAcpiTable ((UINT8 *)(UINTN)(*XsdtAddress));
+  ProcessAcpiTable ((UINT8 *)(UINTPTR_T)(*XsdtAddress));
 }

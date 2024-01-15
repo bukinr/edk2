@@ -396,13 +396,13 @@ InterlockedCompareExchangePointer (
 
   switch (SizeOfValue) {
     case sizeof (UINT32):
-      return (VOID *)(UINTN)InterlockedCompareExchange32 (
+      return (VOID *)(UINTPTR_T)InterlockedCompareExchange32 (
                               (volatile UINT32 *)Value,
                               (UINT32)(UINTN)CompareValue,
                               (UINT32)(UINTN)ExchangeValue
                               );
     case sizeof (UINT64):
-      return (VOID *)(UINTN)InterlockedCompareExchange64 (
+      return (VOID *)(UINTPTR_T)InterlockedCompareExchange64 (
                               (volatile UINT64 *)Value,
                               (UINT64)(UINTN)CompareValue,
                               (UINT64)(UINTN)ExchangeValue

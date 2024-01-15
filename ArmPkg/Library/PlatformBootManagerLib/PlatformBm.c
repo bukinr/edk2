@@ -836,7 +836,7 @@ HandleCapsules (
                              HobPointer.Raw
                              )) != NULL)
   {
-    CapsuleHeader = (VOID *)(UINTN)HobPointer.Capsule->BaseAddress;
+    CapsuleHeader = (VOID *)(UINTPTR_T)HobPointer.Capsule->BaseAddress;
 
     Status = ProcessCapsuleImage (CapsuleHeader);
     if (EFI_ERROR (Status)) {

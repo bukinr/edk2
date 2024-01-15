@@ -11,6 +11,8 @@
 
 
 // Parameters and result.
+#define src1c     c0
+#define src2c     c1
 #define src1      x0
 #define src2      x1
 #define limit     x2
@@ -43,8 +45,8 @@ ASM_PFX(InternalMemCompareMem):
 
     // Start of performance-critical section  -- one 64B cache line.
 .Lloop_aligned:
-    ldr     data1, [src1], #8
-    ldr     data2, [src2], #8
+    ldr     data1, [src1c], #8
+    ldr     data2, [src2c], #8
 .Lstart_realigned:
     subs    limit_wd, limit_wd, #1
     eor     diff, data1, data2        // Non-zero if differences found.
@@ -94,9 +96,9 @@ ASM_PFX(InternalMemCompareMem):
     bic     src2, src2, #7
     add     limit, limit, tmp1          // Adjust the limit for the extra.
     lsl     tmp1, tmp1, #3              // Bytes beyond alignment -> bits.
-    ldr     data1, [src1], #8
+    ldr     data1, [src1c], #8
     neg     tmp1, tmp1                  // Bits to alignment -64.
-    ldr     data2, [src2], #8
+    ldr     data2, [src2c], #8
     mov     tmp2, #~0
 
     // Little-endian.  Early bytes are at LSB.
@@ -112,8 +114,8 @@ ASM_PFX(InternalMemCompareMem):
     sub     limit, limit, #1
 1:
     // Perhaps we can do better than this.
-    ldrb    data1w, [src1], #1
-    ldrb    data2w, [src2], #1
+    ldrb    data1w, [src1c], #1
+    ldrb    data2w, [src2c], #1
     subs    limit, limit, #1
     ccmp    data1w, data2w, #0, cs      // NZCV = 0b0000.
     b.eq    1b

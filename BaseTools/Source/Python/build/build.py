@@ -662,6 +662,7 @@ class BuildTask:
     def Start(self):
         EdkLogger.quiet("Building ... %s" % repr(self.BuildItem))
         Command = self.BuildItem.BuildCommand + [self.BuildItem.Target]
+        EdkLogger.quiet("Command: %s" % Command)
         self.BuildTread = Thread(target=self._CommandThread, args=(Command, self.BuildItem.WorkingDir))
         self.BuildTread.name = "build thread"
         self.BuildTread.daemon = False

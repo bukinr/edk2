@@ -75,7 +75,7 @@ GetPciExpressBaseAddress (
   VOID
   )
 {
-  return (VOID *)(UINTN)PcdGet64 (PcdPciExpressBaseAddress);
+  return (VOID *)(UINTPTR_T)PcdGet64 (PcdPciExpressBaseAddress);
 }
 
 /**

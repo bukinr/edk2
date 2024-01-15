@@ -17,6 +17,8 @@
 
 #define result    x0
 
+#define Csrc      c3
+
 #define src       x3
 #define  tmp       x4
 #define wtmp2     w5
@@ -68,7 +70,7 @@ ASM_PFX(InternalMemScanMem8):
     // and mask the irrelevant part.
     //
 
-    ld1     {vdata1.16b, vdata2.16b}, [src], #32
+    ld1     {vdata1.16b, vdata2.16b}, [Csrc], #32
     sub     tmp, soff, #32
     adds    cntin, cntin, tmp
     cmeq    vhas_chr1.16b, vdata1.16b, vrepchr.16b
@@ -88,7 +90,7 @@ ASM_PFX(InternalMemScanMem8):
     cbnz    synd, .Ltail
 
 .Lloop:
-    ld1     {vdata1.16b, vdata2.16b}, [src], #32
+    ld1     {vdata1.16b, vdata2.16b}, [Csrc], #32
     subs    cntin, cntin, #32
     cmeq    vhas_chr1.16b, vdata1.16b, vrepchr.16b
     cmeq    vhas_chr2.16b, vdata2.16b, vrepchr.16b

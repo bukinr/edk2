@@ -986,7 +986,7 @@ ParseCmObjDesc (
       ObjectCount
       ));
     PrintCmObjDesc (
-      (VOID *)((UINTN)CmObjDesc->Data + Offset),
+      (VOID *)((UINTPTR_T)CmObjDesc->Data + Offset),
       ParserArray->Parser,
       ParserArray->ItemCount,
       &RemainingSize,

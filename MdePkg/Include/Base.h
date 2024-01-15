@@ -946,7 +946,7 @@ STATIC_ASSERT (ALIGNOF (__VERIFY_INT32_ENUM_SIZE) == sizeof (__VERIFY_INT32_ENUM
   @return  A value up to the next boundary.
 
 **/
-#define ALIGN_VALUE(Value, Alignment)  ((Value) + ALIGN_VALUE_ADDEND (Value, Alignment))
+#define ALIGN_VALUE(Value, Alignment)  ((Value) + (UINTN)ALIGN_VALUE_ADDEND (Value, Alignment))
 
 /**
   Adjust a pointer by adding the minimum offset required for it to be aligned on
@@ -961,7 +961,7 @@ STATIC_ASSERT (ALIGNOF (__VERIFY_INT32_ENUM_SIZE) == sizeof (__VERIFY_INT32_ENUM
   @return  Pointer to the aligned address.
 
 **/
-#define ALIGN_POINTER(Pointer, Alignment)  ((VOID *) (ALIGN_VALUE ((UINTN)(Pointer), (Alignment))))
+#define ALIGN_POINTER(Pointer, Alignment)  ((VOID *) (ALIGN_VALUE ((UINTPTR_T)(Pointer), (Alignment))))
 
 /**
   Rounds a value up to the next natural boundary for the current CPU.

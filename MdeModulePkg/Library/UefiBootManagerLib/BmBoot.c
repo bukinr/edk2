@@ -454,7 +454,7 @@ BmMatchUsbWwid (
   //
   // Serial number in USB WWID device path is the last 64-or-less UTF-16 characters.
   //
-  CompareStr = (CHAR16 *)(UINTN)(UsbWwid + 1);
+  CompareStr = (CHAR16 *)(UINTPTR_T)(UsbWwid + 1);
   CompareLen = (DevicePathNodeLength (UsbWwid) - sizeof (USB_WWID_DEVICE_PATH)) / sizeof (CHAR16);
   if (CompareStr[CompareLen - 1] == L'\0') {
     CompareLen--;
@@ -551,8 +551,8 @@ BmFindUsbDevice (
       // Compare starting part of UsbIoHandle's device path with ParentDevicePath.
       //
       if (CompareMem (UsbIoDevicePath, DevicePath, ParentDevicePathSize) == 0) {
-        if (BmMatchUsbClass (UsbIo, (USB_CLASS_DEVICE_PATH *)((UINTN)DevicePath + ParentDevicePathSize)) ||
-            BmMatchUsbWwid (UsbIo, (USB_WWID_DEVICE_PATH *)((UINTN)DevicePath + ParentDevicePathSize)))
+        if (BmMatchUsbClass (UsbIo, (USB_CLASS_DEVICE_PATH *)((UINTPTR_T)DevicePath + ParentDevicePathSize)) ||
+            BmMatchUsbWwid (UsbIo, (USB_WWID_DEVICE_PATH *)((UINTPTR_T)DevicePath + ParentDevicePathSize)))
         {
           Matched = TRUE;
         }
@@ -1299,7 +1299,7 @@ BmGetRamDiskDevicePath (
     Node              = NextDevicePathNode (Node);
     RamDiskDevicePath = DuplicateDevicePath (FilePath);
     ASSERT (RamDiskDevicePath != NULL);
-    SetDevicePathEndNode ((VOID *)((UINTN)RamDiskDevicePath + ((UINTN)Node - (UINTN)FilePath)));
+    SetDevicePathEndNode ((VOID *)((UINTPTR_T)RamDiskDevicePath + ((UINTN)Node - (UINTN)FilePath)));
     return RamDiskDevicePath;
   }
 
@@ -1341,7 +1341,7 @@ BmGetRamDiskMemoryInfo (
   StartingAddr        = ReadUnaligned64 ((UINT64 *)((MEDIA_RAM_DISK_DEVICE_PATH *)RamDiskDevicePath)->StartingAddr);
   EndingAddr          = ReadUnaligned64 ((UINT64 *)((MEDIA_RAM_DISK_DEVICE_PATH *)RamDiskDevicePath)->EndingAddr);
   *RamDiskSizeInPages = EFI_SIZE_TO_PAGES ((UINTN)(EndingAddr - StartingAddr + 1));
-  return (VOID *)(UINTN)StartingAddr;
+  return (VOID *)(UINTPTR_T)StartingAddr;
 }
 
 /**

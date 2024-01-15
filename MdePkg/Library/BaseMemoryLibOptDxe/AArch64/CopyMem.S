@@ -12,6 +12,30 @@
 //
 //
 
+#define Cdstin     c0
+#define Csrc       c1
+#define Ccount     c2
+#define Cdst       c3
+#define Csrcend    c4
+#define Cdstend    c5
+#define CA_l       c6
+#define CA_lw      c6
+#define CA_h       c7
+#define CA_hw      c7
+#define CB_l       c8
+#define CB_lw      c8
+#define CB_h       c9
+#define CC_l       c10
+#define CC_h       c11
+#define CD_l       c12
+#define CD_h       c13
+#define CE_l       c14
+#define CE_h       c15
+#define CF_l       Csrcend
+#define CF_h       Cdst
+#define Ctmp1      c9
+#define Ctmp2      c3
+	
 #define dstin     x0
 #define src       x1
 #define count     x2
@@ -47,7 +71,7 @@
 // well as non-overlapping copies.
 
 __memcpy:
-    prfm    PLDL1KEEP, [src]
+    prfm    PLDL1KEEP, [Csrc]
     add     srcend, src, count
     add     dstend, dstin, count
     cmp     count, 16
@@ -57,17 +81,17 @@ __memcpy:
 
     // Medium copies: 17..96 bytes.
     sub     tmp1, count, 1
-    ldp     A_l, A_h, [src]
+    ldp     A_l, A_h, [Csrc]
     tbnz    tmp1, 6, L(copy96)
-    ldp     D_l, D_h, [srcend, -16]
+    ldp     D_l, D_h, [Csrcend, -16]
     tbz     tmp1, 5, 1f
-    ldp     B_l, B_h, [src, 16]
-    ldp     C_l, C_h, [srcend, -32]
-    stp     B_l, B_h, [dstin, 16]
-    stp     C_l, C_h, [dstend, -32]
+    ldp     B_l, B_h, [Csrc, 16]
+    ldp     C_l, C_h, [Csrcend, -32]
+    stp     B_l, B_h, [Cdstin, 16]
+    stp     C_l, C_h, [Cdstend, -32]
 1:
-    stp     A_l, A_h, [dstin]
-    stp     D_l, D_h, [dstend, -16]
+    stp     A_l, A_h, [Cdstin]
+    stp     D_l, D_h, [Cdstend, -16]
     ret
 
     .p2align 4
@@ -75,18 +99,18 @@ __memcpy:
 L(copy16):
     cmp     count, 8
     b.lo    1f
-    ldr     A_l, [src]
-    ldr     A_h, [srcend, -8]
-    str     A_l, [dstin]
-    str     A_h, [dstend, -8]
+    ldr     A_l, [Csrc]
+    ldr     A_h, [Csrcend, -8]
+    str     A_l, [Cdstin]
+    str     A_h, [Cdstend, -8]
     ret
     .p2align 4
 1:
     tbz     count, 2, 1f
-    ldr     A_lw, [src]
-    ldr     A_hw, [srcend, -4]
-    str     A_lw, [dstin]
-    str     A_hw, [dstend, -4]
+    ldr     A_lw, [Csrc]
+    ldr     A_hw, [Csrcend, -4]
+    str     A_lw, [Cdstin]
+    str     A_hw, [Cdstend, -4]
     ret
 
     // Copy 0..3 bytes.  Use a branchless sequence that copies the same
@@ -94,29 +118,29 @@ L(copy16):
 1:
     cbz     count, 2f
     lsr     tmp1, count, 1
-    ldrb    A_lw, [src]
-    ldrb    A_hw, [srcend, -1]
-    ldrb    B_lw, [src, tmp1]
-    strb    A_lw, [dstin]
-    strb    B_lw, [dstin, tmp1]
-    strb    A_hw, [dstend, -1]
+    ldrb    A_lw, [Csrc]
+    ldrb    A_hw, [Csrcend, -1]
+    ldrb    B_lw, [Csrc, tmp1]
+    strb    A_lw, [Cdstin]
+    strb    B_lw, [Cdstin, tmp1]
+    strb    A_hw, [Cdstend, -1]
 2:  ret
 
     .p2align 4
     // Copy 64..96 bytes.  Copy 64 bytes from the start and
     // 32 bytes from the end.
 L(copy96):
-    ldp     B_l, B_h, [src, 16]
-    ldp     C_l, C_h, [src, 32]
-    ldp     D_l, D_h, [src, 48]
-    ldp     E_l, E_h, [srcend, -32]
-    ldp     F_l, F_h, [srcend, -16]
-    stp     A_l, A_h, [dstin]
-    stp     B_l, B_h, [dstin, 16]
-    stp     C_l, C_h, [dstin, 32]
-    stp     D_l, D_h, [dstin, 48]
-    stp     E_l, E_h, [dstend, -32]
-    stp     F_l, F_h, [dstend, -16]
+    ldp     B_l, B_h, [Csrc, 16]
+    ldp     C_l, C_h, [Csrc, 32]
+    ldp     D_l, D_h, [Csrc, 48]
+    ldp     E_l, E_h, [Csrcend, -32]
+    ldp     F_l, F_h, [Csrcend, -16]
+    stp     A_l, A_h, [Cdstin]
+    stp     B_l, B_h, [Cdstin, 16]
+    stp     C_l, C_h, [Cdstin, 32]
+    stp     D_l, D_h, [Cdstin, 48]
+    stp     E_l, E_h, [Cdstend, -32]
+    stp     F_l, F_h, [Cdstend, -16]
     ret
 
     // Align DST to 16 byte alignment so that we don't cross cache line
@@ -128,25 +152,25 @@ L(copy96):
 L(copy_long):
     and     tmp1, dstin, 15
     bic     dst, dstin, 15
-    ldp     D_l, D_h, [src]
+    ldp     D_l, D_h, [Csrc]
     sub     src, src, tmp1
     add     count, count, tmp1      // Count is now 16 too large.
-    ldp     A_l, A_h, [src, 16]
-    stp     D_l, D_h, [dstin]
-    ldp     B_l, B_h, [src, 32]
-    ldp     C_l, C_h, [src, 48]
-    ldp     D_l, D_h, [src, 64]!
+    ldp     A_l, A_h, [Csrc, 16]
+    stp     D_l, D_h, [Cdstin]
+    ldp     B_l, B_h, [Csrc, 32]
+    ldp     C_l, C_h, [Csrc, 48]
+    ldp     D_l, D_h, [Csrc, 64]!
     subs    count, count, 128 + 16  // Test and readjust count.
     b.ls    2f
 1:
-    stp     A_l, A_h, [dst, 16]
-    ldp     A_l, A_h, [src, 16]
-    stp     B_l, B_h, [dst, 32]
-    ldp     B_l, B_h, [src, 32]
-    stp     C_l, C_h, [dst, 48]
-    ldp     C_l, C_h, [src, 48]
-    stp     D_l, D_h, [dst, 64]!
-    ldp     D_l, D_h, [src, 64]!
+    stp     A_l, A_h, [Cdst, 16]
+    ldp     A_l, A_h, [Csrc, 16]
+    stp     B_l, B_h, [Cdst, 32]
+    ldp     B_l, B_h, [Csrc, 32]
+    stp     C_l, C_h, [Cdst, 48]
+    ldp     C_l, C_h, [Csrc, 48]
+    stp     D_l, D_h, [Cdst, 64]!
+    ldp     D_l, D_h, [Csrc, 64]!
     subs    count, count, 64
     b.hi    1b
 
@@ -154,18 +178,18 @@ L(copy_long):
     // bytes, so it is safe to always copy 64 bytes from the end even if
     // there is just 1 byte left.
 2:
-    ldp     E_l, E_h, [srcend, -64]
-    stp     A_l, A_h, [dst, 16]
-    ldp     A_l, A_h, [srcend, -48]
-    stp     B_l, B_h, [dst, 32]
-    ldp     B_l, B_h, [srcend, -32]
-    stp     C_l, C_h, [dst, 48]
-    ldp     C_l, C_h, [srcend, -16]
-    stp     D_l, D_h, [dst, 64]
-    stp     E_l, E_h, [dstend, -64]
-    stp     A_l, A_h, [dstend, -48]
-    stp     B_l, B_h, [dstend, -32]
-    stp     C_l, C_h, [dstend, -16]
+    ldp     E_l, E_h, [Csrcend, -64]
+    stp     A_l, A_h, [Cdst, 16]
+    ldp     A_l, A_h, [Csrcend, -48]
+    stp     B_l, B_h, [Cdst, 32]
+    ldp     B_l, B_h, [Csrcend, -32]
+    stp     C_l, C_h, [Cdst, 48]
+    ldp     C_l, C_h, [Csrcend, -16]
+    stp     D_l, D_h, [Cdst, 64]
+    stp     E_l, E_h, [Cdstend, -64]
+    stp     A_l, A_h, [Cdstend, -48]
+    stp     B_l, B_h, [Cdstend, -32]
+    stp     C_l, C_h, [Cdstend, -16]
     ret
 
 
@@ -194,27 +218,27 @@ ASM_PFX(InternalMemCopyMem):
     // copies 64 bytes per iteration and prefetches one iteration ahead.
 
     and     tmp2, dstend, 15
-    ldp     D_l, D_h, [srcend, -16]
+    ldp     D_l, D_h, [Csrcend, -16]
     sub     srcend, srcend, tmp2
     sub     count, count, tmp2
-    ldp     A_l, A_h, [srcend, -16]
-    stp     D_l, D_h, [dstend, -16]
-    ldp     B_l, B_h, [srcend, -32]
-    ldp     C_l, C_h, [srcend, -48]
-    ldp     D_l, D_h, [srcend, -64]!
+    ldp     A_l, A_h, [Csrcend, -16]
+    stp     D_l, D_h, [Cdstend, -16]
+    ldp     B_l, B_h, [Csrcend, -32]
+    ldp     C_l, C_h, [Csrcend, -48]
+    ldp     D_l, D_h, [Csrcend, -64]!
     sub     dstend, dstend, tmp2
     subs    count, count, 128
     b.ls    2f
     nop
 1:
-    stp     A_l, A_h, [dstend, -16]
-    ldp     A_l, A_h, [srcend, -16]
-    stp     B_l, B_h, [dstend, -32]
-    ldp     B_l, B_h, [srcend, -32]
-    stp     C_l, C_h, [dstend, -48]
-    ldp     C_l, C_h, [srcend, -48]
-    stp     D_l, D_h, [dstend, -64]!
-    ldp     D_l, D_h, [srcend, -64]!
+    stp     A_l, A_h, [Cdstend, -16]
+    ldp     A_l, A_h, [Csrcend, -16]
+    stp     B_l, B_h, [Cdstend, -32]
+    ldp     B_l, B_h, [Csrcend, -32]
+    stp     C_l, C_h, [Cdstend, -48]
+    ldp     C_l, C_h, [Csrcend, -48]
+    stp     D_l, D_h, [Cdstend, -64]!
+    ldp     D_l, D_h, [Csrcend, -64]!
     subs    count, count, 64
     b.hi    1b
 
@@ -222,16 +246,16 @@ ASM_PFX(InternalMemCopyMem):
     // bytes, so it is safe to always copy 64 bytes from the start even if
     // there is just 1 byte left.
 2:
-    ldp     E_l, E_h, [src, 48]
-    stp     A_l, A_h, [dstend, -16]
-    ldp     A_l, A_h, [src, 32]
-    stp     B_l, B_h, [dstend, -32]
-    ldp     B_l, B_h, [src, 16]
-    stp     C_l, C_h, [dstend, -48]
-    ldp     C_l, C_h, [src]
-    stp     D_l, D_h, [dstend, -64]
-    stp     E_l, E_h, [dstin, 48]
-    stp     A_l, A_h, [dstin, 32]
-    stp     B_l, B_h, [dstin, 16]
-    stp     C_l, C_h, [dstin]
+    ldp     E_l, E_h, [Csrc, 48]
+    stp     A_l, A_h, [Cdstend, -16]
+    ldp     A_l, A_h, [Csrc, 32]
+    stp     B_l, B_h, [Cdstend, -32]
+    ldp     B_l, B_h, [Csrc, 16]
+    stp     C_l, C_h, [Cdstend, -48]
+    ldp     C_l, C_h, [Csrc]
+    stp     D_l, D_h, [Cdstend, -64]
+    stp     E_l, E_h, [Cdstin, 48]
+    stp     A_l, A_h, [Cdstin, 32]
+    stp     B_l, B_h, [Cdstin, 16]
+    stp     C_l, C_h, [Cdstin]
 3:  ret
