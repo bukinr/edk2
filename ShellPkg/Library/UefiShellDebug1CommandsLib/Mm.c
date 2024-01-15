@@ -146,9 +146,9 @@ ShellMmAccess (
 
   if (AccessType == ShellMmMemory) {
     if (Read) {
-      CopyMem (Buffer, (VOID *)(UINTN)Address, Size);
+      CopyMem (Buffer, (VOID *)(UINTPTR_T)Address, Size);
     } else {
-      CopyMem ((VOID *)(UINTN)Address, Buffer, Size);
+      CopyMem ((VOID *)(UINTPTR_T)Address, Buffer, Size);
     }
   } else {
     RootBridgeIoMem = NULL;

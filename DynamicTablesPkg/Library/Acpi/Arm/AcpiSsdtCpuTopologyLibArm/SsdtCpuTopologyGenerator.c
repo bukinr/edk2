@@ -847,7 +847,7 @@ CheckProcNode (
     DEBUG ((
       DEBUG_ERROR,
       "ERROR: SSDT-CPU-TOPOLOGY: Invalid flags for ProcNode: 0x%p.\n",
-      (VOID *)NodeToken
+      (VOID *)(UINTPTR_T)NodeToken
       ));
     ASSERT (0);
     return EFI_INVALID_PARAMETER;
