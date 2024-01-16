@@ -274,7 +274,7 @@ InternalGetSmmPerfData (
       // Check enough reserved memory space
       //
       if (ReservedMemSize > SMM_BOOT_RECORD_COMM_SIZE) {
-        SmmBootRecordCommBuffer = (VOID *)(UINTN)SmmCommMemRegion->PhysicalStart;
+        SmmBootRecordCommBuffer = (VOID *)(UINTPTR_T)SmmCommMemRegion->PhysicalStart;
         SmmCommBufferHeader     = (EFI_SMM_COMMUNICATE_HEADER *)SmmBootRecordCommBuffer;
         SmmCommData             = (SMM_BOOT_RECORD_COMMUNICATE *)SmmCommBufferHeader->Data;
         ZeroMem ((UINT8 *)SmmCommData, sizeof (SMM_BOOT_RECORD_COMMUNICATE));
@@ -304,7 +304,7 @@ InternalGetSmmPerfData (
           SmmBootRecordData     = AllocateZeroPool (SmmBootRecordDataSize);
           ASSERT (SmmBootRecordData  != NULL);
           SmmCommData->BootRecordOffset = 0;
-          SmmCommData->BootRecordData   = (VOID *)((UINTN)SmmCommMemRegion->PhysicalStart + SMM_BOOT_RECORD_COMM_SIZE);
+          SmmCommData->BootRecordData   = (VOID *)((UINTPTR_T)SmmCommMemRegion->PhysicalStart + SMM_BOOT_RECORD_COMM_SIZE);
           SmmCommData->BootRecordSize   = ReservedMemSize - SMM_BOOT_RECORD_COMM_SIZE;
           while (SmmCommData->BootRecordOffset < SmmBootRecordDataSize) {
             Status = Communication->Communicate (Communication, SmmBootRecordCommBuffer, &CommSize);
@@ -379,7 +379,7 @@ AllocateBootPerformanceTable (
                     &PerformanceVariable.BootPerformanceTablePointer
                     );
     if (!EFI_ERROR (Status)) {
-      mAcpiBootPerformanceTable = (BOOT_PERFORMANCE_TABLE *)(UINTN)PerformanceVariable.BootPerformanceTablePointer;
+      mAcpiBootPerformanceTable = (BOOT_PERFORMANCE_TABLE *)(UINTPTR_T)PerformanceVariable.BootPerformanceTablePointer;
     }
   }
 
@@ -1152,7 +1152,7 @@ InsertFpdtRecord (
         FpdtRecordPtr.GuidQwordStringEvent->Qword           = Address;
         CopyMem (&FpdtRecordPtr.GuidQwordStringEvent->Guid, &ModuleGuid, sizeof (FpdtRecordPtr.GuidQwordStringEvent->Guid));
         if (Address != 0) {
-          GetDeviceInfoFromHandleAndUpdateLength (CallerIdentifier, (EFI_HANDLE)(UINTN)Address, FpdtRecordPtr.GuidQwordStringEvent->String, &FpdtRecordPtr.GuidQwordStringEvent->Header.Length);
+          GetDeviceInfoFromHandleAndUpdateLength (CallerIdentifier, (EFI_HANDLE)(UINTPTR_T)Address, FpdtRecordPtr.GuidQwordStringEvent->String, &FpdtRecordPtr.GuidQwordStringEvent->Header.Length);
         }
       }
 

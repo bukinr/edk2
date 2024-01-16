@@ -128,7 +128,7 @@ ReplaceTableEntry (
     // If the mapping is not a live block mapping, or the MMU is not on yet, we
     // can simply overwrite the entry.
     *Entry = Value;
-    ArmUpdateTranslationTableEntry (Entry, (VOID *)(UINTN)RegionStart);
+    ArmUpdateTranslationTableEntry (Entry, (VOID *)(UINTPTR_T)RegionStart);
   } else {
     // If the mapping in question does not cover the code that updates the
     // entry in memory, or the entry that we are intending to update, we can
@@ -161,7 +161,7 @@ FreePageTablesRecursive (
     for (Index = 0; Index < TT_ENTRY_COUNT; Index++) {
       if ((TranslationTable[Index] & TT_TYPE_MASK) == TT_TYPE_TABLE_ENTRY) {
         FreePageTablesRecursive (
-          (VOID *)(UINTN)(TranslationTable[Index] &
+          (VOID *)(UINTPTR_T)(TranslationTable[Index] &
                           TT_ADDRESS_MASK_BLOCK_ENTRY),
           Level + 1
           );
@@ -321,7 +321,7 @@ UpdateRegionMappingRecursive (
 
         NextTableIsLive = FALSE;
       } else {
-        TranslationTable = (VOID *)(UINTN)(*Entry & TT_ADDRESS_MASK_BLOCK_ENTRY);
+        TranslationTable = (VOID *)(UINTPTR_T)(*Entry & TT_ADDRESS_MASK_BLOCK_ENTRY);
         NextTableIsLive  = TableIsLive;
       }
 
@@ -749,7 +749,7 @@ ArmMmuBaseLibConstructor (
     // with the MMU off so we have to ensure that it gets cleaned to the PoC
     //
     WriteBackDataCacheRange (
-      (VOID *)(UINTN)ArmReplaceLiveTranslationEntry,
+      (VOID *)(UINTPTR_T)ArmReplaceLiveTranslationEntry,
       ArmReplaceLiveTranslationEntrySize
       );
   }

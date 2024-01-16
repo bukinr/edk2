@@ -48,7 +48,7 @@ InternalAllocatePages (
     return NULL;
   }
 
-  return (VOID *)(UINTN)Memory;
+  return (VOID *)(UINTPTR_T)Memory;
 }
 
 /**
@@ -217,7 +217,7 @@ InternalAllocateAlignedPages (
 {
   EFI_STATUS            Status;
   EFI_PHYSICAL_ADDRESS  Memory;
-  UINTN                 AlignedMemory;
+  UINTPTR_T             AlignedMemory;
   UINTN                 AlignmentMask;
   UINTN                 UnalignedPages;
   UINTN                 RealPages;
@@ -247,7 +247,7 @@ InternalAllocateAlignedPages (
       return NULL;
     }
 
-    AlignedMemory  = ((UINTN)Memory + AlignmentMask) & ~AlignmentMask;
+    AlignedMemory  = ((UINTPTR_T)Memory + AlignmentMask) & ~AlignmentMask;
     UnalignedPages = EFI_SIZE_TO_PAGES (AlignedMemory - (UINTN)Memory);
     if (UnalignedPages > 0) {
       //
@@ -275,7 +275,7 @@ InternalAllocateAlignedPages (
       return NULL;
     }
 
-    AlignedMemory = (UINTN)Memory;
+    AlignedMemory = (UINTPTR_T)Memory;
   }
 
   return (VOID *)AlignedMemory;

@@ -45,5 +45,5 @@ AllocatePeiAccessiblePages (
     return NULL;
   }
 
-  return (VOID *)(UINTN)Memory;
+  return (VOID *)(UINTPTR_T)Memory;
 }

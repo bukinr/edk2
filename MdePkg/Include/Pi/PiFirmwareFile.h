@@ -175,7 +175,7 @@ typedef struct {
 } EFI_FFS_FILE_HEADER2;
 
 #define IS_FFS_FILE2(FfsFileHeaderPtr) \
-    (((((EFI_FFS_FILE_HEADER *) (UINTN) FfsFileHeaderPtr)->Attributes) & FFS_ATTRIB_LARGE_FILE) == FFS_ATTRIB_LARGE_FILE)
+    (((((EFI_FFS_FILE_HEADER *) (UINTPTR_T) FfsFileHeaderPtr)->Attributes) & FFS_ATTRIB_LARGE_FILE) == FFS_ATTRIB_LARGE_FILE)
 
 ///
 /// The argument passed as the FfsFileHeaderPtr parameter to the
@@ -183,12 +183,12 @@ typedef struct {
 /// FfsFileHeaderPtr is evaluated multiple times.
 ///
 #define FFS_FILE_SIZE(FfsFileHeaderPtr)  ((UINT32) (\
-    (((EFI_FFS_FILE_HEADER *) (UINTN) (FfsFileHeaderPtr))->Size[0]      ) | \
-    (((EFI_FFS_FILE_HEADER *) (UINTN) (FfsFileHeaderPtr))->Size[1] <<  8) | \
-    (((EFI_FFS_FILE_HEADER *) (UINTN) (FfsFileHeaderPtr))->Size[2] << 16)))
+    (((EFI_FFS_FILE_HEADER *) (UINTPTR_T) (FfsFileHeaderPtr))->Size[0]      ) | \
+    (((EFI_FFS_FILE_HEADER *) (UINTPTR_T) (FfsFileHeaderPtr))->Size[1] <<  8) | \
+    (((EFI_FFS_FILE_HEADER *) (UINTPTR_T) (FfsFileHeaderPtr))->Size[2] << 16)))
 
 #define FFS_FILE2_SIZE(FfsFileHeaderPtr) \
-    ((UINT32) (((EFI_FFS_FILE_HEADER2 *) (UINTN) FfsFileHeaderPtr)->ExtendedSize))
+    ((UINT32) (((EFI_FFS_FILE_HEADER2 *) (UINTPTR_T) FfsFileHeaderPtr)->ExtendedSize))
 
 typedef UINT8 EFI_SECTION_TYPE;
 
@@ -491,15 +491,15 @@ typedef struct {
 /// SectionHeaderPtr is evaluated multiple times.
 ///
 #define SECTION_SIZE(SectionHeaderPtr)  ((UINT32) (\
-    (((EFI_COMMON_SECTION_HEADER *) (UINTN) (SectionHeaderPtr))->Size[0]      ) | \
-    (((EFI_COMMON_SECTION_HEADER *) (UINTN) (SectionHeaderPtr))->Size[1] <<  8) | \
-    (((EFI_COMMON_SECTION_HEADER *) (UINTN) (SectionHeaderPtr))->Size[2] << 16)))
+    (((EFI_COMMON_SECTION_HEADER *) (UINTPTR_T) (SectionHeaderPtr))->Size[0]      ) | \
+    (((EFI_COMMON_SECTION_HEADER *) (UINTPTR_T) (SectionHeaderPtr))->Size[1] <<  8) | \
+    (((EFI_COMMON_SECTION_HEADER *) (UINTPTR_T) (SectionHeaderPtr))->Size[2] << 16)))
 
 #define IS_SECTION2(SectionHeaderPtr) \
     (SECTION_SIZE (SectionHeaderPtr) == 0x00ffffff)
 
 #define SECTION2_SIZE(SectionHeaderPtr) \
-    (((EFI_COMMON_SECTION_HEADER2 *) (UINTN) SectionHeaderPtr)->ExtendedSize)
+    (((EFI_COMMON_SECTION_HEADER2 *) (UINTPTR_T) SectionHeaderPtr)->ExtendedSize)
 
 #pragma pack()
 

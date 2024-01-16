@@ -918,7 +918,7 @@ PeCoffLoaderImageAddress (
     return NULL;
   }
 
-  return (CHAR8 *)((UINTN)ImageContext->ImageAddress + Address - TeStrippedOffset);
+  return (CHAR8 *)((UINTPTR_T)ImageContext->ImageAddress + Address - TeStrippedOffset);
 }
 
 /**
@@ -1004,7 +1004,7 @@ PeCoffLoaderRelocateImage (
   }
 
   if (!(ImageContext->IsTeImage)) {
-    Hdr.Pe32         = (EFI_IMAGE_NT_HEADERS32 *)((UINTN)ImageContext->ImageAddress + ImageContext->PeCoffHeaderOffset);
+    Hdr.Pe32         = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)ImageContext->ImageAddress + ImageContext->PeCoffHeaderOffset);
     TeStrippedOffset = 0;
 
     if (Hdr.Pe32->OptionalHeader.Magic == EFI_IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
@@ -1041,7 +1041,7 @@ PeCoffLoaderRelocateImage (
       RelocDir = NULL;
     }
   } else {
-    Hdr.Te           = (EFI_TE_IMAGE_HEADER *)(UINTN)(ImageContext->ImageAddress);
+    Hdr.Te           = (EFI_TE_IMAGE_HEADER *)(UINTPTR_T)(ImageContext->ImageAddress);
     TeStrippedOffset = (UINT32)Hdr.Te->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
     Adjust           = (UINT64)(BaseAddress - (Hdr.Te->ImageBase + TeStrippedOffset));
     if (Adjust != 0) {
@@ -1344,13 +1344,13 @@ PeCoffLoaderLoadImage (
                              ImageContext->Handle,
                              0,
                              &ImageContext->SizeOfHeaders,
-                             (VOID *)(UINTN)ImageContext->ImageAddress
+                             (VOID *)(UINTPTR_T)ImageContext->ImageAddress
                              );
 
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTN)ImageContext->ImageAddress + ImageContext->PeCoffHeaderOffset);
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)ImageContext->ImageAddress + ImageContext->PeCoffHeaderOffset);
 
     FirstSection = (EFI_IMAGE_SECTION_HEADER *)(
-                                                (UINTN)ImageContext->ImageAddress +
+                                                (UINTPTR_T)ImageContext->ImageAddress +
                                                 ImageContext->PeCoffHeaderOffset +
                                                 sizeof (UINT32) +
                                                 sizeof (EFI_IMAGE_FILE_HEADER) +
@@ -1363,12 +1363,12 @@ PeCoffLoaderLoadImage (
                              ImageContext->Handle,
                              0,
                              &ImageContext->SizeOfHeaders,
-                             (void *)(UINTN)ImageContext->ImageAddress
+                             (void *)(UINTPTR_T)ImageContext->ImageAddress
                              );
 
-    Hdr.Te       = (EFI_TE_IMAGE_HEADER *)(UINTN)(ImageContext->ImageAddress);
+    Hdr.Te       = (EFI_TE_IMAGE_HEADER *)(UINTPTR_T)(ImageContext->ImageAddress);
     FirstSection = (EFI_IMAGE_SECTION_HEADER *)(
-                                                (UINTN)ImageContext->ImageAddress +
+                                                (UINTPTR_T)ImageContext->ImageAddress +
                                                 sizeof (EFI_TE_IMAGE_HEADER)
                                                 );
     NumberOfSections = (UINTN)(Hdr.Te->NumberOfSections);
@@ -1772,8 +1772,8 @@ PeCoffLoaderRelocateImageForRuntime (
     return;
   }
 
-  OldBase = (CHAR8 *)((UINTN)ImageBase);
-  NewBase = (CHAR8 *)((UINTN)VirtImageBase);
+  OldBase = (CHAR8 *)((UINTPTR_T)ImageBase);
+  NewBase = (CHAR8 *)((UINTPTR_T)VirtImageBase);
   Adjust  = (UINTN)NewBase - (UINTN)OldBase;
 
   ImageContext.ImageAddress = ImageBase;
