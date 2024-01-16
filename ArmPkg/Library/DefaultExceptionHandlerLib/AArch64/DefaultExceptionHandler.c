@@ -190,8 +190,9 @@ DefaultExceptionHandler (
 {
   CHAR8  Buffer[100];
   UINTN  CharCount;
+#if 0
   INT32  Offset;
-
+#endif
   if (mRecursiveException) {
     STATIC CHAR8 CONST  Message[] = "\nRecursive exception occurred while dumping the CPU state\n";
 
@@ -215,8 +216,8 @@ DefaultExceptionHandler (
   CHAR8   *Pdb, *PrevPdb;
   UINTN   ImageBase;
   UINTN   PeCoffSizeOfHeader;
-  UINT64  *Fp;
-  UINT64  RootFp[2];
+  UINTPTR_T *Fp;
+  UINTPTR_T  RootFp[2];
   UINTN   Idx;
 
   PrevPdb = Pdb = GetImageName (SystemContext.SystemContextAArch64->ELR, &ImageBase, &PeCoffSizeOfHeader);
@@ -233,7 +234,7 @@ DefaultExceptionHandler (
     DEBUG ((DEBUG_ERROR, "PC 0x%012lx\n", SystemContext.SystemContextAArch64->ELR));
   }
 
-  if ((UINT64 *)SystemContext.SystemContextAArch64->FP != 0) {
+  if (SystemContext.SystemContextAArch64->FP != 0) {
     Idx = 0;
 
     RootFp[0] = ((UINT64 *)SystemContext.SystemContextAArch64->FP)[0];
@@ -243,7 +244,7 @@ DefaultExceptionHandler (
       RootFp[1] = SystemContext.SystemContextAArch64->LR;
     }
 
-    for (Fp = RootFp; Fp[0] != 0; Fp = (UINT64 *)Fp[0]) {
+    for (Fp = (UINTPTR_T *)RootFp; Fp[0] != 0; Fp = (UINTPTR_T *)Fp[0]) {
       Pdb = GetImageName (Fp[1], &ImageBase, &PeCoffSizeOfHeader);
       if (Pdb != NULL) {
         if (Pdb != PrevPdb) {
@@ -271,7 +272,7 @@ DefaultExceptionHandler (
     }
 
     Idx = 0;
-    for (Fp = RootFp; Fp[0] != 0; Fp = (UINT64 *)Fp[0]) {
+    for (Fp = RootFp; Fp[0] != 0; Fp = (UINTPTR_T *)Fp[0]) {
       Pdb = GetImageName (Fp[1], &ImageBase, &PeCoffSizeOfHeader);
       if ((Pdb != NULL) && (Pdb != PrevPdb)) {
         DEBUG ((DEBUG_ERROR, "[% 2d] %a\n", ++Idx, Pdb));
@@ -317,6 +318,7 @@ DefaultExceptionHandler (
   DescribeExceptionSyndrome (SystemContext.SystemContextAArch64->ESR);
 
   DEBUG ((DEBUG_ERROR, "\nStack dump:\n"));
+#if 0
   for (Offset = -256; Offset < 256; Offset += 32) {
     DEBUG ((
       DEBUG_ERROR,
@@ -329,7 +331,8 @@ DefaultExceptionHandler (
       *(UINT64 *)(SystemContext.SystemContextAArch64->SP + Offset + 24)
       ));
   }
-
+#endif
+  
   ASSERT (FALSE);
   CpuDeadLoop ();
 }

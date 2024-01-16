@@ -45,7 +45,7 @@
   UINT64  X26;    0x0d0
   UINT64  X27;    0x0d8
   UINT64  X28;    0x0e0
-  UINT64  FP;     0x0e8   // x29 - Frame Pointer
+  UINTPTR_T  FP;     0x0e8   // x29 - Frame Pointer
   UINT64  LR;     0x0f0   // x30 - Link Register
   UINT64  SP;     0x0f8   // x31 - Stack Pointer
 

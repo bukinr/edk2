@@ -109,7 +109,7 @@ typedef struct {
   UINT64    X26;
   UINT64    X27;
   UINT64    X28;
-  UINT64    FP;
+  UINTPTR_T  FP;
   UINT64    LR;
   UINT64    IP0;
 

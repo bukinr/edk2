@@ -555,7 +555,7 @@ typedef struct {
   UINT64    X26;
   UINT64    X27;
   UINT64    X28;
-  UINT64    FP; // x29 - Frame pointer
+  UINTPTR_T    FP; // x29 - Frame pointer
   UINT64    LR; // x30 - Link Register
   UINT64    SP; // x31 - Stack pointer
 
