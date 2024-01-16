@@ -134,25 +134,25 @@ VECTOR_BASE(ExceptionHandlersStart)
   .endif
 
   // Move the stackpointer so we can reach our structure with the str instruction.
-  sub sp, sp, #(FP_CONTEXT_SIZE + SYS_CONTEXT_SIZE)
+  sub csp, csp, #(FP_CONTEXT_SIZE + SYS_CONTEXT_SIZE)
 
   // Push the GP registers so we can record the exception context
-  stp      x0, x1, [sp, #-GP_CONTEXT_SIZE]!
-  stp      x2, x3, [sp, #0x10]
-  stp      x4, x5, [sp, #0x20]
-  stp      x6, x7, [sp, #0x30]
-  stp      x8,  x9,  [sp, #0x40]
-  stp      x10, x11, [sp, #0x50]
-  stp      x12, x13, [sp, #0x60]
-  stp      x14, x15, [sp, #0x70]
-  stp      x16, x17, [sp, #0x80]
-  stp      x18, x19, [sp, #0x90]
-  stp      x20, x21, [sp, #0xa0]
-  stp      x22, x23, [sp, #0xb0]
-  stp      x24, x25, [sp, #0xc0]
-  stp      x26, x27, [sp, #0xd0]
-  stp      x28, x29, [sp, #0xe0]
-  add      x28, sp, #(GP_CONTEXT_SIZE + FP_CONTEXT_SIZE + SYS_CONTEXT_SIZE)
+  stp      c0, c1, [csp, #-GP_CONTEXT_SIZE]!
+  stp      c2, c3, [csp, #0x10]
+  stp      c4, c5, [csp, #0x20]
+  stp      c6, c7, [csp, #0x30]
+  stp      c8,  c9,  [csp, #0x40]
+  stp      c10, c11, [csp, #0x50]
+  stp      c12, c13, [csp, #0x60]
+  stp      c14, c15, [csp, #0x70]
+  stp      c16, c17, [csp, #0x80]
+  stp      c18, c19, [csp, #0x90]
+  stp      c20, c21, [csp, #0xa0]
+  stp      c22, c23, [csp, #0xb0]
+  stp      c24, c25, [csp, #0xc0]
+  stp      c26, c27, [csp, #0xd0]
+  stp      c28, c29, [csp, #0xe0]
+  add      c28, csp, #(GP_CONTEXT_SIZE + FP_CONTEXT_SIZE + SYS_CONTEXT_SIZE)
 
   .ifnc    \sp, SPx
   msr      SPsel, #1
@@ -162,7 +162,7 @@ VECTOR_BASE(ExceptionHandlersStart)
   mov      x7, x28
   .endif
 
-  stp      x30,  x7, [sp, #0xf0]
+  stp      x30,  x7, [csp, #0xf0]
 
   // Record the type of exception that occurred.
   mov       x0, #\val
@@ -281,27 +281,27 @@ ASM_PFX(CommonExceptionEntry):
 4:mrs      x4, fpsr      // Floating point Status Register  32bit
 
   // Save the SYS regs
-  stp      x2,  x3,  [x28, #-SYS_CONTEXT_SIZE]!
-  stp      x4,  x5,  [x28, #0x10]
-  str      x6,  [x28, #0x20]
+  stp      x2,  x3,  [c28, #-SYS_CONTEXT_SIZE]!
+  stp      x4,  x5,  [c28, #0x10]
+  str      x6,  [c28, #0x20]
 
   // Push FP regs to Stack.
-  stp      q0,  q1,  [x28, #-FP_CONTEXT_SIZE]!
-  stp      q2,  q3,  [x28, #0x20]
-  stp      q4,  q5,  [x28, #0x40]
-  stp      q6,  q7,  [x28, #0x60]
-  stp      q8,  q9,  [x28, #0x80]
-  stp      q10, q11, [x28, #0xa0]
-  stp      q12, q13, [x28, #0xc0]
-  stp      q14, q15, [x28, #0xe0]
-  stp      q16, q17, [x28, #0x100]
-  stp      q18, q19, [x28, #0x120]
-  stp      q20, q21, [x28, #0x140]
-  stp      q22, q23, [x28, #0x160]
-  stp      q24, q25, [x28, #0x180]
-  stp      q26, q27, [x28, #0x1a0]
-  stp      q28, q29, [x28, #0x1c0]
-  stp      q30, q31, [x28, #0x1e0]
+  stp      q0,  q1,  [c28, #-FP_CONTEXT_SIZE]!
+  stp      q2,  q3,  [c28, #0x20]
+  stp      q4,  q5,  [c28, #0x40]
+  stp      q6,  q7,  [c28, #0x60]
+  stp      q8,  q9,  [c28, #0x80]
+  stp      q10, q11, [c28, #0xa0]
+  stp      q12, q13, [c28, #0xc0]
+  stp      q14, q15, [c28, #0xe0]
+  stp      q16, q17, [c28, #0x100]
+  stp      q18, q19, [c28, #0x120]
+  stp      q20, q21, [c28, #0x140]
+  stp      q22, q23, [c28, #0x160]
+  stp      q24, q25, [c28, #0x180]
+  stp      q26, q27, [c28, #0x1a0]
+  stp      q28, q29, [c28, #0x1c0]
+  stp      q30, q31, [c28, #0x1e0]
 
   // x0 still holds the exception type.
   // Set x1 to point to the top of our struct on the Stack
@@ -319,42 +319,42 @@ ASM_PFX(CommonExceptionEntry):
   bl       ASM_PFX(CommonCExceptionHandler) // Call exception handler
 
   // Pop as many GP regs as we can before entering the critical section below
-  ldp      x2,  x3,  [sp, #0x10]
-  ldp      x4,  x5,  [sp, #0x20]
-  ldp      x6,  x7,  [sp, #0x30]
-  ldp      x8,  x9,  [sp, #0x40]
-  ldp      x10, x11, [sp, #0x50]
-  ldp      x12, x13, [sp, #0x60]
-  ldp      x14, x15, [sp, #0x70]
-  ldp      x16, x17, [sp, #0x80]
-  ldp      x18, x19, [sp, #0x90]
-  ldp      x20, x21, [sp, #0xa0]
-  ldp      x22, x23, [sp, #0xb0]
-  ldp      x24, x25, [sp, #0xc0]
-  ldp      x26, x27, [sp, #0xd0]
-  ldp      x0,  x1,  [sp], #0xe0
+  ldp      c2,  c3,  [csp, #0x10]
+  ldp      c4,  c5,  [csp, #0x20]
+  ldp      c6,  c7,  [csp, #0x30]
+  ldp      c8,  c9,  [csp, #0x40]
+  ldp      c10, c11, [csp, #0x50]
+  ldp      c12, c13, [csp, #0x60]
+  ldp      c14, c15, [csp, #0x70]
+  ldp      c16, c17, [csp, #0x80]
+  ldp      c18, c19, [csp, #0x90]
+  ldp      c20, c21, [csp, #0xa0]
+  ldp      c22, c23, [csp, #0xb0]
+  ldp      c24, c25, [csp, #0xc0]
+  ldp      c26, c27, [csp, #0xd0]
+  ldp      c0,  c1,  [csp], #0xe0
 
   // Pop FP regs from Stack.
-  ldp      q2,  q3,  [x28, #0x20]
-  ldp      q4,  q5,  [x28, #0x40]
-  ldp      q6,  q7,  [x28, #0x60]
-  ldp      q8,  q9,  [x28, #0x80]
-  ldp      q10, q11, [x28, #0xa0]
-  ldp      q12, q13, [x28, #0xc0]
-  ldp      q14, q15, [x28, #0xe0]
-  ldp      q16, q17, [x28, #0x100]
-  ldp      q18, q19, [x28, #0x120]
-  ldp      q20, q21, [x28, #0x140]
-  ldp      q22, q23, [x28, #0x160]
-  ldp      q24, q25, [x28, #0x180]
-  ldp      q26, q27, [x28, #0x1a0]
-  ldp      q28, q29, [x28, #0x1c0]
-  ldp      q30, q31, [x28, #0x1e0]
-  ldp      q0,  q1,  [x28], #FP_CONTEXT_SIZE
+  ldp      q2,  q3,  [c28, #0x20]
+  ldp      q4,  q5,  [c28, #0x40]
+  ldp      q6,  q7,  [c28, #0x60]
+  ldp      q8,  q9,  [c28, #0x80]
+  ldp      q10, q11, [c28, #0xa0]
+  ldp      q12, q13, [c28, #0xc0]
+  ldp      q14, q15, [c28, #0xe0]
+  ldp      q16, q17, [c28, #0x100]
+  ldp      q18, q19, [c28, #0x120]
+  ldp      q20, q21, [c28, #0x140]
+  ldp      q22, q23, [c28, #0x160]
+  ldp      q24, q25, [c28, #0x180]
+  ldp      q26, q27, [c28, #0x1a0]
+  ldp      q28, q29, [c28, #0x1c0]
+  ldp      q30, q31, [c28, #0x1e0]
+  ldp      q0,  q1,  [c28], #FP_CONTEXT_SIZE
 
   // Pop the SYS regs we need
-  ldp      x29, x30, [x28]
-  ldr      x28, [x28, #0x10]
+  ldp      c29, c30, [c28]
+  ldr      c28, [c28, #0x10]
   msr      fpsr, x28
 
   //
@@ -395,8 +395,8 @@ ASM_PFX(CommonExceptionEntry):
 4:
 
   // pop remaining GP regs and return from exception.
-  ldr      x30, [sp, #0xf0 - 0xe0]
-  ldp      x28, x29, [sp], #GP_CONTEXT_SIZE - 0xe0
+  ldr      x30, [csp, #0xf0 - 0xe0]
+  ldp      x28, x29, [csp], #GP_CONTEXT_SIZE - 0xe0
 
   // Adjust SP to be where we started from when we came into the handler.
   // The handler can not change the SP.

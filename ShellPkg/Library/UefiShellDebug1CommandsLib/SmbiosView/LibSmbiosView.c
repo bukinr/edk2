@@ -56,7 +56,7 @@ LibSmbiosInit (
   //
   // Init SMBIOS structure table address
   //
-  mSmbiosStruct->Raw = (UINT8 *)(UINTN)(mSmbiosTable->TableAddress);
+  mSmbiosStruct->Raw = (UINT8 *)(UINTPTR_T)(mSmbiosTable->TableAddress);
 
   mInit = 1;
   return EFI_SUCCESS;
@@ -98,7 +98,7 @@ LibSmbios64BitInit (
   //
   // Init SMBIOS structure table address
   //
-  mSmbios64BitStruct->Raw = (UINT8 *)(UINTN)(mSmbios64BitTable->TableAddress);
+  mSmbios64BitStruct->Raw = (UINT8 *)(UINTPTR_T)(mSmbios64BitTable->TableAddress);
 
   m64Init = 1;
   return EFI_SUCCESS;

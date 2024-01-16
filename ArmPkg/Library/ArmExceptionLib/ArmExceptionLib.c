@@ -164,7 +164,7 @@ CopyExceptionHandlers (
   //
   Length = (UINTN)ExceptionHandlersEnd - (UINTN)ExceptionHandlersStart;
 
-  VectorBase = (UINT32 *)(UINTN)BaseAddress;
+  VectorBase = (UINT32 *)(UINTPTR_T)BaseAddress;
 
   if (FeaturePcdGet (PcdDebuggerExceptionSupport) == TRUE) {
     // Save existing vector table, in case debugger is already hooked in
@@ -179,7 +179,7 @@ CopyExceptionHandlers (
   //
   for (Index = 0; Index <= gMaxExceptionNumber; Index++) {
     if (!FeaturePcdGet (PcdDebuggerExceptionSupport) ||
-        (gDebuggerExceptionHandlers[Index] == 0) || (gDebuggerExceptionHandlers[Index] == (VOID *)gDebuggerNoHandlerValue))
+        (gDebuggerExceptionHandlers[Index] == 0) || ((UINTN)gDebuggerExceptionHandlers[Index] == (UINTN)gDebuggerNoHandlerValue))
     {
       Status = RegisterExceptionHandler (Index, NULL);
       ASSERT_EFI_ERROR (Status);
@@ -190,7 +190,7 @@ CopyExceptionHandlers (
   }
 
   // Flush Caches since we updated executable stuff
-  InvalidateInstructionCacheRange ((VOID *)(UINTN)BaseAddress, Length);
+  InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)BaseAddress, Length);
 
   return RETURN_SUCCESS;
 }

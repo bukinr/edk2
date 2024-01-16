@@ -17,7 +17,7 @@
 
   // clean and invalidate first so that we don't clobber
   // adjacent entries that are dirty in the caches
-  dc    civac, x0
+  dc    civac, c0
   dsb   nsh
 
   // disable the MMU
@@ -27,12 +27,12 @@
   isb
 
   // write updated entry
-  str   x1, [x0]
+  str   x1, [c0]
 
   // invalidate again to get rid of stale clean cachelines that may
   // have been filled speculatively since the last invalidate
   dmb   sy
-  dc    ivac, x0
+  dc    ivac, c0
 
   // flush translations for the target address from the TLBs
   lsr   x2, x2, #12
@@ -50,7 +50,7 @@
 
 .L1_\@:
   // write invalid entry
-  str   xzr, [x0]
+  str   xzr, [c0]
   dsb   nshst
 
   // flush translations for the target address from the TLBs
@@ -63,7 +63,7 @@
   dsb   nsh
 
   // write updated entry
-  str   x1, [x0]
+  str   x1, [c0]
   dsb   nshst
   isb
 
