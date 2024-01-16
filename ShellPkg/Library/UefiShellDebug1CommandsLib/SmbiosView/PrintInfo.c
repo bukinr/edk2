@@ -320,7 +320,7 @@ SmbiosPrintStructure (
     return EFI_SUCCESS;
   }
 
-  Buffer = (UINT8 *)(UINTN)(Struct->Raw);
+  Buffer = (UINT8 *)(UINTPTR_T)(Struct->Raw);
 
   //
   // Display structure header
@@ -346,7 +346,7 @@ SmbiosPrintStructure (
         ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SMBIOSVIEW_PRINTINFO_BIOS_SIZE), gShellDebug1HiiHandle, 64 * (Struct->Type0->BiosSize + 1));
       }
 
-      DisplayBiosCharacteristics (ReadUnaligned64 ((UINT64 *)(UINTN)&(Struct->Type0->BiosCharacteristics)), Option);
+      DisplayBiosCharacteristics (ReadUnaligned64 ((UINT64 *)(UINTPTR_T)&(Struct->Type0->BiosCharacteristics)), Option);
 
       if (Struct->Hdr->Length > 0x12) {
         DisplayBiosCharacteristicsExt1 (Struct->Type0->BIOSCharacteristicsExtensionBytes[0], Option);
@@ -574,7 +574,7 @@ SmbiosPrintStructure (
       PRINT_STRUCT_VALUE_H (Struct, Type7, InstalledSize);
       PRINT_STRUCT_VALUE_H (Struct, Type7, SupportedSRAMType);
       PRINT_STRUCT_VALUE_H (Struct, Type7, CurrentSRAMType);
-      DisplayCacheSRAMType (ReadUnaligned16 ((UINT16 *)(UINTN)&(Struct->Type7->CurrentSRAMType)), Option);
+      DisplayCacheSRAMType (ReadUnaligned16 ((UINT16 *)(UINTPTR_T)&(Struct->Type7->CurrentSRAMType)), Option);
       PRINT_STRUCT_VALUE_H (Struct, Type7, CacheSpeed);
       DisplayCacheErrCorrectingType (Struct->Type7->ErrorCorrectionType, Option);
       DisplayCacheSystemCacheType (Struct->Type7->SystemCacheType, Option);
@@ -762,7 +762,7 @@ SmbiosPrintStructure (
         if (Option >= SHOW_DETAIL) {
           switch (Struct->Type15->AccessMethod) {
             case 03:
-              AccessMethodAddress = (UINT8 *)(UINTN)(Struct->Type15->AccessMethodAddress);
+              AccessMethodAddress = (UINT8 *)(UINTPTR_T)(Struct->Type15->AccessMethodAddress);
               break;
 
             case 00:
@@ -845,7 +845,7 @@ SmbiosPrintStructure (
       ShellPrintEx (-1, -1, L"Device Locator: %a\n", LibGetSmbiosString (Struct, Struct->Type17->DeviceLocator));
       ShellPrintEx (-1, -1, L"Bank Locator: %a\n", LibGetSmbiosString (Struct, Struct->Type17->BankLocator));
       DisplayMemoryDeviceType (Struct->Type17->MemoryType, Option);
-      DisplayMemoryDeviceTypeDetail (ReadUnaligned16 ((UINT16 *)(UINTN)&(Struct->Type17->TypeDetail)), Option);
+      DisplayMemoryDeviceTypeDetail (ReadUnaligned16 ((UINT16 *)(UINTPTR_T)&(Struct->Type17->TypeDetail)), Option);
       PRINT_STRUCT_VALUE_H (Struct, Type17, Speed);
       PRINT_PENDING_STRING (Struct, Type17, Manufacturer);
       ShellPrintEx (-1, -1, L"Serial Number: %a\n", LibGetSmbiosString (Struct, Struct->Type17->SerialNumber));
@@ -1295,7 +1295,7 @@ SmbiosPrintStructure (
       PRINT_STRUCT_VALUE_H (Struct, Type43, FirmwareVersion1);
       PRINT_STRUCT_VALUE_H (Struct, Type43, FirmwareVersion2);
       PRINT_PENDING_STRING (Struct, Type43, Description);
-      DisplayTpmDeviceCharacteristics (ReadUnaligned64 ((UINT64 *)(UINTN)&(Struct->Type43->Characteristics)), Option);
+      DisplayTpmDeviceCharacteristics (ReadUnaligned64 ((UINT64 *)(UINTPTR_T)&(Struct->Type43->Characteristics)), Option);
       PRINT_STRUCT_VALUE_H (Struct, Type43, OemDefined);
       break;
 
@@ -1368,8 +1368,8 @@ SmbiosPrintStructure (
           );
       }
 
-      DisplayFirmwareCharacteristics (ReadUnaligned16 ((UINT16 *)(UINTN)&(Struct->Type45->Characteristics)), Option);
-      DisplayFirmwareState (*(UINT8 *)(UINTN)&(Struct->Type45->State), Option);
+      DisplayFirmwareCharacteristics (ReadUnaligned16 ((UINT16 *)(UINTPTR_T)&(Struct->Type45->Characteristics)), Option);
+      DisplayFirmwareState (*(UINT8 *)(UINTPTR_T)&(Struct->Type45->State), Option);
 
       PRINT_STRUCT_VALUE_H (Struct, Type45, AssociatedComponentCount);
       if (Struct->Hdr->Length > sizeof (*Struct->Type45)) {

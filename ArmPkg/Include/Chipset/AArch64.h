@@ -146,7 +146,7 @@ ArmReadCbar (
   VOID
   );
 
-UINTN
+UINTPTR_T
 EFIAPI
 ArmReadTpidrurw (
   VOID

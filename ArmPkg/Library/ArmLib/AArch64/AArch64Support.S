@@ -450,7 +450,7 @@ ASM_FUNC(ArmReadMpidr)
 
 // Keep old function names for C compatibility for now. Change later?
 ASM_FUNC(ArmReadTpidrurw)
-  mrs   x0, tpidr_el0           // read tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
+  mrs   c0, tpidr_el0           // read tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
   ret
 
 

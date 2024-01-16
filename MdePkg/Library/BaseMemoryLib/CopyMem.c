@@ -60,8 +60,8 @@ InternalMemCopyMem (
         *(Destination8++) = *(Source8++);
       }
     } else if (SourceBuffer < DestinationBuffer) {
-      Destination64 = (UINT64 *)((UINTN)DestinationBuffer + Length);
-      Source64      = (CONST UINT64 *)((UINTN)SourceBuffer + Length);
+      Destination64 = (UINT64 *)((UINTPTR_T)DestinationBuffer + Length);
+      Source64      = (CONST UINT64 *)((UINTPTR_T)SourceBuffer + Length);
 
       // Destination64 and Source64 were aligned on a 64-bit boundary
       // but if length is not a multiple of 8 bytes then they won't be
@@ -102,8 +102,8 @@ InternalMemCopyMem (
         *(Destination8++) = *(Source8++);
       }
     } else if (SourceBuffer < DestinationBuffer) {
-      Destination32 = (UINT32 *)((UINTN)DestinationBuffer + Length);
-      Source32      = (CONST UINT32 *)((UINTN)SourceBuffer + Length);
+      Destination32 = (UINT32 *)((UINTPTR_T)DestinationBuffer + Length);
+      Source32      = (CONST UINT32 *)((UINTPTR_T)SourceBuffer + Length);
 
       // Destination32 and Source32 were aligned on a 32-bit boundary
       // but if length is not a multiple of 4 bytes then they won't be
