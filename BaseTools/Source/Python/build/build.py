@@ -2565,7 +2565,7 @@ def ThreadNum():
 
     if ThreadNumber == 0:
         try:
-            ThreadNumber = multiprocessing.cpu_count()
+            ThreadNumber = 1 # multiprocessing.cpu_count()
         except (ImportError, NotImplementedError):
             ThreadNumber = 1
     return ThreadNumber

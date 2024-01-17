@@ -25,7 +25,7 @@ __version__     = '%s Version %s' % (__prog__, '0.10 ')
 __copyright__   = 'Copyright (c) 2018, Intel Corporation. All rights reserved.'
 __description__ = 'Replace for NmakeSubdirs.bat in windows ,support parallel build for nmake.\n'
 
-cpu_count = multiprocessing.cpu_count()
+cpu_count = 1 # multiprocessing.cpu_count()
 output_lock = threading.Lock()
 def RunCommand(WorkDir=None, *Args, **kwargs):
     if WorkDir is None:

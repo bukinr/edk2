@@ -142,7 +142,7 @@ class Edk2ToolsBuild(BaseAbstractInvocable):
             return ret
 
         elif self.tool_chain_tag.lower().startswith("gcc"):
-            cpu_count = self.GetCpuThreads()
+            cpu_count = 1 # self.GetCpuThreads()
             ret = RunCmd("make", f"-C .  -j {cpu_count}", workingdir=shell_env.get_shell_var("EDK_TOOLS_PATH"))
             if ret != 0:
                 raise Exception("Failed to build.")
@@ -160,7 +160,7 @@ class Edk2ToolsBuild(BaseAbstractInvocable):
         ''' Function to return number of cpus. If error return 1'''
         cpus = 1
         try:
-            cpus = multiprocessing.cpu_count()
+            cpus = 1 # multiprocessing.cpu_count()
         except:
             # from the internet there are cases where cpu_count is not implemented.
             # will handle error by just doing single proc build

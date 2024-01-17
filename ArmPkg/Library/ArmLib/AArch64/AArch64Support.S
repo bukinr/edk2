@@ -21,26 +21,26 @@
 .set CPACR_VFP_BITS,  (3 << 20)
 
 ASM_FUNC(ArmInvalidateDataCacheEntryByMVA)
-  dc      ivac, x0    // Invalidate single data cache line
+  dc      ivac, c0    // Invalidate single data cache line
   ret
 
 
 ASM_FUNC(ArmCleanDataCacheEntryByMVA)
-  dc      cvac, x0    // Clean single data cache line
+  dc      cvac, c0    // Clean single data cache line
   ret
 
 
 ASM_FUNC(ArmCleanDataCacheEntryToPoUByMVA)
-  dc      cvau, x0    // Clean single data cache line to PoU
+  dc      cvau, c0    // Clean single data cache line to PoU
   ret
 
 ASM_FUNC(ArmInvalidateInstructionCacheEntryToPoUByMVA)
-  ic      ivau, x0    // Invalidate single instruction cache line to PoU
+  ic      ivau, c0    // Invalidate single instruction cache line to PoU
   ret
 
 
 ASM_FUNC(ArmCleanInvalidateDataCacheEntryByMVA)
-  dc      civac, x0   // Clean and invalidate single data cache line
+  dc      civac, c0   // Clean and invalidate single data cache line
   ret
 
 
@@ -302,7 +302,7 @@ ASM_FUNC(ArmDisableBranchPrediction)
 ASM_FUNC(AArch64AllDataCachesOperation)
 // We can use regs 0-7 and 9-15 without having to save/restore.
 // Save our link register on the stack. - The stack must always be quad-word aligned
-  stp   x29, x30, [sp, #-16]!
+  stp   x29, x30, [csp, #-16]!
   mov   x29, sp
   mov   x1, x0                  // Save Function call in x1
   mrs   x6, clidr_el1           // Read EL1 CLIDR
@@ -354,7 +354,7 @@ L_Skip:
 L_Finished:
   dsb   sy
   isb
-  ldp   x29, x30, [sp], #0x10
+  ldp   x29, x30, [csp], #0x10
   ret
 
 
@@ -450,7 +450,7 @@ ASM_FUNC(ArmReadMpidr)
 
 // Keep old function names for C compatibility for now. Change later?
 ASM_FUNC(ArmReadTpidrurw)
-  mrs   c0, tpidr_el0           // read tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
+  mrs   x0, tpidr_el0           // read tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
   ret
 
 

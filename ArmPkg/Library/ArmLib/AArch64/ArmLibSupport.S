@@ -132,7 +132,7 @@ ASM_FUNC(ArmUpdateTranslationTableEntry)
 3: tlbi    vae3, x1              // TLB Invalidate VA , EL3
    mrs     x2, sctlr_el3
 4: tbnz    x2, SCTLR_ELx_M_BIT_POS, 5f
-   dc      ivac, x0              // invalidate in Dcache if MMU is still off
+   dc      ivac, c0              // invalidate in Dcache if MMU is still off
 5: dsb     nsh
    isb
    ret
@@ -199,7 +199,7 @@ ASM_FUNC(ArmWriteSctlr)
 
 ASM_FUNC(ArmGetPhysicalAddressBits)
   mrs   x0, id_aa64mmfr0_el1
-  adr   x1, .LPARanges
+  adrp  c1, .LPARanges
   and   x0, x0, #0xf
   ldrb  w0, [x1, x0]
   ret

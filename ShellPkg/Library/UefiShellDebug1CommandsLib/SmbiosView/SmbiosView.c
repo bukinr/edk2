@@ -695,7 +695,7 @@ CalculateSmbios64BitStructureCountAndLength (
   *Smbios64TableLength        = 0;
   *NumberOfSmbios64Structures = 0;
 
-  Smbios.Raw = (UINT8 *)(UINTN)(Smbios64EntryPoint->TableAddress);
+  Smbios.Raw = (UINT8 *)(UINTPTR_T)(Smbios64EntryPoint->TableAddress);
   while (TRUE) {
     if (Smbios.Hdr->Type == 127) {
       //
