@@ -1145,4 +1145,43 @@ typedef struct {
 #define R_LARCH_TLS_GD_PC_HI20             97
 #define R_LARCH_TLS_GD64_HI20              98
 #define R_LARCH_RELAX                      99
+
+#define	R_MORELLO_TSTBR14                         0xe000
+#define	R_MORELLO_CONDBR19                        0xe001
+#define	R_MORELLO_JUMP26                          0xe002
+#define	R_MORELLO_CALL26                          0xe003
+#define	R_MORELLO_LD_PREL_LO17                    0xe004
+#define	R_MORELLO_ADR_PREL_PG_HI20                0xe005
+#define	R_MORELLO_ADR_PREL_PG_HI20_NC             0xe006
+#define	R_MORELLO_ADR_GOT_PAGE                    0xe007
+#define	R_MORELLO_LD128_GOT_LO12_NC               0xe008
+#define	R_MORELLO_MOVW_SIZE_G0                    0xe009
+#define	R_MORELLO_MOVW_SIZE_G0_NC                 0xe00a
+#define	R_MORELLO_MOVW_SIZE_G1                    0xe00b
+#define	R_MORELLO_MOVW_SIZE_G1_NC                 0xe00c
+#define	R_MORELLO_MOVW_SIZE_G2                    0xe00d
+#define	R_MORELLO_MOVW_SIZE_G2_NC                 0xe00f
+#define	R_MORELLO_MOVW_SIZE_G3                    0xe010
+#define	R_MORELLO_TLSDESC_ADR_PAGE20              0xe100
+#define	R_MORELLO_TLSDESC_LD128_LO12              0xe101
+#define	R_MORELLO_TLSDESC_CALL                    0xe102
+#define	R_MORELLO_TLSIE_ADR_GOTTPREL_PAGE20       0xe103
+#define	R_MORELLO_TLSIE_ADD_LO12                  0xe104
+#define	R_MORELLO_DESC_GLOBAL_CALL26              0xe200
+#define	R_MORELLO_DESC_GLOBAL_JUMP26              0xe201
+#define	R_MORELLO_DESC_ADR_PREL_PG_HI20           0xe204
+#define	R_MORELLO_DESC_ADR_PREL_PG_HI20_NC        0xe205
+#define	R_MORELLO_DESC_ADR_GOT_PAGE               0xe206
+#define	R_MORELLO_DESC_LD128_GOT_LO12_NC          0xe207
+#define	R_MORELLO_DESC_CAPINIT                    0xe208
+#define	R_MORELLO_DESC_CALL                       0xe209
+#define	R_MORELLO_DESC_TCALL                      0xe20a
+#define	R_MORELLO_CAPINIT                         0xe800
+#define	R_MORELLO_GLOB_DAT                        0xe801
+#define	R_MORELLO_JUMP_SLOT                       0xe802
+#define	R_MORELLO_RELATIVE                        0xe803
+#define	R_MORELLO_IRELATIVE                       0xe804
+#define	R_MORELLO_TLSDESC                         0xe805
+#define	R_MORELLO_TLS_TPREL128                    0xe806
+
 #endif /* !_SYS_ELF_COMMON_H_ */
