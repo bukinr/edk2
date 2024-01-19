@@ -27,6 +27,6 @@ ASM_FUNC(ArmCallSmc)
   stp   x2, x3, [c9, #16]
   stp   x0, x1, [c9, #0]
 
-  mov   x0, x9
+  mov   c0, c9
 
   ret
