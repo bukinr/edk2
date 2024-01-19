@@ -49,6 +49,7 @@
   HighBitSet32.c
   GetPowerOfTwo64.c
   GetPowerOfTwo32.c
+  InferAbi.c
   DivU64x64Remainder.c
   DivU64x32Remainder.c
   DivU64x32.c
