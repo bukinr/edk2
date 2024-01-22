@@ -1436,8 +1436,8 @@ RootBridgeIoMap (
         (Operation == EfiPciOperationBusMasterRead64))
     {
       CopyMem (
-        (VOID *)(UINTN)MapInfo->MappedHostAddress,
-        (VOID *)(UINTN)MapInfo->HostAddress,
+        (VOID *)(UINTPTR_T)MapInfo->MappedHostAddress,
+        (VOID *)(UINTPTR_T)MapInfo->HostAddress,
         MapInfo->NumberOfBytes
         );
     }
@@ -1543,8 +1543,8 @@ RootBridgeIoUnmap (
       (MapInfo->Operation == EfiPciOperationBusMasterWrite64))
   {
     CopyMem (
-      (VOID *)(UINTN)MapInfo->HostAddress,
-      (VOID *)(UINTN)MapInfo->MappedHostAddress,
+      (VOID *)(UINTPTR_T)MapInfo->HostAddress,
+      (VOID *)(UINTPTR_T)MapInfo->MappedHostAddress,
       MapInfo->NumberOfBytes
       );
   }
@@ -1662,7 +1662,7 @@ RootBridgeIoAllocateBuffer (
                   &PhysicalAddress
                   );
   if (!EFI_ERROR (Status)) {
-    *HostAddress = (VOID *)(UINTN)PhysicalAddress;
+    *HostAddress = (VOID *)(UINTPTR_T)PhysicalAddress;
   }
 
   return Status;

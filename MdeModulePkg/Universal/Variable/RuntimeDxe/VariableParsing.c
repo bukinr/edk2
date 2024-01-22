@@ -301,12 +301,12 @@ GetVariableDataPtr (
   IN  BOOLEAN          AuthFormat
   )
 {
-  UINTN  Value;
+  UINTPTR_T  Value;
 
   //
   // Be careful about pad size for alignment.
   //
-  Value  =  (UINTN)GetVariableNamePtr (Variable, AuthFormat);
+  Value  =  (UINTPTR_T)GetVariableNamePtr (Variable, AuthFormat);
   Value += NameSizeOfVariable (Variable, AuthFormat);
   Value += GET_PAD_SIZE (NameSizeOfVariable (Variable, AuthFormat));
 

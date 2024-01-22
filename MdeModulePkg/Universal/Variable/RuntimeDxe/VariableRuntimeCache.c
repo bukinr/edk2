@@ -47,11 +47,11 @@ FlushPendingRuntimeVariableCacheUpdates (
     {
       CopyMem (
         (VOID *)(
-                 ((UINT8 *)(UINTN)VariableRuntimeCacheContext->VariableRuntimeHobCache.Store) +
+                 ((UINT8 *)(UINTPTR_T)VariableRuntimeCacheContext->VariableRuntimeHobCache.Store) +
                  VariableRuntimeCacheContext->VariableRuntimeHobCache.PendingUpdateOffset
                  ),
         (VOID *)(
-                 ((UINT8 *)(UINTN)mVariableModuleGlobal->VariableGlobal.HobVariableBase) +
+                 ((UINT8 *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.HobVariableBase) +
                  VariableRuntimeCacheContext->VariableRuntimeHobCache.PendingUpdateOffset
                  ),
         VariableRuntimeCacheContext->VariableRuntimeHobCache.PendingUpdateLength
@@ -62,11 +62,11 @@ FlushPendingRuntimeVariableCacheUpdates (
 
     CopyMem (
       (VOID *)(
-               ((UINT8 *)(UINTN)VariableRuntimeCacheContext->VariableRuntimeNvCache.Store) +
+               ((UINT8 *)(UINTPTR_T)VariableRuntimeCacheContext->VariableRuntimeNvCache.Store) +
                VariableRuntimeCacheContext->VariableRuntimeNvCache.PendingUpdateOffset
                ),
       (VOID *)(
-               ((UINT8 *)(UINTN)mNvVariableCache) +
+               ((UINT8 *)(UINTPTR_T)mNvVariableCache) +
                VariableRuntimeCacheContext->VariableRuntimeNvCache.PendingUpdateOffset
                ),
       VariableRuntimeCacheContext->VariableRuntimeNvCache.PendingUpdateLength
@@ -76,11 +76,11 @@ FlushPendingRuntimeVariableCacheUpdates (
 
     CopyMem (
       (VOID *)(
-               ((UINT8 *)(UINTN)VariableRuntimeCacheContext->VariableRuntimeVolatileCache.Store) +
+               ((UINT8 *)(UINTPTR_T)VariableRuntimeCacheContext->VariableRuntimeVolatileCache.Store) +
                VariableRuntimeCacheContext->VariableRuntimeVolatileCache.PendingUpdateOffset
                ),
       (VOID *)(
-               ((UINT8 *)(UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase) +
+               ((UINT8 *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase) +
                VariableRuntimeCacheContext->VariableRuntimeVolatileCache.PendingUpdateOffset
                ),
       VariableRuntimeCacheContext->VariableRuntimeVolatileCache.PendingUpdateLength

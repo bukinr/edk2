@@ -172,7 +172,7 @@ RuntimeDriverConvertPointer (
           //
           // Compute new address
           //
-          *ConvertAddress = (VOID *)(Address - (UINTN)VirtEntry->PhysicalStart + (UINTN)VirtEntry->VirtualStart);
+          *ConvertAddress = (VOID *)((UINTPTR_T)Address - (UINTN)VirtEntry->PhysicalStart + (UINTN)VirtEntry->VirtualStart);
           return EFI_SUCCESS;
         }
       }
