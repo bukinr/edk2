@@ -419,7 +419,7 @@ AmlGetOffsetAfterLastOption (
   //
   // We need to parse the rest buffer after last node.
   //
-  *Buffer = (UINT8 *)((UINTN)Data + DataSize);
+  *Buffer = (UINT8 *)((UINTPTR_T)Data + DataSize);
 
   //
   // We need skip PkgLength if no Option

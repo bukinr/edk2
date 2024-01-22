@@ -174,7 +174,7 @@ UpdateVariableStore (
     // written.
     //
     if (Volatile) {
-      VolatileBase = (VARIABLE_STORE_HEADER *)((UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase);
+      VolatileBase = (VARIABLE_STORE_HEADER *)((UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase);
       if (SetByIndex) {
         DataPtr += mVariableModuleGlobal->VariableGlobal.VolatileVariableBase;
       }
@@ -198,7 +198,7 @@ UpdateVariableStore (
     //
     // If Volatile/Emulated Non-volatile Variable just do a simple mem copy.
     //
-    CopyMem ((UINT8 *)(UINTN)DataPtr, Buffer, DataSize);
+    CopyMem ((UINT8 *)(UINTPTR_T)DataPtr, Buffer, DataSize);
     return EFI_SUCCESS;
   }
 
@@ -554,7 +554,7 @@ Reclaim (
     UpdatingInDeletedTransition = UpdatingPtrTrack->InDeletedTransitionPtr;
   }
 
-  VariableStoreHeader = (VARIABLE_STORE_HEADER *)((UINTN)VariableBase);
+  VariableStoreHeader = (VARIABLE_STORE_HEADER *)((UINTPTR_T)VariableBase);
 
   CommonVariableTotalSize     = 0;
   CommonUserVariableTotalSize = 0;
@@ -730,7 +730,7 @@ Reclaim (
     CopyMem (CurrPtr, (UINT8 *)NewVariable, NewVariableSize);
     ((VARIABLE_HEADER *)CurrPtr)->State = VAR_ADDED;
     if (UpdatingVariable != NULL) {
-      UpdatingPtrTrack->CurrPtr                = (VARIABLE_HEADER *)((UINTN)UpdatingPtrTrack->StartPtr + ((UINTN)CurrPtr - (UINTN)GetStartPointer ((VARIABLE_STORE_HEADER *)ValidBuffer)));
+      UpdatingPtrTrack->CurrPtr                = (VARIABLE_HEADER *)((UINTPTR_T)UpdatingPtrTrack->StartPtr + ((UINTN)CurrPtr - (UINTN)GetStartPointer ((VARIABLE_STORE_HEADER *)ValidBuffer)));
       UpdatingPtrTrack->InDeletedTransitionPtr = NULL;
     }
 
@@ -741,8 +741,8 @@ Reclaim (
     //
     // If volatile/emulated non-volatile variable store, just copy valid buffer.
     //
-    SetMem ((UINT8 *)(UINTN)VariableBase, VariableStoreHeader->Size, 0xff);
-    CopyMem ((UINT8 *)(UINTN)VariableBase, ValidBuffer, (UINTN)CurrPtr - (UINTN)ValidBuffer);
+    SetMem ((UINT8 *)(UINTPTR_T)VariableBase, VariableStoreHeader->Size, 0xff);
+    CopyMem ((UINT8 *)(UINTPTR_T)VariableBase, ValidBuffer, (UINTN)CurrPtr - (UINTN)ValidBuffer);
     *LastVariableOffset = (UINTN)CurrPtr - (UINTN)ValidBuffer;
     if (!IsVolatile) {
       //
@@ -771,8 +771,8 @@ Reclaim (
       mVariableModuleGlobal->HwErrVariableTotalSize      = 0;
       mVariableModuleGlobal->CommonVariableTotalSize     = 0;
       mVariableModuleGlobal->CommonUserVariableTotalSize = 0;
-      Variable                                           = GetStartPointer ((VARIABLE_STORE_HEADER *)(UINTN)VariableBase);
-      while (IsValidVariableHeader (Variable, GetEndPointer ((VARIABLE_STORE_HEADER *)(UINTN)VariableBase))) {
+      Variable                                           = GetStartPointer ((VARIABLE_STORE_HEADER *)(UINTPTR_T)VariableBase);
+      while (IsValidVariableHeader (Variable, GetEndPointer ((VARIABLE_STORE_HEADER *)(UINTPTR_T)VariableBase))) {
         NextVariable = GetNextVariablePtr (Variable, AuthFormat);
         VariableSize = (UINTN)NextVariable - (UINTN)Variable;
         if ((Variable->Attributes & EFI_VARIABLE_HARDWARE_ERROR_RECORD) == EFI_VARIABLE_HARDWARE_ERROR_RECORD) {
@@ -805,7 +805,7 @@ Done:
     //
     // For NV variable reclaim, we use mNvVariableCache as the buffer, so copy the data back.
     //
-    CopyMem (mNvVariableCache, (UINT8 *)(UINTN)VariableBase, VariableStoreHeader->Size);
+    CopyMem (mNvVariableCache, (UINT8 *)(UINTPTR_T)VariableBase, VariableStoreHeader->Size);
     DoneStatus = SynchronizeRuntimeVariableCache (
                    &mVariableModuleGlobal->VariableGlobal.VariableRuntimeCacheContext.VariableRuntimeNvCache,
                    0,
@@ -869,8 +869,8 @@ FindVariable (
   // The index and attributes mapping must be kept in this order as RuntimeServiceGetNextVariableName
   // make use of this mapping to implement search algorithm.
   //
-  VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *)(UINTN)Global->VolatileVariableBase;
-  VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *)(UINTN)Global->HobVariableBase;
+  VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *)(UINTPTR_T)Global->VolatileVariableBase;
+  VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *)(UINTPTR_T)Global->HobVariableBase;
   VariableStoreHeader[VariableStoreTypeNv]       = mNvVariableCache;
 
   //
@@ -1739,7 +1739,7 @@ UpdateVariable (
   //
   if ((CacheVariable->CurrPtr != NULL) &&
       (mVariableModuleGlobal->VariableGlobal.HobVariableBase != 0) &&
-      (CacheVariable->StartPtr == GetStartPointer ((VARIABLE_STORE_HEADER *)(UINTN)mVariableModuleGlobal->VariableGlobal.HobVariableBase))
+      (CacheVariable->StartPtr == GetStartPointer ((VARIABLE_STORE_HEADER *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.HobVariableBase))
       )
   {
     CacheVariable->StartPtr = GetStartPointer (mNvVariableCache);
@@ -1771,14 +1771,14 @@ UpdateVariable (
     // CacheVariable points to the variable in the memory copy of Flash area
     // Now let Variable points to the same variable in Flash area.
     //
-    VariableStoreHeader = (VARIABLE_STORE_HEADER *)((UINTN)mVariableModuleGlobal->VariableGlobal.NonVolatileVariableBase);
+    VariableStoreHeader = (VARIABLE_STORE_HEADER *)((UINTPTR_T)mVariableModuleGlobal->VariableGlobal.NonVolatileVariableBase);
     Variable            = &NvVariable;
     Variable->StartPtr  = GetStartPointer (VariableStoreHeader);
-    Variable->EndPtr    = (VARIABLE_HEADER *)((UINTN)Variable->StartPtr + ((UINTN)CacheVariable->EndPtr - (UINTN)CacheVariable->StartPtr));
+    Variable->EndPtr    = (VARIABLE_HEADER *)((UINTPTR_T)Variable->StartPtr + ((UINTN)CacheVariable->EndPtr - (UINTN)CacheVariable->StartPtr));
 
-    Variable->CurrPtr = (VARIABLE_HEADER *)((UINTN)Variable->StartPtr + ((UINTN)CacheVariable->CurrPtr - (UINTN)CacheVariable->StartPtr));
+    Variable->CurrPtr = (VARIABLE_HEADER *)((UINTPTR_T)Variable->StartPtr + ((UINTN)CacheVariable->CurrPtr - (UINTN)CacheVariable->StartPtr));
     if (CacheVariable->InDeletedTransitionPtr != NULL) {
-      Variable->InDeletedTransitionPtr = (VARIABLE_HEADER *)((UINTN)Variable->StartPtr + ((UINTN)CacheVariable->InDeletedTransitionPtr - (UINTN)CacheVariable->StartPtr));
+      Variable->InDeletedTransitionPtr = (VARIABLE_HEADER *)((UINTPTR_T)Variable->StartPtr + ((UINTN)CacheVariable->InDeletedTransitionPtr - (UINTN)CacheVariable->StartPtr));
     } else {
       Variable->InDeletedTransitionPtr = NULL;
     }
@@ -1792,7 +1792,7 @@ UpdateVariable (
   // Tricky part: Use scratch data area at the end of volatile variable store
   // as a temporary storage.
   //
-  NextVariable = GetEndPointer ((VARIABLE_STORE_HEADER *)((UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase));
+  NextVariable = GetEndPointer ((VARIABLE_STORE_HEADER *)((UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase));
   ScratchSize  = mVariableModuleGlobal->ScratchBufferSize;
   SetMem (NextVariable, ScratchSize, 0xff);
   DataReady = FALSE;
@@ -1849,7 +1849,7 @@ UpdateVariable (
                    Variable->Volatile,
                    FALSE,
                    Fvb,
-                   (UINTN)&Variable->InDeletedTransitionPtr->State,
+                   (UINTPTR_T)&Variable->InDeletedTransitionPtr->State,
                    sizeof (UINT8),
                    &State
                    );
@@ -1912,10 +1912,10 @@ UpdateVariable (
         // From DataOffset of NextVariable is to save the existing variable data.
         //
         DataOffset     = GetVariableDataOffset (CacheVariable->CurrPtr, AuthFormat);
-        BufferForMerge = (UINT8 *)((UINTN)NextVariable + DataOffset);
+        BufferForMerge = (UINT8 *)((UINTPTR_T)NextVariable + DataOffset);
         CopyMem (
           BufferForMerge,
-          (UINT8 *)((UINTN)CacheVariable->CurrPtr + DataOffset),
+          (UINT8 *)((UINTPTR_T)CacheVariable->CurrPtr + DataOffset),
           DataSizeOfVariable (CacheVariable->CurrPtr, AuthFormat)
           );
 
@@ -1948,7 +1948,7 @@ UpdateVariable (
 
         CopyMem (
           (UINT8 *)(
-                    (UINTN)BufferForMerge + DataSizeOfVariable (CacheVariable->CurrPtr, AuthFormat)
+                    (UINTPTR_T)BufferForMerge + DataSizeOfVariable (CacheVariable->CurrPtr, AuthFormat)
                     ),
           Data,
           DataSize
@@ -2063,7 +2063,7 @@ UpdateVariable (
   VarNameOffset = GetVariableHeaderSize (AuthFormat);
   VarNameSize   = StrSize (VariableName);
   CopyMem (
-    (UINT8 *)((UINTN)NextVariable + VarNameOffset),
+    (UINT8 *)((UINTPTR_T)NextVariable + VarNameOffset),
     VariableName,
     VarNameSize
     );
@@ -2075,7 +2075,7 @@ UpdateVariable (
   //
   if (!DataReady) {
     CopyMem (
-      (UINT8 *)((UINTN)NextVariable + VarDataOffset),
+      (UINT8 *)((UINTPTR_T)NextVariable + VarDataOffset),
       Data,
       DataSize
       );
@@ -2147,7 +2147,7 @@ UpdateVariable (
         // The new variable has been integrated successfully during reclaiming.
         //
         if (Variable->CurrPtr != NULL) {
-          CacheVariable->CurrPtr                = (VARIABLE_HEADER *)((UINTN)CacheVariable->StartPtr + ((UINTN)Variable->CurrPtr - (UINTN)Variable->StartPtr));
+          CacheVariable->CurrPtr                = (VARIABLE_HEADER *)((UINTPTR_T)CacheVariable->StartPtr + ((UINTN)Variable->CurrPtr - (UINTN)Variable->StartPtr));
           CacheVariable->InDeletedTransitionPtr = NULL;
         }
 
@@ -2285,7 +2285,7 @@ UpdateVariable (
     Volatile = TRUE;
 
     if ((UINT32)(VarSize + mVariableModuleGlobal->VolatileLastVariableOffset) >
-        ((VARIABLE_STORE_HEADER *)((UINTN)(mVariableModuleGlobal->VariableGlobal.VolatileVariableBase)))->Size)
+        ((VARIABLE_STORE_HEADER *)((UINTPTR_T)(mVariableModuleGlobal->VariableGlobal.VolatileVariableBase)))->Size)
     {
       //
       // Perform garbage collection & reclaim operation, and integrate the new variable at the same time.
@@ -2303,7 +2303,7 @@ UpdateVariable (
         // The new variable has been integrated successfully during reclaiming.
         //
         if (Variable->CurrPtr != NULL) {
-          CacheVariable->CurrPtr                = (VARIABLE_HEADER *)((UINTN)CacheVariable->StartPtr + ((UINTN)Variable->CurrPtr - (UINTN)Variable->StartPtr));
+          CacheVariable->CurrPtr                = (VARIABLE_HEADER *)((UINTPTR_T)CacheVariable->StartPtr + ((UINTN)Variable->CurrPtr - (UINTN)Variable->StartPtr));
           CacheVariable->InDeletedTransitionPtr = NULL;
         }
 
@@ -2558,8 +2558,8 @@ VariableServiceGetNextVariableName (
   // The index and attributes mapping must be kept in this order as FindVariable
   // makes use of this mapping to implement search algorithm.
   //
-  VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *)(UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase;
-  VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *)(UINTN)mVariableModuleGlobal->VariableGlobal.HobVariableBase;
+  VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase;
+  VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.HobVariableBase;
   VariableStoreHeader[VariableStoreTypeNv]       = mNvVariableCache;
 
   Status =  VariableServiceGetNextVariableInternal (
@@ -2840,7 +2840,7 @@ VariableServiceSetVariable (
   //
   // Special Handling for MOR Lock variable.
   //
-  Status = SetVariableCheckHandlerMor (VariableName, VendorGuid, Attributes, PayloadSize, (VOID *)((UINTN)Data + DataSize - PayloadSize));
+  Status = SetVariableCheckHandlerMor (VariableName, VendorGuid, Attributes, PayloadSize, (VOID *)((UINTPTR_T)Data + DataSize - PayloadSize));
   if (Status == EFI_ALREADY_STARTED) {
     //
     // EFI_ALREADY_STARTED means the SetVariable() action is handled inside of SetVariableCheckHandlerMor().
@@ -2853,7 +2853,7 @@ VariableServiceSetVariable (
     return Status;
   }
 
-  Status = VarCheckLibSetVariableCheck (VariableName, VendorGuid, Attributes, PayloadSize, (VOID *)((UINTN)Data + DataSize - PayloadSize), mRequestSource);
+  Status = VarCheckLibSetVariableCheck (VariableName, VendorGuid, Attributes, PayloadSize, (VOID *)((UINTPTR_T)Data + DataSize - PayloadSize), mRequestSource);
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -2868,8 +2868,8 @@ VariableServiceSetVariable (
     //
     // Parse non-volatile variable data and get last variable offset.
     //
-    NextVariable = GetStartPointer ((VARIABLE_STORE_HEADER *)(UINTN)Point);
-    while (IsValidVariableHeader (NextVariable, GetEndPointer ((VARIABLE_STORE_HEADER *)(UINTN)Point))) {
+    NextVariable = GetStartPointer ((VARIABLE_STORE_HEADER *)(UINTPTR_T)Point);
+    while (IsValidVariableHeader (NextVariable, GetEndPointer ((VARIABLE_STORE_HEADER *)(UINTPTR_T)Point))) {
       NextVariable = GetNextVariablePtr (NextVariable, AuthFormat);
     }
 
@@ -2978,7 +2978,7 @@ VariableServiceQueryVariableInfoInternal (
     //
     // Query is Volatile related.
     //
-    VariableStoreHeader = (VARIABLE_STORE_HEADER *)((UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase);
+    VariableStoreHeader = (VARIABLE_STORE_HEADER *)((UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase);
   } else {
     //
     // Query is Non-Volatile related.
@@ -3318,7 +3318,7 @@ FlushHobVariableToFlash (
   // Flush the HOB variable to flash.
   //
   if (mVariableModuleGlobal->VariableGlobal.HobVariableBase != 0) {
-    VariableStoreHeader = (VARIABLE_STORE_HEADER *)(UINTN)mVariableModuleGlobal->VariableGlobal.HobVariableBase;
+    VariableStoreHeader = (VARIABLE_STORE_HEADER *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.HobVariableBase;
     //
     // Set HobVariableBase to 0, it can avoid SetVariable to call back.
     //
@@ -3788,7 +3788,7 @@ VariableCommonInitialize (
   VolatileVariableStore                    = AllocateRuntimePool (PcdGet32 (PcdVariableStoreSize) + ScratchSize);
   if (VolatileVariableStore == NULL) {
     if (mVariableModuleGlobal->VariableGlobal.HobVariableBase != 0) {
-      FreePool ((VOID *)(UINTN)mVariableModuleGlobal->VariableGlobal.HobVariableBase);
+      FreePool ((VOID *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.HobVariableBase);
     }
 
     if (mNvFvHeaderCache != NULL) {

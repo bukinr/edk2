@@ -100,8 +100,8 @@ VariableExLibFindNextVariable (
   AUTHENTICATED_VARIABLE_HEADER  *AuthVariablePtr;
   VARIABLE_STORE_HEADER          *VariableStoreHeader[VariableStoreTypeMax];
 
-  VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *)(UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase;
-  VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *)(UINTN)mVariableModuleGlobal->VariableGlobal.HobVariableBase;
+  VariableStoreHeader[VariableStoreTypeVolatile] = (VARIABLE_STORE_HEADER *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase;
+  VariableStoreHeader[VariableStoreTypeHob]      = (VARIABLE_STORE_HEADER *)(UINTPTR_T)mVariableModuleGlobal->VariableGlobal.HobVariableBase;
   VariableStoreHeader[VariableStoreTypeNv]       = mNvVariableCache;
 
   Status = VariableServiceGetNextVariableInternal (
@@ -199,7 +199,7 @@ VariableExLibGetScratchBuffer (
     return EFI_UNSUPPORTED;
   }
 
-  *ScratchBuffer = GetEndPointer ((VARIABLE_STORE_HEADER *)((UINTN)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase));
+  *ScratchBuffer = GetEndPointer ((VARIABLE_STORE_HEADER *)((UINTPTR_T)mVariableModuleGlobal->VariableGlobal.VolatileVariableBase));
   return EFI_SUCCESS;
 }
 

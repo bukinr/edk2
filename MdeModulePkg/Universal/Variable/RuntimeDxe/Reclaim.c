@@ -60,7 +60,7 @@ GetLbaAndOffsetByAddress (
     return Status;
   }
 
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTN)FvbBaseAddress);
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTPTR_T)FvbBaseAddress);
 
   //
   // Get the (LBA, Offset) of Address.
@@ -76,7 +76,7 @@ GetLbaAndOffsetByAddress (
         // Found the (Lba, Offset).
         //
         *Lba    = LbaIndex - 1;
-        *Offset = (UINTN)(Address - (FvbBaseAddress + FvbMapEntry->Length * (LbaIndex - 1)));
+        *Offset = (UINTPTR_T)(Address - (FvbBaseAddress + FvbMapEntry->Length * (LbaIndex - 1)));
         return EFI_SUCCESS;
       }
     }
@@ -137,7 +137,7 @@ FtwVariableSpace (
     return EFI_ABORTED;
   }
 
-  FtwBufferSize = ((VARIABLE_STORE_HEADER *)((UINTN)VariableBase))->Size;
+  FtwBufferSize = ((VARIABLE_STORE_HEADER *)((UINTPTR_T)VariableBase))->Size;
   ASSERT (FtwBufferSize == VariableBuffer->Size);
 
   //

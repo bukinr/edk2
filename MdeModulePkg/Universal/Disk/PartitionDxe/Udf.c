@@ -236,7 +236,7 @@ FindAnchorVolumeDescriptorPointer (
   // Search for AVDP from blocks N-1 through N-MAX_CORRECTION_BLOCKS_NUM
   //
   for (Index = MAX_CORRECTION_BLOCKS_NUM - 2; Index >= 0; Index--) {
-    AnchorPointPtr = (VOID *)((UINTN)AnchorPoints + Index * BlockSize);
+    AnchorPointPtr = (VOID *)((UINTPTR_T)AnchorPoints + Index * BlockSize);
 
     DescriptorTag = &AnchorPointPtr->DescriptorTag;
 

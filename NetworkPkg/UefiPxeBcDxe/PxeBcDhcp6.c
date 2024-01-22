@@ -504,7 +504,7 @@ PxeBcExtractBootFileUrl (
   //
   // Get the part of BOOTFILE_NAME string.
   //
-  BootFileNamePtr = (CHAR8 *)((UINTN)ServerAddress + 1);
+  BootFileNamePtr = (CHAR8 *)((UINTPTR_T)ServerAddress + 1);
   if (IpExpressedUrl) {
     if (*BootFileNamePtr != PXEBC_TFTP_URL_SEPARATOR) {
       FreePool (TmpStr);

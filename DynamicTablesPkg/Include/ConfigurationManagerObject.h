@@ -124,7 +124,7 @@ typedef struct CmObjDescriptor {
   UINT32          Size;
 
   /// Pointer to the described Object or Object List
-  VOID            *Data;
+  UINTPTR_T       Data;
 
   /// Count of objects in the list
   UINT32          Count;

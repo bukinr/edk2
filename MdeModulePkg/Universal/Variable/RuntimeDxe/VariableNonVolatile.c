@@ -71,7 +71,7 @@ InitEmuNonVolatileVariableStore (
     // thereby providing better NV variable emulation.
     //
     VariableStore =
-      (VARIABLE_STORE_HEADER *)(VOID *)(UINTN)
+      (VARIABLE_STORE_HEADER *)(VOID *)(UINTPTR_T)
       PcdGet64 (PcdEmuVariableNvStoreReserved);
     if ((VariableStore->Size == VariableStoreLength) &&
         (CompareGuid (&VariableStore->Signature, &gEfiAuthenticatedVariableGuid) ||
@@ -175,7 +175,7 @@ InitRealNonVolatileVariableStore (
   //
   // Copy NV storage data to the memory buffer.
   //
-  CopyMem (NvStorageData, (UINT8 *)(UINTN)NvStorageBase, NvStorageSize);
+  CopyMem (NvStorageData, (UINT8 *)(UINTPTR_T)NvStorageBase, NvStorageSize);
 
   Status = GetFtwProtocol ((VOID **)&FtwProtocol);
   //
@@ -193,7 +193,7 @@ InitRealNonVolatileVariableStore (
         //
         // Copy the backed up NV storage data to the memory buffer from spare block.
         //
-        CopyMem (NvStorageData, (UINT8 *)(UINTN)(FtwLastWriteData->SpareAddress), NvStorageSize);
+        CopyMem (NvStorageData, (UINT8 *)(UINTPTR_T)(FtwLastWriteData->SpareAddress), NvStorageSize);
       } else if ((FtwLastWriteData->TargetAddress > NvStorageBase) &&
                  (FtwLastWriteData->TargetAddress < (NvStorageBase + NvStorageSize)))
       {
@@ -206,7 +206,7 @@ InitRealNonVolatileVariableStore (
         //
         // Copy the partial backed up NV storage data to the memory buffer from spare block.
         //
-        CopyMem (NvStorageData + BackUpOffset, (UINT8 *)(UINTN)FtwLastWriteData->SpareAddress, BackUpSize);
+        CopyMem (NvStorageData + BackUpOffset, (UINT8 *)(UINTPTR_T)FtwLastWriteData->SpareAddress, BackUpSize);
       }
     }
   }
@@ -222,7 +222,7 @@ InitRealNonVolatileVariableStore (
     return EFI_VOLUME_CORRUPTED;
   }
 
-  VariableStore       = (VARIABLE_STORE_HEADER *)((UINTN)FvHeader + FvHeader->HeaderLength);
+  VariableStore       = (VARIABLE_STORE_HEADER *)((UINTPTR_T)FvHeader + FvHeader->HeaderLength);
   VariableStoreLength = NvStorageSize - FvHeader->HeaderLength;
   ASSERT (sizeof (VARIABLE_STORE_HEADER) <= VariableStoreLength);
   ASSERT (VariableStore->Size == VariableStoreLength);
@@ -319,7 +319,7 @@ InitNonVolatileVariableStore (
   }
 
   mVariableModuleGlobal->VariableGlobal.NonVolatileVariableBase = VariableStoreBase;
-  mNvVariableCache                                              = (VARIABLE_STORE_HEADER *)(UINTN)VariableStoreBase;
+  mNvVariableCache                                              = (VARIABLE_STORE_HEADER *)(UINTPTR_T)VariableStoreBase;
   mVariableModuleGlobal->VariableGlobal.AuthFormat              = (BOOLEAN)(CompareGuid (&mNvVariableCache->Signature, &gEfiAuthenticatedVariableGuid));
 
   mVariableModuleGlobal->MaxVariableSize     = PcdGet32 (PcdMaxVariableSize);

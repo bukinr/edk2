@@ -255,7 +255,7 @@ GetVariableNamePtr (
   IN  BOOLEAN          AuthFormat
   )
 {
-  return (CHAR16 *)((UINTN)Variable + GetVariableHeaderSize (AuthFormat));
+  return (CHAR16 *)((UINTPTR_T)Variable + GetVariableHeaderSize (AuthFormat));
 }
 
 /**
@@ -410,7 +410,7 @@ GetEndPointer (
   //
   // The end of variable store
   //
-  return (VARIABLE_HEADER *)HEADER_ALIGN ((UINTN)VarStoreHeader + VarStoreHeader->Size);
+  return (VARIABLE_HEADER *)HEADER_ALIGN ((UINTPTR_T)VarStoreHeader + VarStoreHeader->Size);
 }
 
 /**
