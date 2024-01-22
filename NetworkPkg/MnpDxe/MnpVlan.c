@@ -196,7 +196,7 @@ MnpInsertVlanTag (
   *Packet       = *Packet - NET_VLAN_TAG_LEN;
 
   Tpid    = (UINT16 *)(*Packet + SnpMode->MediaHeaderSize - sizeof (*ProtocolType));
-  VlanTci = (VLAN_TCI *)(UINTN)(Tpid + 1);
+  VlanTci = (VLAN_TCI *)(UINTPTR_T)(Tpid + 1);
   if (TxData->HeaderLength != 0) {
     //
     // Media header is in packet, move DA+SA 4 bytes left
@@ -211,7 +211,7 @@ MnpInsertVlanTag (
     //
     // Media header not in packet, VLAN TCI and original protocol type becomes payload
     //
-    EtherType  = (UINT16 *)(UINTN)(VlanTci + 1);
+    EtherType  = (UINT16 *)(UINTPTR_T)(VlanTci + 1);
     *EtherType = HTONS (TxData->ProtocolType);
   }
 

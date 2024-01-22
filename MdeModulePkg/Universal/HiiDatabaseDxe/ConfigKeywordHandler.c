@@ -847,7 +847,7 @@ GetStringIdFromString (
 
       case EFI_HII_SIBT_STRINGS_SCSU:
         CopyMem (&StringCount, BlockHdr + sizeof (EFI_HII_STRING_BLOCK), sizeof (UINT16));
-        StringTextPtr = (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_BLOCK) - sizeof (UINT8));
+        StringTextPtr = (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_BLOCK) - sizeof (UINT8));
         BlockSize    += StringTextPtr - BlockHdr;
 
         for (Index = 0; Index < StringCount; Index++) {
@@ -866,10 +866,10 @@ GetStringIdFromString (
       case EFI_HII_SIBT_STRINGS_SCSU_FONT:
         CopyMem (
           &StringCount,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT16)
           );
-        StringTextPtr = (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_FONT_BLOCK) - sizeof (UINT8));
+        StringTextPtr = (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_FONT_BLOCK) - sizeof (UINT8));
         BlockSize    += StringTextPtr - BlockHdr;
 
         for (Index = 0; Index < StringCount; Index++) {
@@ -959,7 +959,7 @@ GetStringIdFromString (
         BlockSize    += Offset;
         CopyMem (
           &StringCount,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT16)
           );
         for (Index = 0; Index < StringCount; Index++) {
@@ -987,7 +987,7 @@ GetStringIdFromString (
         break;
 
       case EFI_HII_SIBT_SKIP1:
-        SkipCount       = (UINT16)(*(UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK)));
+        SkipCount       = (UINT16)(*(UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK)));
         CurrentStringId = (UINT16)(CurrentStringId + SkipCount);
         BlockSize      +=  sizeof (EFI_HII_SIBT_SKIP1_BLOCK);
         break;
@@ -1001,7 +1001,7 @@ GetStringIdFromString (
       case EFI_HII_SIBT_EXT1:
         CopyMem (
           &Length8,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT8)
           );
         BlockSize += Length8;
@@ -1015,7 +1015,7 @@ GetStringIdFromString (
       case EFI_HII_SIBT_EXT4:
         CopyMem (
           &Length32,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT32)
           );
 
@@ -1141,7 +1141,7 @@ GetNextStringId (
 
       case EFI_HII_SIBT_STRINGS_SCSU:
         CopyMem (&StringCount, BlockHdr + sizeof (EFI_HII_STRING_BLOCK), sizeof (UINT16));
-        StringTextPtr = (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_BLOCK) - sizeof (UINT8));
+        StringTextPtr = (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_BLOCK) - sizeof (UINT8));
         BlockSize    += StringTextPtr - BlockHdr;
 
         for (Index = 0; Index < StringCount; Index++) {
@@ -1168,10 +1168,10 @@ GetNextStringId (
       case EFI_HII_SIBT_STRINGS_SCSU_FONT:
         CopyMem (
           &StringCount,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT16)
           );
-        StringTextPtr = (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_FONT_BLOCK) - sizeof (UINT8));
+        StringTextPtr = (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_SIBT_STRINGS_SCSU_FONT_BLOCK) - sizeof (UINT8));
         BlockSize    += StringTextPtr - BlockHdr;
 
         for (Index = 0; Index < StringCount; Index++) {
@@ -1266,7 +1266,7 @@ GetNextStringId (
         BlockSize    += Offset;
         CopyMem (
           &StringCount,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT16)
           );
         for (Index = 0; Index < StringCount; Index++) {
@@ -1291,7 +1291,7 @@ GetNextStringId (
         break;
 
       case EFI_HII_SIBT_SKIP1:
-        SkipCount       = (UINT16)(*(UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK)));
+        SkipCount       = (UINT16)(*(UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK)));
         CurrentStringId = (UINT16)(CurrentStringId + SkipCount);
         BlockSize      +=  sizeof (EFI_HII_SIBT_SKIP1_BLOCK);
         break;
@@ -1305,7 +1305,7 @@ GetNextStringId (
       case EFI_HII_SIBT_EXT1:
         CopyMem (
           &Length8,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT8)
           );
         BlockSize += Length8;
@@ -1319,7 +1319,7 @@ GetNextStringId (
       case EFI_HII_SIBT_EXT4:
         CopyMem (
           &Length32,
-          (UINT8 *)((UINTN)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
+          (UINT8 *)((UINTPTR_T)BlockHdr + sizeof (EFI_HII_STRING_BLOCK) + sizeof (UINT8)),
           sizeof (UINT32)
           );
 

@@ -389,7 +389,7 @@ ReallocateAcpiTableBuffer (
   }
 
   if (mAcpiTableAllocType != AllocateAnyPages) {
-    Pointer = (UINT8 *)(UINTN)PageAddress;
+    Pointer = (UINT8 *)(UINTPTR_T)PageAddress;
   }
 
   ZeroMem (Pointer, TotalSize);
@@ -600,7 +600,7 @@ AddTableToList (
                     EFI_SIZE_TO_PAGES (CurrentTableList->TableSize),
                     &AllocPhysAddress
                     );
-    CurrentTableList->Table = (EFI_ACPI_COMMON_HEADER *)(UINTN)AllocPhysAddress;
+    CurrentTableList->Table = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)AllocPhysAddress;
   }
 
   //
@@ -612,7 +612,7 @@ AddTableToList (
   }
 
   if (!CurrentTableList->PoolAllocation) {
-    CurrentTableList->Table = (EFI_ACPI_COMMON_HEADER *)(UINTN)AllocPhysAddress;
+    CurrentTableList->Table = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)AllocPhysAddress;
   }
 
   //
@@ -1833,7 +1833,7 @@ InstallAcpiTableFromHob (
       return EFI_NOT_FOUND;
     }
 
-    Rsdp = (EFI_ACPI_3_0_ROOT_SYSTEM_DESCRIPTION_POINTER *)(UINTN)(AcpiTableAdress->Rsdp);
+    Rsdp = (EFI_ACPI_3_0_ROOT_SYSTEM_DESCRIPTION_POINTER *)(UINTPTR_T)(AcpiTableAdress->Rsdp);
 
     //
     // An ACPI-compatible OS must use the XSDT if present.
@@ -1842,12 +1842,12 @@ InstallAcpiTableFromHob (
     ASSERT ((UINTN)Rsdp->XsdtAddress == Rsdp->XsdtAddress);
 
     EntrySize = sizeof (UINT64);
-    Rsdt      = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTN)Rsdp->XsdtAddress;
+    Rsdt      = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTPTR_T)Rsdp->XsdtAddress;
     if (Rsdt == NULL) {
       //
       // XsdtAddress is zero, then we use Rsdt which has 32 bit entry
       //
-      Rsdt      = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTN)Rsdp->RsdtAddress;
+      Rsdt      = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTPTR_T)Rsdp->RsdtAddress;
       EntrySize = sizeof (UINT32);
     }
 
@@ -1870,7 +1870,7 @@ InstallAcpiTableFromHob (
         break;
       }
 
-      ChildTable = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTN)ChildTableAddress;
+      ChildTable = (EFI_ACPI_DESCRIPTION_HEADER *)(UINTPTR_T)ChildTableAddress;
       Status     = AddTableToList (AcpiTableInstance, ChildTable, TRUE, Version, TRUE, &TableKey);
       if (EFI_ERROR (Status)) {
         DEBUG ((DEBUG_ERROR, "InstallAcpiTableFromHob: Fail to add ACPI table at 0x%p\n", ChildTable));
@@ -1883,7 +1883,7 @@ InstallAcpiTableFromHob (
         // Add the FACS and DSDT tables if it is not NULL.
         //
         if (((EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE *)ChildTable)->FirmwareCtrl != 0) {
-          TableToInstall = (VOID *)(UINTN)((EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE *)ChildTable)->FirmwareCtrl;
+          TableToInstall = (VOID *)(UINTPTR_T)((EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE *)ChildTable)->FirmwareCtrl;
           Status         = AddTableToList (AcpiTableInstance, TableToInstall, TRUE, Version, TRUE, &TableKey);
           if (EFI_ERROR (Status)) {
             DEBUG ((DEBUG_ERROR, "InstallAcpiTableFromHob: Fail to add ACPI table FACS\n"));
@@ -1893,7 +1893,7 @@ InstallAcpiTableFromHob (
         }
 
         if (((EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE *)ChildTable)->Dsdt != 0) {
-          TableToInstall = (VOID *)(UINTN)((EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE *)ChildTable)->Dsdt;
+          TableToInstall = (VOID *)(UINTPTR_T)((EFI_ACPI_3_0_FIXED_ACPI_DESCRIPTION_TABLE *)ChildTable)->Dsdt;
           Status         = AddTableToList (AcpiTableInstance, TableToInstall, TRUE, Version, TRUE, &TableKey);
           if (EFI_ERROR (Status)) {
             DEBUG ((DEBUG_ERROR, "InstallAcpiTableFromHob: Fail to add ACPI table DSDT\n"));
@@ -1999,7 +1999,7 @@ AcpiTableAcpiTableConstructor (
   }
 
   if (mAcpiTableAllocType != AllocateAnyPages) {
-    Pointer = (UINT8 *)(UINTN)PageAddress;
+    Pointer = (UINT8 *)(UINTPTR_T)PageAddress;
   }
 
   ZeroMem (Pointer, RsdpTableSize);
@@ -2063,7 +2063,7 @@ AcpiTableAcpiTableConstructor (
   }
 
   if (mAcpiTableAllocType != AllocateAnyPages) {
-    Pointer = (UINT8 *)(UINTN)PageAddress;
+    Pointer = (UINT8 *)(UINTPTR_T)PageAddress;
   }
 
   ZeroMem (Pointer, TotalSize);

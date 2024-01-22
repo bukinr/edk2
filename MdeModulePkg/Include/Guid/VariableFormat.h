@@ -38,7 +38,7 @@ extern EFI_GUID  gEfiAuthenticatedVariableGuid;
 /// Alignment of Variable Data Header in Variable Store region.
 ///
 #define HEADER_ALIGNMENT  4
-#define HEADER_ALIGN(Header)  (((UINTN) (Header) + HEADER_ALIGNMENT - 1) & (~(HEADER_ALIGNMENT - 1)))
+#define HEADER_ALIGN(Header)  (((UINTPTR_T) (Header) + HEADER_ALIGNMENT - 1) & (~(HEADER_ALIGNMENT - 1)))
 
 ///
 /// Status of Variable Store Region.
