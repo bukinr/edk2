@@ -942,7 +942,7 @@ ParseCmObjDesc (
   INTN                        Offset;
   CONST  CM_OBJ_PARSER_ARRAY  *ParserArray;
 
-  if ((CmObjDesc == NULL) || (CmObjDesc->Data == NULL)) {
+  if ((CmObjDesc == NULL) || (CmObjDesc->Data == 0)) {
     return;
   }
 
