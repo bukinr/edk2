@@ -249,7 +249,7 @@ SnpUndi32GetStatus (
       *TxBuf = NULL;
     } else {
       Snp->RecycledTxBufCount--;
-      *TxBuf = (VOID *)(UINTN)Snp->RecycledTxBuf[Snp->RecycledTxBufCount];
+      *TxBuf = (VOID *)(UINTPTR_T)Snp->RecycledTxBuf[Snp->RecycledTxBufCount];
     }
   }
 

@@ -97,7 +97,7 @@ SnpUndi32CallbackMemio (
   SNP_DRIVER                 *Snp;
   EFI_PCI_IO_PROTOCOL_WIDTH  Width;
 
-  Snp = (SNP_DRIVER *)(UINTN)UniqueId;
+  Snp = (SNP_DRIVER *)(UINTPTR_T)UniqueId;
 
   Width = (EFI_PCI_IO_PROTOCOL_WIDTH)0;
   switch (NumBytes) {
@@ -302,7 +302,7 @@ SnpUndi32CallbackUnmap (
   SNP_DRIVER  *Snp;
   UINT16      Index;
 
-  Snp = (SNP_DRIVER *)(UINTN)UniqueId;
+  Snp = (SNP_DRIVER *)(UINTPTR_T)UniqueId;
 
   for (Index = 0; Index < MAX_MAP_LENGTH; Index++) {
     if (Snp->MapList[Index].VirtualAddress == CpuAddr) {

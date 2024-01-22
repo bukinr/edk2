@@ -173,7 +173,7 @@ SimpleNetworkDriverSupported (
     goto Done;
   }
 
-  Pxe = (PXE_UNDI *)(UINTN)(NiiProtocol->Id);
+  Pxe = (PXE_UNDI *)(UINTPTR_T)(NiiProtocol->Id);
 
   //
   //  Verify !PXE revisions.
@@ -331,7 +331,7 @@ SimpleNetworkDriverStart (
 
   DEBUG ((DEBUG_INFO, "Start(): UNDI3.1 found\n"));
 
-  Pxe = (PXE_UNDI *)(UINTN)(Nii->Id);
+  Pxe = (PXE_UNDI *)(UINTPTR_T)(Nii->Id);
 
   if (Calc8BitCksum (Pxe, Pxe->hw.Len) != 0) {
     DEBUG ((DEBUG_NET, "\n!PXE checksum is not correct.\n"));
@@ -371,7 +371,7 @@ SimpleNetworkDriverStart (
     goto NiiError;
   }
 
-  Snp = (SNP_DRIVER *)(UINTN)Address;
+  Snp = (SNP_DRIVER *)(UINTPTR_T)Address;
 
   ZeroMem (Snp, sizeof (SNP_DRIVER));
 
@@ -423,9 +423,9 @@ SimpleNetworkDriverStart (
     Snp->IsSwUndi = TRUE;
 
     if ((Pxe->sw.Implementation & PXE_ROMID_IMP_SW_VIRT_ADDR) != 0) {
-      Snp->IssueUndi32Command = (ISSUE_UNDI32_COMMAND)(UINTN)Pxe->sw.EntryPoint;
+      Snp->IssueUndi32Command = (ISSUE_UNDI32_COMMAND)(UINTPTR_T)Pxe->sw.EntryPoint;
     } else {
-      Snp->IssueUndi32Command = (ISSUE_UNDI32_COMMAND)(UINTN)((UINT8)(UINTN)Pxe + Pxe->sw.EntryPoint);
+      Snp->IssueUndi32Command = (ISSUE_UNDI32_COMMAND)(UINTPTR_T)((UINT8)(UINTN)Pxe + Pxe->sw.EntryPoint);
     }
   }
 
@@ -459,8 +459,8 @@ SimpleNetworkDriverStart (
     goto Error_DeleteSNP;
   }
 
-  Snp->Cpb = (VOID *)(UINTN)Address;
-  Snp->Db  = (VOID *)((UINTN)Address + 2048);
+  Snp->Cpb = (VOID *)(UINTPTR_T)Address;
+  Snp->Db  = (VOID *)((UINTPTR_T)Address + 2048);
 
   //
   // Find the correct BAR to do IO.
