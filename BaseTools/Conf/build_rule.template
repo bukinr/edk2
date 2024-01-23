@@ -646,5 +646,8 @@
     <Command.GCC>
         "$(GENFW)" -o $(OUTPUT_DIR)(+)$(MODULE_NAME)hii.rc -g $(MODULE_GUID) --hiibinpackage $(HII_BINARY_PACKAGES) $(GENFW_FLAGS)
         "$(RC)" $(RC_FLAGS) $(OUTPUT_DIR)(+)$(MODULE_NAME)hii.rc ${dst}
+        echo .incbin \"$(OUTPUT_DIR)(+)$(MODULE_NAME)hii.rc\" >> $(OUTPUT_DIR)(+)$(MODULE_NAME)hii.S
+        $(ASM) -c -target aarch64-linux-gnu -march=morello -mabi=purecap $(OUTPUT_DIR)(+)$(MODULE_NAME)hii.S -o ${dst}
+
     <Command.XCODE>
         "$(GENFW)" -o $(OUTPUT_DIR)(+)$(MODULE_NAME)hii.rc -g $(MODULE_GUID) --hiibinpackage $(HII_BINARY_PACKAGES) $(GENFW_FLAGS)
