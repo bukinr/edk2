@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "Udp4Impl.h"
 
 EFI_UDP4_PROTOCOL  mUdp4Protocol = {
@@ -366,7 +367,7 @@ Udp4Groups (
   // the multicast datagrams destined to multicast IPs the other instances configured.
   //
   if (JoinFlag) {
-    NetMapInsertTail (&Instance->McastIps, (VOID *)(UINTN)McastIp, NULL);
+    NetMapInsertTail (&Instance->McastIps, (VOID *)(UINTPTR_T)McastIp, NULL);
   } else {
     NetMapIterate (&Instance->McastIps, Udp4LeaveGroup, MulticastAddress);
   }

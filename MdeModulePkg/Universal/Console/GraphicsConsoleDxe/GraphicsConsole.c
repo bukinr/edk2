@@ -1077,7 +1077,7 @@ GraphicsConsoleConOutOutputString (
           //
           UgaDraw->Blt (
                      UgaDraw,
-                     (EFI_UGA_PIXEL *)(UINTN)&Background,
+                     (EFI_UGA_PIXEL *)(UINTPTR_T)&Background,
                      EfiUgaVideoFill,
                      0,
                      0,
@@ -1456,7 +1456,7 @@ GraphicsConsoleConOutSetMode (
       //
       Status = UgaDraw->Blt (
                           UgaDraw,
-                          (EFI_UGA_PIXEL *)(UINTN)&mGraphicsEfiColors[0],
+                          (EFI_UGA_PIXEL *)(UINTPTR_T)&mGraphicsEfiColors[0],
                           EfiUgaVideoFill,
                           0,
                           0,
@@ -1594,7 +1594,7 @@ GraphicsConsoleConOutClearScreen (
   } else if (FeaturePcdGet (PcdUgaConsumeSupport)) {
     Status = UgaDraw->Blt (
                         UgaDraw,
-                        (EFI_UGA_PIXEL *)(UINTN)&Background,
+                        (EFI_UGA_PIXEL *)(UINTPTR_T)&Background,
                         EfiUgaVideoFill,
                         0,
                         0,
@@ -1975,7 +1975,7 @@ FlushCursor (
   } else if (FeaturePcdGet (PcdUgaConsumeSupport)) {
     UgaDraw->Blt (
                UgaDraw,
-               (EFI_UGA_PIXEL *)(UINTN)BltChar,
+               (EFI_UGA_PIXEL *)(UINTPTR_T)BltChar,
                EfiUgaVideoToBltBuffer,
                GlyphX,
                GlyphY,
@@ -2016,7 +2016,7 @@ FlushCursor (
   } else if (FeaturePcdGet (PcdUgaConsumeSupport)) {
     UgaDraw->Blt (
                UgaDraw,
-               (EFI_UGA_PIXEL *)(UINTN)BltChar,
+               (EFI_UGA_PIXEL *)(UINTPTR_T)BltChar,
                EfiUgaBltBufferToVideo,
                0,
                0,

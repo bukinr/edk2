@@ -927,7 +927,7 @@ MatchUsbWwid (
   //
   // Serial number in USB WWID device path is the last 64-or-less UTF-16 characters.
   //
-  CompareStr = (CHAR16 *)(UINTN)(UsbWwid + 1);
+  CompareStr = (CHAR16 *)(UINTPTR_T)(UsbWwid + 1);
   CompareLen = (DevicePathNodeLength (UsbWwid) - sizeof (USB_WWID_DEVICE_PATH)) / sizeof (CHAR16);
   if (CompareStr[CompareLen - 1] == L'\0') {
     CompareLen--;

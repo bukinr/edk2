@@ -103,7 +103,7 @@ EFI_GET_PCD_INFO_PROTOCOL  mEfiGetPcdInfoInstance = {
 };
 
 EFI_HANDLE  mPcdHandle      = NULL;
-UINTN       mVpdBaseAddress = 0;
+UINTPTR_T   mVpdBaseAddress = 0;
 
 /**
   Main entry for PCD DXE driver.
@@ -181,7 +181,7 @@ PcdDxeInit (
   //
   // PcdVpdBaseAddress64 is DynamicEx PCD only. So, DxePcdGet64Ex() is used to get its value.
   //
-  mVpdBaseAddress = (UINTN)DxePcdGet64Ex (&gEfiMdeModulePkgTokenSpaceGuid, PcdToken (PcdVpdBaseAddress64));
+  mVpdBaseAddress = (UINTPTR_T)MakeCap(DxePcdGet64Ex (&gEfiMdeModulePkgTokenSpaceGuid, PcdToken (PcdVpdBaseAddress64)));
   if (mVpdBaseAddress == 0) {
     //
     // PcdVpdBaseAddress64 is not set, get value from PcdVpdBaseAddress.

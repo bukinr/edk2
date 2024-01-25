@@ -19,6 +19,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/VarCheck.h>
 #include <Protocol/VariableLock.h>
 #include <Library/BaseLib.h>
+#include <Library/CheriLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiLib.h>
 #include <Library/UefiDriverEntryPoint.h>
@@ -42,7 +43,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
   #error "Please make sure the version of PCD DXE Service and the generated PCD DXE Database match."
 #endif
 
-extern UINTN  mVpdBaseAddress;
+extern UINTPTR_T  mVpdBaseAddress;
 
 /**
   Retrieve additional information associated with a PCD token in the default token space.

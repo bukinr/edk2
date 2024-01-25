@@ -167,7 +167,7 @@ RamDiskBlkIoReadBlocks (
 
   CopyMem (
     Buffer,
-    (VOID *)(UINTN)(PrivateData->StartingAddr + MultU64x32 (Lba, PrivateData->Media.BlockSize)),
+    (VOID *)(UINTPTR_T)(PrivateData->StartingAddr + MultU64x32 (Lba, PrivateData->Media.BlockSize)),
     BufferSize
     );
 
@@ -244,7 +244,7 @@ RamDiskBlkIoWriteBlocks (
   }
 
   CopyMem (
-    (VOID *)(UINTN)(PrivateData->StartingAddr + MultU64x32 (Lba, PrivateData->Media.BlockSize)),
+    (VOID *)(UINTPTR_T)(PrivateData->StartingAddr + MultU64x32 (Lba, PrivateData->Media.BlockSize)),
     Buffer,
     BufferSize
     );

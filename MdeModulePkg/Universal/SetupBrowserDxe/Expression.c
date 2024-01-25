@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "Setup.h"
 
 //
@@ -253,7 +254,7 @@ PopCurrentExpression (
              &Data
              );
 
-  *Pointer = (VOID *)(UINTN)Data.Value.u64;
+  *Pointer = (VOID *)(MakeCap(Data.Value.u64));
 
   return Status;
 }
@@ -604,7 +605,7 @@ PopMapExpressionList (
              &Data
              );
 
-  *Pointer = (VOID *)(UINTN)Data.Value.u64;
+  *Pointer = (VOID *)(MakeCap(Data.Value.u64));
 
   return Status;
 }

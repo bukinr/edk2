@@ -845,7 +845,7 @@ RamDiskUnregister (
           // driver is responsible for freeing the allocated memory for the
           // RAM disk.
           //
-          FreePool ((VOID *)(UINTN)PrivateData->StartingAddr);
+          FreePool ((VOID *)(UINTPTR_T)PrivateData->StartingAddr);
         }
 
         FreePool (PrivateData->DevicePath);

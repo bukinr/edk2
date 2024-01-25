@@ -7,6 +7,7 @@
 
 **/
 
+#include "Library/CheriLib.h"
 #include "Udp6Impl.h"
 
 UINT16  mUdp6RandomPort;
@@ -1149,7 +1150,7 @@ Udp6CancelTokens (
     // be removed from the Map there.
     //
     Packet = (NET_BUF *)(Item->Value);
-    IpIo   = (IP_IO *)(*((UINTN *)&Packet->ProtoData[0]));
+    IpIo   = (IP_IO *)MakeCap(*((UINTN *)&Packet->ProtoData[0]));
 
     IpIoCancelTxToken (IpIo, Packet);
   } else {
@@ -1789,7 +1790,7 @@ Udp6SendPortUnreach (
   // for pointer movement that fact should be considered.
   //
   Ptr = (VOID *)&IcmpErrHdr->Head;
-  Ptr = (UINT8 *)(UINTN)((UINTN)Ptr + sizeof (IP6_ICMP_ERROR_HEAD) - sizeof (EFI_IP6_HEADER));
+  Ptr = (UINT8 *)(UINTPTR_T)((UINTPTR_T)Ptr + sizeof (IP6_ICMP_ERROR_HEAD) - sizeof (EFI_IP6_HEADER));
   CopyMem (Ptr, NetSession->IpHdr.Ip6Hdr, NetSession->IpHdrLen);
   CopyMem (
     Ptr + NetSession->IpHdrLen,

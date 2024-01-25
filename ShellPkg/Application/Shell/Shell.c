@@ -2739,9 +2739,9 @@ SetupAndRunCommandOrFile (
   if (EFI_ERROR (Status)) {
     ConstScriptFile = ShellCommandGetCurrentScriptFile ();
     if ((ConstScriptFile == NULL) || (ConstScriptFile->CurrentCommand == NULL)) {
-      ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SHELL_ERROR), ShellInfoObject.HiiHandle, (VOID *)(Status));
+      ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SHELL_ERROR), ShellInfoObject.HiiHandle, Status);
     } else {
-      ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SHELL_ERROR_SCRIPT), ShellInfoObject.HiiHandle, (VOID *)(Status), ConstScriptFile->CurrentCommand->Line);
+      ShellPrintHiiEx (-1, -1, NULL, STRING_TOKEN (STR_SHELL_ERROR_SCRIPT), ShellInfoObject.HiiHandle, Status, ConstScriptFile->CurrentCommand->Line);
     }
   }
 

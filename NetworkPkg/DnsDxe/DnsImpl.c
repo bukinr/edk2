@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "DnsImpl.h"
 
 /**
@@ -116,7 +117,7 @@ Dns4CancelTokens (
     // Item->Value.
     //
     Packet = (NET_BUF *)(Item->Value);
-    UdpIo  = (UDP_IO *)(*((UINTN *)&Packet->ProtoData[0]));
+    UdpIo  = (UDP_IO *)MakeCap(*((UINTN *)&Packet->ProtoData[0]));
 
     UdpIoCancelSentDatagram (UdpIo, Packet);
   }
@@ -176,7 +177,7 @@ Dns6CancelTokens (
     // Item->Value.
     //
     Packet = (NET_BUF *)(Item->Value);
-    UdpIo  = (UDP_IO *)(*((UINTN *)&Packet->ProtoData[0]));
+    UdpIo  = (UDP_IO *)MakeCap(*((UINTN *)&Packet->ProtoData[0]));
 
     UdpIoCancelSentDatagram (UdpIo, Packet);
   }

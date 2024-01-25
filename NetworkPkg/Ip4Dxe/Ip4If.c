@@ -827,7 +827,7 @@ Ip4SendFrameToDefaultRoute (
       goto ON_ERROR;
     }
 
-    DefaultRoute = (IP4_ROUTE_ENTRY *)RtCacheEntry->Tag;
+    DefaultRoute = (IP4_ROUTE_ENTRY *)(UINTPTR_T)RtCacheEntry->Tag;
     if (DefaultRoute == NULL) {
       Status = EFI_NO_MAPPING;
       goto ON_ERROR;

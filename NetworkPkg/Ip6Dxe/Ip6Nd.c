@@ -7,6 +7,7 @@
 
 **/
 
+#include <Library/CheriLib.h>
 #include "Ip6Impl.h"
 
 EFI_MAC_ADDRESS  mZeroMacAddress;
@@ -2549,7 +2550,7 @@ Ip6ProcessRedirect (
     IP6_COPY_ADDRESS (&RouteCache->NextHop, Target);
 
     if (!IsRouter) {
-      RouteEntry       = (IP6_ROUTE_ENTRY *)RouteCache->Tag;
+      RouteEntry       = (IP6_ROUTE_ENTRY *)MakeCap(RouteCache->Tag);
       RouteEntry->Flag = RouteEntry->Flag | IP6_DIRECT_ROUTE;
     }
   } else {

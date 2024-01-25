@@ -12,6 +12,7 @@
 #include <Library/UefiDriverEntryPoint.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/HobLib.h>
+#include <Library/CheriLib.h>
 #include <libfdt.h>
 
 #include <Guid/Fdt.h>
@@ -418,7 +419,7 @@ InitializeFdtClientDxe (
     return EFI_NOT_FOUND;
   }
 
-  DeviceTreeBase = (VOID *)(UINTN)*(UINT64 *)GET_GUID_HOB_DATA (Hob);
+  DeviceTreeBase = (VOID *)MakeCap(*(UINT64 *)GET_GUID_HOB_DATA (Hob));
 
   if (fdt_check_header (DeviceTreeBase) != 0) {
     DEBUG ((

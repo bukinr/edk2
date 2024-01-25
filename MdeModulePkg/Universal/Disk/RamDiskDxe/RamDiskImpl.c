@@ -185,7 +185,7 @@ UnregisterAllRamDisks (
         // driver is responsible for freeing the allocated memory for the
         // RAM disk.
         //
-        FreePool ((VOID *)(UINTN)PrivateData->StartingAddr);
+        FreePool ((VOID *)(UINTPTR_T)PrivateData->StartingAddr);
       }
 
       FreePool (PrivateData->DevicePath);
@@ -389,7 +389,7 @@ HiiCreateRamDisk (
     FileHandle->Read (
                   FileHandle,
                   &BufferSize,
-                  (VOID *)(UINTN)StartingAddr
+                  (VOID *)(UINTPTR_T)StartingAddr
                   );
     if (BufferSize != FileInformation->FileSize) {
       do {

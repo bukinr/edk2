@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "Udp4Impl.h"
 
 UINT16  mUdp4RandomPort;
@@ -1139,7 +1140,7 @@ Udp4CancelTokens (
     // be removed from the Map there.
     //
     Packet = (NET_BUF *)(Item->Value);
-    IpIo   = (IP_IO *)(*((UINTN *)&Packet->ProtoData[0]));
+    IpIo   = (IP_IO *)MakeCap(*((UINTN *)&Packet->ProtoData[0]));
 
     IpIoCancelTxToken (IpIo, Packet);
   } else {
@@ -1311,7 +1312,7 @@ Udp4MatchDgram (
   }
 
   if (IP4_IS_MULTICAST (NTOHL (Destination)) &&
-      (NetMapFindKey (&Instance->McastIps, (VOID *)(UINTN)Destination) != NULL)
+      (NetMapFindKey (&Instance->McastIps, (VOID *)(UINTPTR_T)Destination) != NULL)
       )
   {
     //
