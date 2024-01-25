@@ -715,7 +715,7 @@ PeiCheckAndSwitchStack (
     EFI_PEI_HOB_POINTERS  Hob;
 
     for (  StackPointer = (UINT32 *)SecCoreData->StackBase;
-           (StackPointer < (UINT32 *)((UINTN)SecCoreData->StackBase + SecCoreData->StackSize)) \
+           (StackPointer < (UINT32 *)((UINTPTR_T)SecCoreData->StackBase + SecCoreData->StackSize)) \
         && (*StackPointer == PcdGet32 (PcdInitValueInTempStack));
            StackPointer++)
     {
@@ -804,9 +804,9 @@ PeiCheckAndSwitchStack (
     BuildStackHob (TopOfNewStack - NewStackSize, NewStackSize);
 
     //
-    // Cache information from SecCoreData into locals before SecCoreData is converted to a permanent memory address
+    // Cache information from SecCoreData into locals before SecCoreData is converted to a permanent memory addres5Ds
     //
-    TemporaryRamBase    = (EFI_PHYSICAL_ADDRESS)(UINTN)SecCoreData->TemporaryRamBase;
+    TemporaryRamBase    = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)SecCoreData->TemporaryRamBase;
     TemporaryRamSize    = SecCoreData->TemporaryRamSize;
     TemporaryStackSize  = SecCoreData->StackSize;
     TemporaryStackBase  = SecCoreData->StackBase;
@@ -841,11 +841,11 @@ PeiCheckAndSwitchStack (
       // Calculate new HandOffTable and PrivateData address in permanent memory's stack
       //
       if (StackOffsetPositive) {
-        SecCoreData = (CONST EFI_SEC_PEI_HAND_OFF *)((UINTN)(VOID *)SecCoreData + StackOffset);
-        Private     = (PEI_CORE_INSTANCE *)((UINTN)(VOID *)Private + StackOffset);
+        SecCoreData = (CONST EFI_SEC_PEI_HAND_OFF *)((UINTPTR_T)(VOID *)SecCoreData + StackOffset);
+        Private     = (PEI_CORE_INSTANCE *)((UINTPTR_T)(VOID *)Private + StackOffset);
       } else {
-        SecCoreData = (CONST EFI_SEC_PEI_HAND_OFF *)((UINTN)(VOID *)SecCoreData - StackOffset);
-        Private     = (PEI_CORE_INSTANCE *)((UINTN)(VOID *)Private - StackOffset);
+        SecCoreData = (CONST EFI_SEC_PEI_HAND_OFF *)((UINTPTR_T)(VOID *)SecCoreData - StackOffset);
+        Private     = (PEI_CORE_INSTANCE *)((UINTPTR_T)(VOID *)Private - StackOffset);
       }
 
       //
@@ -857,7 +857,7 @@ PeiCheckAndSwitchStack (
       TemporaryRamSupportPpi->TemporaryRamMigration (
                                 PeiServices,
                                 TemporaryRamBase,
-                                (EFI_PHYSICAL_ADDRESS)(UINTN)(TopOfNewStack - TemporaryStackSize),
+                                (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)(TopOfNewStack - TemporaryStackSize),
                                 TemporaryRamSize
                                 );
 
@@ -1538,7 +1538,7 @@ PeiDispatcher (
                   //
                   // Call the PEIM entry point for PEIM driver
                   //
-                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTN)EntryPoint;
+                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTPTR_T)EntryPoint;
                   PeimEntryPoint (PeimFileHandle, (const EFI_PEI_SERVICES **)PeiServices);
                   Private->PeimDispatchOnThisPass = TRUE;
                 } else {
@@ -1600,7 +1600,7 @@ PeiDispatcher (
                            &AuthenticationState
                            );
                 if (Status == EFI_SUCCESS) {
-                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTN)EntryPoint;
+                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTPTR_T)EntryPoint;
                 }
               }
 

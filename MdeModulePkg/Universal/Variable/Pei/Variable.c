@@ -84,7 +84,7 @@ GetEndPointer (
   //
   // The end of variable store
   //
-  return (VARIABLE_HEADER *)HEADER_ALIGN ((UINTN)VarStoreHeader + VarStoreHeader->Size);
+  return (VARIABLE_HEADER *)HEADER_ALIGN ((UINTPTR_T)VarStoreHeader + VarStoreHeader->Size);
 }
 
 /**
@@ -229,7 +229,7 @@ GetVariableNamePtr (
   IN BOOLEAN          AuthFlag
   )
 {
-  return (CHAR16 *)((UINTN)Variable + GetVariableHeaderSize (AuthFlag));
+  return (CHAR16 *)((UINTPTR_T)Variable + GetVariableHeaderSize (AuthFlag));
 }
 
 /**
@@ -274,12 +274,12 @@ GetVariableDataPtr (
   IN  BOOLEAN          AuthFlag
   )
 {
-  UINTN  Value;
+  UINTPTR_T  Value;
 
   //
   // Be careful about pad size for alignment
   //
-  Value  =  (UINTN)GetVariableNamePtr (Variable, AuthFlag);
+  Value  =  (UINTPTR_T)GetVariableNamePtr (Variable, AuthFlag);
   Value += NameSizeOfVariable (VariableHeader, AuthFlag);
   Value += GET_PAD_SIZE (NameSizeOfVariable (VariableHeader, AuthFlag));
 
@@ -305,9 +305,9 @@ GetNextVariablePtr (
 {
   EFI_PHYSICAL_ADDRESS  TargetAddress;
   EFI_PHYSICAL_ADDRESS  SpareAddress;
-  UINTN                 Value;
+  UINTPTR_T             Value;
 
-  Value  =  (UINTN)GetVariableDataPtr (Variable, VariableHeader, StoreInfo->AuthFlag);
+  Value  =  (UINTPTR_T)GetVariableDataPtr (Variable, VariableHeader, StoreInfo->AuthFlag);
   Value += DataSizeOfVariable (VariableHeader, StoreInfo->AuthFlag);
   Value += GET_PAD_SIZE (DataSizeOfVariable (VariableHeader, StoreInfo->AuthFlag));
   //
@@ -322,7 +322,7 @@ GetNextVariablePtr (
       //
       // Next variable is in spare block.
       //
-      Value = (UINTN)SpareAddress + (Value - (UINTN)TargetAddress);
+      Value = (UINTPTR_T)SpareAddress + (Value - (UINTN)TargetAddress);
     }
   }
 
@@ -407,7 +407,7 @@ CompareVariableName (
         //
         // Another partial content is in spare block.
         //
-        if (CompareMem ((UINT8 *)(UINTN)SpareAddress, (UINT8 *)Name2 + PartialNameSize, NameSize - PartialNameSize) == 0) {
+        if (CompareMem ((UINT8 *)(UINTPTR_T)SpareAddress, (UINT8 *)Name2 + PartialNameSize, NameSize - PartialNameSize) == 0) {
           return TRUE;
         }
       }
@@ -425,7 +425,7 @@ CompareVariableName (
         //
         // Another partial content is in spare block.
         //
-        if (CompareMem ((UINT8 *)(UINTN)SpareAddress, (UINT8 *)Name1 + PartialNameSize, NameSize - PartialNameSize) == 0) {
+        if (CompareMem ((UINT8 *)(UINTPTR_T)SpareAddress, (UINT8 *)Name1 + PartialNameSize, NameSize - PartialNameSize) == 0) {
           return TRUE;
         }
       }
@@ -605,7 +605,7 @@ GetVariableStore (
         //
         // First let FvHeader point to NV storage base.
         //
-        FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTN)NvStorageBase;
+        FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)NvStorageBase;
 
         //
         // Check the FTW last write data hob.
@@ -618,7 +618,7 @@ GetVariableStore (
             //
             // Let FvHeader point to spare block.
             //
-            FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTN)FtwLastWriteData->SpareAddress;
+            FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)FtwLastWriteData->SpareAddress;
             DEBUG ((DEBUG_INFO, "PeiVariable: NV storage is backed up in spare block: 0x%x\n", (UINTN)FtwLastWriteData->SpareAddress));
           } else if ((FtwLastWriteData->TargetAddress > NvStorageBase) && (FtwLastWriteData->TargetAddress < (NvStorageBase + NvStorageSize))) {
             StoreInfo->FtwLastWriteData = FtwLastWriteData;
@@ -736,7 +736,7 @@ GetVariableHeader (
         //
         // Another partial content is in spare block.
         //
-        CopyMem ((UINT8 *)*VariableHeader + PartialHeaderSize, (UINT8 *)(UINTN)SpareAddress, GetVariableHeaderSize (StoreInfo->AuthFlag) - PartialHeaderSize);
+        CopyMem ((UINT8 *)*VariableHeader + PartialHeaderSize, (UINT8 *)(UINTPTR_T)SpareAddress, GetVariableHeaderSize (StoreInfo->AuthFlag) - PartialHeaderSize);
       }
     }
   } else {
@@ -787,7 +787,7 @@ GetVariableNameOrData (
       //
       // Another partial content is in spare block.
       //
-      CopyMem (Buffer + PartialSize, (UINT8 *)(UINTN)SpareAddress, Size - PartialSize);
+      CopyMem (Buffer + PartialSize, (UINT8 *)(UINTPTR_T)SpareAddress, Size - PartialSize);
       return;
     }
   }

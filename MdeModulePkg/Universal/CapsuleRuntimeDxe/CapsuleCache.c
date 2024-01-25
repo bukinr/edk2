@@ -9,6 +9,7 @@
 
 **/
 
+#include <Library/CheriLib.h>
 #include "CapsuleService.h"
 
 #include <Library/CacheMaintenanceLib.h>
@@ -30,26 +31,26 @@ CapsuleCacheWriteBack (
   EFI_CAPSULE_BLOCK_DESCRIPTOR  *Desc;
 
   if (!EfiAtRuntime ()) {
-    Desc = (EFI_CAPSULE_BLOCK_DESCRIPTOR *)(UINTN)ScatterGatherList;
+    Desc = (EFI_CAPSULE_BLOCK_DESCRIPTOR *)MakeCap(ScatterGatherList);
     do {
       WriteBackDataCacheRange (
-        (VOID *)(UINTN)Desc,
+        (VOID *)(UINTPTR_T)Desc,
         (UINTN)sizeof (*Desc)
         );
 
       if (Desc->Length > 0) {
         WriteBackDataCacheRange (
-          (VOID *)(UINTN)Desc->Union.DataBlock,
+          (VOID *)(UINTPTR_T)Desc->Union.DataBlock,
           (UINTN)Desc->Length
           );
         Desc++;
       } else if (Desc->Union.ContinuationPointer > 0) {
-        Desc = (EFI_CAPSULE_BLOCK_DESCRIPTOR *)(UINTN)Desc->Union.ContinuationPointer;
+        Desc = (EFI_CAPSULE_BLOCK_DESCRIPTOR *)(UINTPTR_T)Desc->Union.ContinuationPointer;
       }
     } while (Desc->Length > 0 || Desc->Union.ContinuationPointer > 0);
 
     WriteBackDataCacheRange (
-      (VOID *)(UINTN)Desc,
+      (VOID *)(UINTPTR_T)Desc,
       (UINTN)sizeof (*Desc)
       );
   }

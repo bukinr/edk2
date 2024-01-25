@@ -84,7 +84,7 @@ _SetupPrimaryCoreStack:
   MOV64 (x8, FixedPcdGet64 (PcdCPUCoresStackBase))
   MOV64 (x9, FixedPcdGet32 (PcdInitValueInTempStack) |\
              FixedPcdGet32 (PcdInitValueInTempStack) << 32)
-0:stp   x9, x9, [x8], #16
+0:stp   x9, x9, [c8], #16
   cmp   x8, x1
   b.lt  0b
   b     _PrepareArguments

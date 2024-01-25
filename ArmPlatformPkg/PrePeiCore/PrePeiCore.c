@@ -11,6 +11,7 @@
 #include <Library/CacheMaintenanceLib.h>
 #include <Library/DebugAgentLib.h>
 #include <Library/ArmLib.h>
+#include <Library/CheriLib.h>
 #include <Library/PrintLib.h>
 #include <Library/SerialPortLib.h>
 
@@ -34,7 +35,7 @@ CreatePpiList (
 {
   EFI_PEI_PPI_DESCRIPTOR  *PlatformPpiList;
   UINTN                   PlatformPpiListSize;
-  UINTN                   ListBase;
+  UINTPTR_T               ListBase;
   EFI_PEI_PPI_DESCRIPTOR  *LastPpi;
 
   // Get the Platform PPIs
@@ -42,7 +43,7 @@ CreatePpiList (
   ArmPlatformGetPlatformPpiList (&PlatformPpiListSize, &PlatformPpiList);
 
   // Copy the Common and Platform PPis in Temporary Memory
-  ListBase = PcdGet64 (PcdCPUCoresStackBase);
+  ListBase = (UINTPTR_T)PcdGet64 (PcdCPUCoresStackBase);
   CopyMem ((VOID *)ListBase, gCommonPpiTable, sizeof (gCommonPpiTable));
   CopyMem ((VOID *)(ListBase + sizeof (gCommonPpiTable)), PlatformPpiList, PlatformPpiListSize);
 
@@ -94,7 +95,7 @@ CEntryPoint (
     ArmEnableInstructionCache ();
 
     InvalidateDataCacheRange (
-      (VOID *)(UINTN)PcdGet64 (PcdCPUCoresStackBase),
+      (VOID *)(UINTPTR_T)PcdGet64 (PcdCPUCoresStackBase),
       PcdGet32 (PcdCPUCorePrimaryStackSize)
       );
   }
@@ -159,11 +160,11 @@ PrePeiCoreTemporaryRamSupport (
 
   HeapSize = ALIGN_VALUE (CopySize / 2, CPU_STACK_ALIGNMENT);
 
-  OldHeap = (VOID *)(UINTN)TemporaryMemoryBase;
-  NewHeap = (VOID *)((UINTN)PermanentMemoryBase + (CopySize - HeapSize));
+  OldHeap = (VOID *)MakeCap(TemporaryMemoryBase);
+  NewHeap = (VOID *)(MakeCap(PermanentMemoryBase) + (CopySize - HeapSize));
 
-  OldStack = (VOID *)((UINTN)TemporaryMemoryBase + HeapSize);
-  NewStack = (VOID *)(UINTN)PermanentMemoryBase;
+  OldStack = (VOID *)(MakeCap(TemporaryMemoryBase) + HeapSize);
+  NewStack = (VOID *)MakeCap(PermanentMemoryBase);
 
   //
   // Migrate the temporary memory stack to permanent memory stack.

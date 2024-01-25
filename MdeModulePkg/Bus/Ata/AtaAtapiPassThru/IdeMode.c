@@ -1394,7 +1394,7 @@ AtaUdmaInOut (
     Status    = PciIo->Map (
                          PciIo,
                          EfiPciIoOperationBusMasterCommonBuffer,
-                         (VOID *)(UINTN)BaseAddr,
+                         (VOID *)(UINTPTR_T)BaseAddr,
                          &ByteCount,
                          &BaseMapAddr,
                          &PrdTableMap
@@ -1405,18 +1405,18 @@ AtaUdmaInOut (
       // it means the DMA operation may be broken into several discontinuous smaller chunks.
       // Can't handle this case.
       //
-      PciIo->FreeBuffer (PciIo, RealPageCount, (VOID *)(UINTN)BaseAddr);
+      PciIo->FreeBuffer (PciIo, RealPageCount, (VOID *)(UINTPTR_T)BaseAddr);
       return EFI_OUT_OF_RESOURCES;
     }
 
-    ZeroMem ((VOID *)((UINTN)BaseAddr), ByteCount);
+    ZeroMem ((VOID *)((UINTPTR_T)BaseAddr), ByteCount);
 
     //
     // Calculate the 64K align address as PRD Table base address.
     //
     AlignmentMask    = SIZE_64KB - 1;
-    PrdTableBaseAddr = ((UINTN)BaseAddr + AlignmentMask) & ~AlignmentMask;
-    PrdTableMapAddr  = ((UINTN)BaseMapAddr + AlignmentMask) & ~AlignmentMask;
+    PrdTableBaseAddr = ((UINTPTR_T)BaseAddr + AlignmentMask) & ~AlignmentMask;
+    PrdTableMapAddr  = ((UINTPTR_T)BaseMapAddr + AlignmentMask) & ~AlignmentMask;
 
     //
     // Map the host address of DataBuffer to DMA master address.
@@ -1438,7 +1438,7 @@ AtaUdmaInOut (
                          );
     if (EFI_ERROR (Status) || (ByteCount != DataLength)) {
       PciIo->Unmap (PciIo, PrdTableMap);
-      PciIo->FreeBuffer (PciIo, RealPageCount, (VOID *)(UINTN)BaseAddr);
+      PciIo->FreeBuffer (PciIo, RealPageCount, (VOID *)(UINTPTR_T)BaseAddr);
       return EFI_OUT_OF_RESOURCES;
     }
 
@@ -1452,7 +1452,7 @@ AtaUdmaInOut (
     // Fill the PRD table with appropriate bus master address of data buffer and data length.
     //
     ByteRemaining   = ByteCount;
-    TempPrdBaseAddr = (EFI_ATA_DMA_PRD *)(UINTN)PrdTableBaseAddr;
+    TempPrdBaseAddr = (EFI_ATA_DMA_PRD *)(UINTPTR_T)PrdTableBaseAddr;
     while (ByteRemaining != 0) {
       if (ByteRemaining <= 0x10000) {
         TempPrdBaseAddr->RegionBaseAddr = (UINT32)((UINTN)BufferMapAddress);
@@ -1509,7 +1509,7 @@ AtaUdmaInOut (
     if (Task != NULL) {
       Task->Map            = BufferMap;
       Task->TableMap       = PrdTableMap;
-      Task->MapBaseAddress = (EFI_ATA_DMA_PRD *)(UINTN)BaseAddr;
+      Task->MapBaseAddress = (EFI_ATA_DMA_PRD *)(UINTPTR_T)BaseAddr;
       Task->PageCount      = RealPageCount;
       Task->IsStart        = TRUE;
     }
@@ -1596,7 +1596,7 @@ Exit:
       PciIo->Unmap (PciIo, Task->Map);
     } else {
       PciIo->Unmap (PciIo, PrdTableMap);
-      PciIo->FreeBuffer (PciIo, RealPageCount, (VOID *)(UINTN)BaseAddr);
+      PciIo->FreeBuffer (PciIo, RealPageCount, (VOID *)(UINTPTR_T)BaseAddr);
       PciIo->Unmap (PciIo, BufferMap);
     }
 

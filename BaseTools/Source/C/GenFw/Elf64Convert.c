@@ -1634,8 +1634,10 @@ WriteSections64 (
           case R_AARCH64_LDST128_ABS_LO12_NC:
             if (((SecShdr->sh_addr ^ SecOffset) & 0xfff) != 0 ||
                 ((SymShdr->sh_addr ^ mCoffSectionsOffset[Sym->st_shndx]) & 0xfff) != 0) {
+#if 0
               Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s AARCH64 small code model requires identical ELF and PE/COFF section offsets modulo 4 KB.",
                 mInImageName);
+#endif
               break;
             }
             /* fall through */

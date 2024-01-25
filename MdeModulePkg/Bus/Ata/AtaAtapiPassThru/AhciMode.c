@@ -7,6 +7,7 @@
 
 **/
 
+#include <Library/CheriLib.h>
 #include "AtaAtapiPassThru.h"
 
 /**
@@ -225,7 +226,7 @@ AhciWaitMemSet (
     // compiler from optimizing the access to the memory address
     // to only read once.
     //
-    Value  = *(volatile UINT32 *)(UINTN)Address;
+    Value  = *(volatile UINT32 *)MakeCap(Address);
     Value &= MaskValue;
 
     if (Value == TestValue) {
@@ -263,7 +264,7 @@ AhciCheckMemSet (
 {
   UINT32  Value;
 
-  Value  = *(volatile UINT32 *)Address;
+  Value  = *(volatile UINT32 *)MakeCap(Address);
   Value &= MaskValue;
 
   if (Value == TestValue) {
@@ -328,9 +329,9 @@ AhciDumpPortStatus (
   IN OUT EFI_ATA_STATUS_BLOCK  *AtaStatusBlock
   )
 {
-  UINTN       Offset;
+  UINTPTR_T   Offset;
   UINT32      Data;
-  UINTN       FisBaseAddr;
+  UINTPTR_T   FisBaseAddr;
   EFI_STATUS  Status;
 
   ASSERT (PciIo != NULL);
@@ -338,7 +339,7 @@ AhciDumpPortStatus (
   if (AtaStatusBlock != NULL) {
     ZeroMem (AtaStatusBlock, sizeof (EFI_ATA_STATUS_BLOCK));
 
-    FisBaseAddr = (UINTN)AhciRegisters->AhciRFis + Port * sizeof (EFI_AHCI_RECEIVED_FIS);
+    FisBaseAddr = (UINTPTR_T)AhciRegisters->AhciRFis + Port * sizeof (EFI_AHCI_RECEIVED_FIS);
     Offset      = FisBaseAddr + EFI_AHCI_D2H_FIS_OFFSET;
 
     Status = AhciCheckMemSet (Offset, EFI_AHCI_FIS_TYPE_MASK, EFI_AHCI_FIS_REGISTER_D2H);
@@ -499,7 +500,7 @@ AhciBuildCommand (
 
   BaseAddr = Data64.Uint64;
 
-  ZeroMem ((VOID *)((UINTN)BaseAddr), sizeof (EFI_AHCI_RECEIVED_FIS));
+  ZeroMem ((VOID *)(MakeCap(BaseAddr)), sizeof (EFI_AHCI_RECEIVED_FIS));
 
   ZeroMem (AhciRegisters->AhciCommandTable, sizeof (EFI_AHCI_COMMAND_TABLE));
 
@@ -549,7 +550,7 @@ AhciBuildCommand (
   }
 
   CopyMem (
-    (VOID *)((UINTN)AhciRegisters->AhciCmdList + (UINTN)CommandSlotNumber * sizeof (EFI_AHCI_COMMAND_LIST)),
+    (VOID *)((UINTPTR_T)AhciRegisters->AhciCmdList + (UINTN)CommandSlotNumber * sizeof (EFI_AHCI_COMMAND_LIST)),
     CommandList,
     sizeof (EFI_AHCI_COMMAND_LIST)
     );
@@ -1052,7 +1053,7 @@ AhciPioTransfer (
       AtapiCommand,
       AtapiCommandLength,
       0,
-      (VOID *)(UINTN)PhyAddr,
+      (VOID *)(UINTPTR_T)PhyAddr,
       DataCount
       );
 
@@ -1262,7 +1263,7 @@ AhciDmaTransfer (
         AtapiCommand,
         AtapiCommandLength,
         0,
-        (VOID *)(UINTN)PhyAddr,
+        (VOID *)(UINTPTR_T)PhyAddr,
         DataCount
         );
 
@@ -1302,7 +1303,7 @@ AhciDmaTransfer (
         AtapiCommand,
         AtapiCommandLength,
         0,
-        (VOID *)(UINTN)PhyAddr,
+        (VOID *)(UINTPTR_T)PhyAddr,
         DataCount
         );
 
@@ -1738,7 +1739,7 @@ AhciAtaSmartReturnStatusCheck (
   EFI_ATA_COMMAND_BLOCK  AtaCommandBlock;
   UINT8                  LBAMid;
   UINT8                  LBAHigh;
-  UINTN                  FisBaseAddr;
+  UINTPTR_T              FisBaseAddr;
   UINT32                 Value;
 
   ZeroMem (&AtaCommandBlock, sizeof (EFI_ATA_COMMAND_BLOCK));
@@ -1777,13 +1778,13 @@ AhciAtaSmartReturnStatusCheck (
     (EFI_IO_BUS_ATA_ATAPI | EFI_IOB_ATA_BUS_SMART_ENABLE)
     );
 
-  FisBaseAddr = (UINTN)AhciRegisters->AhciRFis + Port * sizeof (EFI_AHCI_RECEIVED_FIS);
+  FisBaseAddr = (UINTPTR_T)AhciRegisters->AhciRFis + Port * sizeof (EFI_AHCI_RECEIVED_FIS);
 
   Value = *(UINT32 *)(FisBaseAddr + EFI_AHCI_D2H_FIS_OFFSET);
 
   if ((Value & EFI_AHCI_FIS_TYPE_MASK) == EFI_AHCI_FIS_REGISTER_D2H) {
-    LBAMid  = ((UINT8 *)(UINTN)(FisBaseAddr + EFI_AHCI_D2H_FIS_OFFSET))[5];
-    LBAHigh = ((UINT8 *)(UINTN)(FisBaseAddr + EFI_AHCI_D2H_FIS_OFFSET))[6];
+    LBAMid  = ((UINT8 *)(UINTPTR_T)(FisBaseAddr + EFI_AHCI_D2H_FIS_OFFSET))[5];
+    LBAHigh = ((UINT8 *)(UINTPTR_T)(FisBaseAddr + EFI_AHCI_D2H_FIS_OFFSET))[6];
 
     if ((LBAMid == 0x4f) && (LBAHigh == 0xc2)) {
       //
@@ -2245,7 +2246,7 @@ AhciCreateTransferDescriptor (
   //
   // Get the highest bit of implemented ports which decides how many bytes are allocated for received FIS.
   //
-  MaxPortNumber = (UINT8)(UINTN)(HighBitSet32 (PortImplementBitMap) + 1);
+  MaxPortNumber = (UINT8)(UINTPTR_T)(HighBitSet32 (PortImplementBitMap) + 1);
   if (MaxPortNumber == 0) {
     return EFI_DEVICE_ERROR;
   }
@@ -2255,7 +2256,7 @@ AhciCreateTransferDescriptor (
                                PciIo,
                                AllocateAnyPages,
                                EfiBootServicesData,
-                               EFI_SIZE_TO_PAGES ((UINTN)MaxReceiveFisSize),
+                               EFI_SIZE_TO_PAGES ((UINTPTR_T)MaxReceiveFisSize),
                                &Buffer,
                                0
                                );
@@ -2295,7 +2296,7 @@ AhciCreateTransferDescriptor (
     goto Error5;
   }
 
-  AhciRegisters->AhciRFisPciAddr = (EFI_AHCI_RECEIVED_FIS *)(UINTN)AhciRFisPciAddr;
+  AhciRegisters->AhciRFisPciAddr = (EFI_AHCI_RECEIVED_FIS *)(UINTPTR_T)AhciRFisPciAddr;
 
   //
   // Allocate memory for command list
@@ -2351,7 +2352,7 @@ AhciCreateTransferDescriptor (
     goto Error3;
   }
 
-  AhciRegisters->AhciCmdListPciAddr = (EFI_AHCI_COMMAND_LIST *)(UINTN)AhciCmdListPciAddr;
+  AhciRegisters->AhciCmdListPciAddr = (EFI_AHCI_COMMAND_LIST *)(UINTPTR_T)AhciCmdListPciAddr;
 
   //
   // Allocate memory for command table
@@ -2408,7 +2409,7 @@ AhciCreateTransferDescriptor (
     goto Error1;
   }
 
-  AhciRegisters->AhciCommandTablePciAddr = (EFI_AHCI_COMMAND_TABLE *)(UINTN)AhciCommandTablePciAddr;
+  AhciRegisters->AhciCommandTablePciAddr = (EFI_AHCI_COMMAND_TABLE *)(UINTPTR_T)AhciCommandTablePciAddr;
 
   return EFI_SUCCESS;
   //
