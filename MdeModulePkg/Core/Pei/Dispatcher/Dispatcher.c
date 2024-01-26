@@ -911,12 +911,12 @@ PeiCheckAndSwitchStack (
       //
       HeapTemporaryRamSize = (UINTN)(Private->HobList.HandoffInformationTable->EfiFreeMemoryBottom - Private->HobList.HandoffInformationTable->EfiMemoryBottom);
       ASSERT (BaseOfNewHeap + HeapTemporaryRamSize <= Private->FreePhysicalMemoryTop);
-      CopyMem ((UINT8 *)(UINTN)BaseOfNewHeap, PeiTemporaryRamBase, HeapTemporaryRamSize);
+      CopyMem ((UINT8 *)(UINTPTR_T)BaseOfNewHeap, PeiTemporaryRamBase, HeapTemporaryRamSize);
 
       //
       // Migrate Stack
       //
-      CopyMem ((UINT8 *)(UINTN)(TopOfNewStack - TemporaryStackSize), TemporaryStackBase, TemporaryStackSize);
+      CopyMem ((UINT8 *)(UINTPTR_T)(TopOfNewStack - TemporaryStackSize), TemporaryStackBase, TemporaryStackSize);
 
       //
       // Copy Hole Range Data
@@ -965,7 +965,7 @@ PeiCheckAndSwitchStack (
               Private->HoleData[Index].Offset         = (UINTN)(Private->HoleData[Index].Base - HoleMemBase);
             }
 
-            CopyMem ((VOID *)(UINTN)HoleMemBase, (VOID *)(UINTN)Private->HoleData[Index].Base, Private->HoleData[Index].Size);
+            CopyMem ((VOID *)(UINTPTR_T)HoleMemBase, (VOID *)(UINTPTR_T)Private->HoleData[Index].Base, Private->HoleData[Index].Size);
             HoleMemBase = HoleMemBase + Private->HoleData[Index].Size;
           }
         }
@@ -975,10 +975,10 @@ PeiCheckAndSwitchStack (
       // Switch new stack
       //
       SwitchStack (
-        (SWITCH_STACK_ENTRY_POINT)(UINTN)PeiCoreEntry,
+        (SWITCH_STACK_ENTRY_POINT)(UINTPTR_T)PeiCoreEntry,
         (VOID *)SecCoreData,
         (VOID *)Private,
-        (VOID *)(UINTN)TopOfNewStack
+        (VOID *)(UINTPTR_T)TopOfNewStack
         );
     }
 
@@ -1034,7 +1034,7 @@ MigratePeim (
     DEBUG ((DEBUG_VERBOSE, "%a", AsciiString));
     DEBUG_CODE_END ();
 
-    Pe32Data = (VOID *)((UINTN)ImageAddress - (UINTN)MigratedFileHandle + (UINTN)FileHandle);
+    Pe32Data = (VOID *)((UINTPTR_T)ImageAddress - (UINTN)MigratedFileHandle + (UINTN)FileHandle);
     Status   = LoadAndRelocatePeCoffImageInPlace (Pe32Data, ImageAddress);
     ASSERT_EFI_ERROR (Status);
   }
@@ -1067,7 +1067,7 @@ ConvertStatusCodeCallbacks (
     NumberOfEntries = GET_GUID_HOB_DATA (Hob);
     CallbackEntry   = NumberOfEntries + 1;
     for (Index = 0; Index < *NumberOfEntries; Index++) {
-      if (((VOID *)CallbackEntry[Index]) != NULL) {
+      if ((CallbackEntry[Index]) != 0) {
         if ((CallbackEntry[Index] >= OrgFvHandle) && (CallbackEntry[Index] < (OrgFvHandle + FvSize))) {
           DEBUG ((
             DEBUG_INFO,
@@ -1132,7 +1132,7 @@ MigratePeimsInFv (
       if (Private->Fv[FvIndex].FvFileHandles[FileIndex] != NULL) {
         FileHandle = Private->Fv[FvIndex].FvFileHandles[FileIndex];
 
-        MigratedFileHandle = (EFI_PEI_FILE_HANDLE)((UINTN)FileHandle - OrgFvHandle + FvHandle);
+        MigratedFileHandle = (EFI_PEI_FILE_HANDLE)((UINTPTR_T)FileHandle - OrgFvHandle + FvHandle);
 
         DEBUG ((DEBUG_VERBOSE, "    Migrating FileHandle %2d ", FileIndex));
         Status = MigratePeim (FileHandle, MigratedFileHandle);
@@ -1233,7 +1233,7 @@ EvacuateTempRam (
                   &FvHeaderAddress
                   );
       ASSERT_EFI_ERROR (Status);
-      MigratedFvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTN)FvHeaderAddress;
+      MigratedFvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)FvHeaderAddress;
 
       //
       // Allocate pool to save the raw PEIMs, which is used to keep consistent context across
@@ -1245,7 +1245,7 @@ EvacuateTempRam (
                   &FvHeaderAddress
                   );
       ASSERT_EFI_ERROR (Status);
-      RawDataFvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTN)FvHeaderAddress;
+      RawDataFvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)FvHeaderAddress;
 
       DEBUG ((
         DEBUG_VERBOSE,
@@ -1282,7 +1282,7 @@ EvacuateTempRam (
           DEBUG ((DEBUG_VERBOSE, "    Child FV[%02d] is being migrated.\n", FvChildIndex));
           ChildFvOffset = (UINTN)ChildFvHeader - (UINTN)FvHeader;
           DEBUG ((DEBUG_VERBOSE, "    Child FV offset = 0x%x.\n", ChildFvOffset));
-          MigratedChildFvHeader              = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTN)MigratedFvHeader + ChildFvOffset);
+          MigratedChildFvHeader              = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTPTR_T)MigratedFvHeader + ChildFvOffset);
           Private->Fv[FvChildIndex].FvHeader = MigratedChildFvHeader;
           Private->Fv[FvChildIndex].FvHandle = (EFI_PEI_FV_HANDLE)MigratedChildFvHeader;
           DEBUG ((DEBUG_VERBOSE, "    Child migrated FV header at 0x%x.\n", (UINTN)MigratedChildFvHeader));
@@ -1407,7 +1407,7 @@ PeiDispatcher (
             //
             // Call the PEIM entry point
             //
-            PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTN)EntryPoint;
+            PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTPTR_T)EntryPoint;
 
             PERF_START_IMAGE_BEGIN (PeimFileHandle);
             PeimEntryPoint (PeimFileHandle, (const EFI_PEI_SERVICES **)&Private->Ps);

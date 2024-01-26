@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "PeiMain.h"
 
 /**
@@ -101,12 +102,12 @@ PeiCreateHob (
     return EFI_OUT_OF_RESOURCES;
   }
 
-  *Hob                                        = (VOID *)(UINTN)HandOffHob->EfiEndOfHobList;
+  *Hob                                        = (VOID *)(UINTPTR_T)HandOffHob->EfiEndOfHobList;
   ((EFI_HOB_GENERIC_HEADER *)*Hob)->HobType   = Type;
   ((EFI_HOB_GENERIC_HEADER *)*Hob)->HobLength = Length;
   ((EFI_HOB_GENERIC_HEADER *)*Hob)->Reserved  = 0;
 
-  HobEnd                      = (EFI_HOB_GENERIC_HEADER *)((UINTN)*Hob + Length);
+  HobEnd                      = (EFI_HOB_GENERIC_HEADER *)MakeCap((UINTN)*Hob + Length);
   HandOffHob->EfiEndOfHobList = (EFI_PHYSICAL_ADDRESS)(UINTN)HobEnd;
 
   HobEnd->HobType   = EFI_HOB_TYPE_END_OF_HOB_LIST;
@@ -178,10 +179,10 @@ PeiInstallSecHobData (
     return EFI_OUT_OF_RESOURCES;
   }
 
-  Hob.Raw = (UINT8 *)(UINTN)HandOffHob->EfiEndOfHobList;
+  Hob.Raw = (UINT8 *)(UINTPTR_T)HandOffHob->EfiEndOfHobList;
   CopyMem (Hob.Raw, HobStart.Raw, SecHobListLength);
 
-  HobEnd                      = (EFI_HOB_GENERIC_HEADER *)((UINTN)Hob.Raw + SecHobListLength);
+  HobEnd                      = (EFI_HOB_GENERIC_HEADER *)MakeCap((UINTN)Hob.Raw + SecHobListLength);
   HandOffHob->EfiEndOfHobList = (EFI_PHYSICAL_ADDRESS)(UINTN)HobEnd;
 
   HobEnd->HobType   = EFI_HOB_TYPE_END_OF_HOB_LIST;
@@ -214,7 +215,7 @@ PeiCoreBuildHobHandoffInfoTable (
   EFI_HOB_HANDOFF_INFO_TABLE  *Hob;
   EFI_HOB_GENERIC_HEADER      *HobEnd;
 
-  Hob                   = (VOID *)(UINTN)MemoryBegin;
+  Hob                   = (VOID *)(UINTPTR_T)MemoryBegin;
   HobEnd                = (EFI_HOB_GENERIC_HEADER *)(Hob+1);
   Hob->Header.HobType   = EFI_HOB_TYPE_HANDOFF;
   Hob->Header.HobLength = (UINT16)sizeof (EFI_HOB_HANDOFF_INFO_TABLE);

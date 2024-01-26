@@ -32,9 +32,9 @@ ConvertPointer (
       ((UINTN)*Pointer >= TempBottom))
   {
     if (OffsetPositive) {
-      *Pointer = (VOID *)((UINTN)*Pointer + Offset);
+      *Pointer = (VOID *)((UINTPTR_T)*Pointer + Offset);
     } else {
-      *Pointer = (VOID *)((UINTN)*Pointer - Offset);
+      *Pointer = (VOID *)((UINTPTR_T)*Pointer - Offset);
     }
   }
 }
@@ -1114,7 +1114,7 @@ ConvertPeiCorePpiPointers (
     //
     // Find PEI Core EntryPoint in the BFV in temporary memory.
     //
-    Status = PeCoffLoaderGetEntryPoint ((VOID *)(UINTN)PeiCoreImageBase, &PeiCoreEntryPoint);
+    Status = PeCoffLoaderGetEntryPoint ((VOID *)(UINTPTR_T)PeiCoreImageBase, &PeiCoreEntryPoint);
     ASSERT_EFI_ERROR (Status);
 
     OrgImageBase      = (UINTN)PeiCoreImageBase;

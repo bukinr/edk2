@@ -44,7 +44,7 @@ PeiImageRead (
   CHAR8  *Source8;
 
   Destination8 = Buffer;
-  Source8      = (CHAR8 *)((UINTN)FileHandle + FileOffset);
+  Source8      = (CHAR8 *)((UINTPTR_T)FileHandle + FileOffset);
   if (Destination8 != Source8) {
     CopyMem (Destination8, Source8, *ReadSize);
   }
@@ -239,7 +239,7 @@ GetPeCoffImageFixLoadingAssignedAddress (
     SectionHeaderOffset += sizeof (EFI_IMAGE_SECTION_HEADER);
   }
 
-  DEBUG ((DEBUG_INFO|DEBUG_LOAD, "LOADING MODULE FIXED INFO: Loading module at fixed address 0x%11p. Status= %r \n", (VOID *)(UINTN)FixLoadingAddress, Status));
+  DEBUG ((DEBUG_INFO|DEBUG_LOAD, "LOADING MODULE FIXED INFO: Loading module at fixed address 0x%11p. Status= %r \n", (VOID *)(UINTPTR_T)FixLoadingAddress, Status));
   return Status;
 }
 
@@ -312,7 +312,7 @@ LoadAndRelocatePeCoffImage (
   //
   // XIP image that ImageAddress is same to Image handle.
   //
-  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)(UINTN)Pe32Data) {
+  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data) {
     IsXipImage = TRUE;
   }
 
@@ -348,7 +348,7 @@ LoadAndRelocatePeCoffImage (
   //
   // Set default base address to current image address.
   //
-  ImageContext.ImageAddress = (EFI_PHYSICAL_ADDRESS)(UINTN)Pe32Data;
+  ImageContext.ImageAddress = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data;
 
   //
   // Allocate Memory for the image when memory is ready, and image is relocatable.
@@ -440,7 +440,7 @@ LoadAndRelocatePeCoffImage (
   Status = PeCoffLoaderLoadImage (&ImageContext);
   if (EFI_ERROR (Status)) {
     if (ImageContext.ImageError == IMAGE_ERROR_INVALID_SECTION_ALIGNMENT) {
-      DEBUG ((DEBUG_ERROR, "PEIM Image Address 0x%11p doesn't meet with section alignment 0x%x.\n", (VOID *)(UINTN)ImageContext.ImageAddress, ImageContext.SectionAlignment));
+      DEBUG ((DEBUG_ERROR, "PEIM Image Address 0x%11p doesn't meet with section alignment 0x%x.\n", (VOID *)(UINTPTR_T)ImageContext.ImageAddress, ImageContext.SectionAlignment));
     }
 
     return Status;
@@ -457,8 +457,8 @@ LoadAndRelocatePeCoffImage (
   //
   // Flush the instruction cache so the image data is written before we execute it
   //
-  if (ImageContext.ImageAddress != (EFI_PHYSICAL_ADDRESS)(UINTN)Pe32Data) {
-    InvalidateInstructionCacheRange ((VOID *)(UINTN)ImageContext.ImageAddress, (UINTN)ImageContext.ImageSize);
+  if (ImageContext.ImageAddress != (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data) {
+    InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)ImageContext.ImageAddress, (UINTN)ImageContext.ImageSize);
   }
 
   *ImageAddress = ImageContext.ImageAddress;
@@ -497,7 +497,7 @@ LoadAndRelocatePeCoffImageInPlace (
     return Status;
   }
 
-  ImageContext.ImageAddress = (PHYSICAL_ADDRESS)(UINTN)ImageAddress;
+  ImageContext.ImageAddress = (PHYSICAL_ADDRESS)(UINTPTR_T)ImageAddress;
 
   //
   // Load the image in place
@@ -520,8 +520,8 @@ LoadAndRelocatePeCoffImageInPlace (
   //
   // Flush the instruction cache so the image data is written before we execute it
   //
-  if (ImageContext.ImageAddress != (EFI_PHYSICAL_ADDRESS)(UINTN)Pe32Data) {
-    InvalidateInstructionCacheRange ((VOID *)(UINTN)ImageContext.ImageAddress, (UINTN)ImageContext.ImageSize);
+  if (ImageContext.ImageAddress != (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data) {
+    InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)ImageContext.ImageAddress, (UINTN)ImageContext.ImageSize);
   }
 
   return Status;
@@ -687,7 +687,7 @@ PeiLoadImageLoadImage (
   //
   // Got the entry point from the loaded Pe32Data
   //
-  Pe32Data    = (VOID *)((UINTN)ImageAddress);
+  Pe32Data    = (VOID *)((UINTPTR_T)ImageAddress);
   *EntryPoint = ImageEntryPoint;
 
   Machine = PeCoffLoaderGetMachineType (Pe32Data);
@@ -716,12 +716,12 @@ PeiLoadImageLoadImage (
   // Print debug message: Loading PEIM at 0x12345678 EntryPoint=0x12345688 Driver.efi
   //
   if (Machine != EFI_IMAGE_MACHINE_IA64) {
-    DEBUG ((DEBUG_INFO | DEBUG_LOAD, "Loading PEIM at 0x%11p EntryPoint=0x%11p ", (VOID *)(UINTN)ImageAddress, (VOID *)(UINTN)*EntryPoint));
+    DEBUG ((DEBUG_INFO | DEBUG_LOAD, "Loading PEIM at 0x%11p EntryPoint=0x%11p ", (VOID *)(UINTPTR_T)ImageAddress, (VOID *)(UINTPTR_T)*EntryPoint));
   } else {
     //
     // For IPF Image, the real entry point should be print.
     //
-    DEBUG ((DEBUG_INFO | DEBUG_LOAD, "Loading PEIM at 0x%11p EntryPoint=0x%11p ", (VOID *)(UINTN)ImageAddress, (VOID *)(UINTN)(*(UINT64 *)(UINTN)*EntryPoint)));
+    DEBUG ((DEBUG_INFO | DEBUG_LOAD, "Loading PEIM at 0x%11p EntryPoint=0x%11p ", (VOID *)(UINTPTR_T)ImageAddress, (VOID *)(UINTPTR_T)(*(UINT64 *)(UINTPTR_T)*EntryPoint)));
   }
 
   //
@@ -829,7 +829,7 @@ RelocationIsStrip (
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTN)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
@@ -925,7 +925,7 @@ PeiLoadImage (
         // The shadowed PEIM must be relocatable.
         //
         if (PeimState == PEIM_STATE_REGISTER_FOR_SHADOW) {
-          IsStrip = RelocationIsStrip ((VOID *)(UINTN)ImageAddress);
+          IsStrip = RelocationIsStrip ((VOID *)(UINTPTR_T)ImageAddress);
           ASSERT (!IsStrip);
           if (IsStrip) {
             return EFI_UNSUPPORTED;
@@ -935,8 +935,8 @@ PeiLoadImage (
         //
         // The image to be started must have the machine type supported by PeiCore.
         //
-        ASSERT (EFI_IMAGE_MACHINE_TYPE_SUPPORTED (PeCoffLoaderGetMachineType ((VOID *)(UINTN)ImageAddress)));
-        if (!EFI_IMAGE_MACHINE_TYPE_SUPPORTED (PeCoffLoaderGetMachineType ((VOID *)(UINTN)ImageAddress))) {
+        ASSERT (EFI_IMAGE_MACHINE_TYPE_SUPPORTED (PeCoffLoaderGetMachineType ((VOID *)(UINTPTR_T)ImageAddress)));
+        if (!EFI_IMAGE_MACHINE_TYPE_SUPPORTED (PeCoffLoaderGetMachineType ((VOID *)(UINTPTR_T)ImageAddress))) {
           return EFI_UNSUPPORTED;
         }
 

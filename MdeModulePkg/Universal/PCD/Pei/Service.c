@@ -7,6 +7,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "Service.h"
 
 /**
@@ -853,7 +854,7 @@ GetWorker (
   UINT32            LocalTokenNumber;
   UINT32            LocalTokenCount;
   UINT8             *VaraiableDefaultBuffer;
-  UINTN             VpdBaseAddress;
+  UINTPTR_T         VpdBaseAddress;
 
   //
   // TokenNumber Zero is reserved as PCD_INVALID_TOKEN_NUMBER.
@@ -886,7 +887,7 @@ GetWorker (
       //
       // PcdVpdBaseAddress64 is DynamicEx PCD only. So, PeiPcdGet64Ex() is used to get its value.
       //
-      VpdBaseAddress = (UINTN)PeiPcdGet64Ex (&gEfiMdeModulePkgTokenSpaceGuid, PcdToken (PcdVpdBaseAddress64));
+      VpdBaseAddress = (UINTPTR_T)MakeCap(PeiPcdGet64Ex (&gEfiMdeModulePkgTokenSpaceGuid, PcdToken (PcdVpdBaseAddress64)));
       if (VpdBaseAddress == 0) {
         //
         // PcdVpdBaseAddress64 is not set, get value from PcdVpdBaseAddress.

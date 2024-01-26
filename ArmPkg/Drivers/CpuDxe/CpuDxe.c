@@ -53,13 +53,13 @@ CpuFlushCpuDataCache (
 {
   switch (FlushType) {
     case EfiCpuFlushTypeWriteBack:
-      WriteBackDataCacheRange ((VOID *)(UINTN)Start, (UINTN)Length);
+      WriteBackDataCacheRange ((VOID *)(UINTPTR_T)Start, (UINTN)Length);
       break;
     case EfiCpuFlushTypeInvalidate:
-      InvalidateDataCacheRange ((VOID *)(UINTN)Start, (UINTN)Length);
+      InvalidateDataCacheRange ((VOID *)(UINTPTR_T)Start, (UINTN)Length);
       break;
     case EfiCpuFlushTypeWriteBackInvalidate:
-      WriteBackInvalidateDataCacheRange ((VOID *)(UINTN)Start, (UINTN)Length);
+      WriteBackInvalidateDataCacheRange ((VOID *)(UINTPTR_T)Start, (UINTN)Length);
       break;
     default:
       return EFI_INVALID_PARAMETER;

@@ -235,7 +235,7 @@ FwVolBlockReadBlock (
   }
 
   LbaStart    = FvbDevice->LbaCache[LbaIndex].Base;
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTN)FvbDevice->BaseAddress);
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTPTR_T)FvbDevice->BaseAddress);
   LbaOffset   = (UINT8 *)FwVolHeader + LbaStart + Offset;
 
   //
@@ -357,7 +357,7 @@ FwVolBlockGetBlockSize (
     return EFI_INVALID_PARAMETER;
   }
 
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTN)FvbDevice->BaseAddress);
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTPTR_T)FvbDevice->BaseAddress);
 
   PtrBlockMapEntry = FwVolHeader->BlockMap;
 
@@ -447,7 +447,7 @@ ProduceFVBProtocolOnBuffer (
   EFI_FV_BLOCK_MAP_ENTRY      *PtrBlockMapEntry;
 
   FvAlignment = 0;
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTN)BaseAddress;
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)BaseAddress;
   //
   // Validate FV Header, if not as expected, return
   //
@@ -569,7 +569,7 @@ ProduceFVBProtocolOnBuffer (
 
     CopyGuid (
       &((FV_PIWG_DEVICE_PATH *)FvbDev->DevicePath)->FvDevPath.FvName,
-      (GUID *)(UINTN)(BaseAddress + FwVolHeader->ExtHeaderOffset)
+      (GUID *)(UINTPTR_T)(BaseAddress + FwVolHeader->ExtHeaderOffset)
       );
   }
 
@@ -682,7 +682,7 @@ CoreProcessFirmwareVolume (
 
   *FVProtocolHandle = NULL;
   Status            = ProduceFVBProtocolOnBuffer (
-                        (EFI_PHYSICAL_ADDRESS)(UINTN)FvHeader,
+                        (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)FvHeader,
                         (UINT64)Size,
                         NULL,
                         0,

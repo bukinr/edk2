@@ -182,7 +182,7 @@ CoreAddRange (
   //
   if ((Type == EfiConventionalMemory) && (Start == 0) && (End >= EFI_PAGE_SIZE - 1)) {
     if ((PcdGet8 (PcdNullPointerDetectionPropertyMask) & BIT0) == 0) {
-      SetMem ((VOID *)(UINTN)Start, EFI_PAGE_SIZE, 0);
+      SetMem ((VOID *)(UINTPTR_T)Start, EFI_PAGE_SIZE, 0);
     }
   }
 
@@ -933,10 +933,10 @@ CoreConvertPagesEx (
       //
       if (Start == 0) {
         if (RangeEnd > EFI_PAGE_SIZE) {
-          DEBUG_CLEAR_MEMORY ((VOID *)(UINTN)EFI_PAGE_SIZE, (UINTN)(RangeEnd - EFI_PAGE_SIZE + 1));
+          DEBUG_CLEAR_MEMORY ((VOID *)(UINTPTR_T)EFI_PAGE_SIZE, (UINTN)(RangeEnd - EFI_PAGE_SIZE + 1));
         }
       } else {
-        DEBUG_CLEAR_MEMORY ((VOID *)(UINTN)Start, (UINTN)(RangeEnd - Start + 1));
+        DEBUG_CLEAR_MEMORY ((VOID *)(UINTPTR_T)Start, (UINTN)(RangeEnd - Start + 1));
       }
     }
 
@@ -1493,7 +1493,7 @@ CoreAllocatePages (
       MemoryProfileActionAllocatePages,
       MemoryType,
       EFI_PAGES_TO_SIZE (NumberOfPages),
-      (VOID *)(UINTN)*Memory,
+      (VOID *)(UINTPTR_T)*Memory,
       NULL
       );
     InstallMemoryAttributesTableOnMemoryAllocation (MemoryType);
@@ -1625,7 +1625,7 @@ CoreFreePages (
       MemoryProfileActionFreePages,
       MemoryType,
       EFI_PAGES_TO_SIZE (NumberOfPages),
-      (VOID *)(UINTN)Memory,
+      (VOID *)(UINTPTR_T)Memory,
       NULL
       );
     InstallMemoryAttributesTableOnMemoryAllocation (MemoryType);
@@ -2101,7 +2101,7 @@ CoreAllocatePoolPages (
     }
   }
 
-  return (VOID *)(UINTN)Start;
+  return (VOID *)(UINTPTR_T)Start;
 }
 
 /**

@@ -354,7 +354,7 @@ FvCheck (
     //
     // Don't cache memory mapped FV really.
     //
-    FvDevice->CachedFv = (UINT8 *)(UINTN)PhysicalAddress;
+    FvDevice->CachedFv = (UINT8 *)(UINTPTR_T)PhysicalAddress;
   } else {
     FvDevice->IsMemoryMapped = FALSE;
     FvDevice->CachedFv       = AllocatePool (Size);
@@ -513,7 +513,7 @@ FvCheck (
         //
         // Adjust pointer to the next 8-byte aligned boundary.
         //
-        FfsHeader = (EFI_FFS_FILE_HEADER *)(((UINTN)FfsHeader + 7) & ~0x07);
+        FfsHeader = (EFI_FFS_FILE_HEADER *)(((UINTPTR_T)FfsHeader + 7) & ~0x07);
         continue;
       }
     }
@@ -548,7 +548,7 @@ FvCheck (
     //
     // Adjust pointer to the next 8-byte aligned boundary.
     //
-    FfsHeader = (EFI_FFS_FILE_HEADER *)(((UINTN)FfsHeader + 7) & ~0x07);
+    FfsHeader = (EFI_FFS_FILE_HEADER *)(((UINTPTR_T)FfsHeader + 7) & ~0x07);
   }
 
 Done:

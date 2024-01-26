@@ -810,7 +810,7 @@ CoreFreePoolI (
     // See if all the pool entries in the same page as Free are freed pool
     // entries
     //
-    NewPage = (CHAR8 *)((UINTN)Free & ~(Granularity - 1));
+    NewPage = (CHAR8 *)((UINTPTR_T)Free & ~(Granularity - 1));
     Free    = (POOL_FREE *)&NewPage[0];
     ASSERT (Free != NULL);
 

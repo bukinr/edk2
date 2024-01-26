@@ -34,7 +34,7 @@ CoreInitializeDebugImageInfoTable (
   EFI_STATUS            Status;
   UINTN                 Pages;
   EFI_PHYSICAL_ADDRESS  Memory;
-  UINTN                 AlignedMemory;
+  UINTPTR_T             AlignedMemory;
   UINTN                 AlignmentMask;
   UINTN                 UnalignedPages;
   UINTN                 RealPages;
@@ -89,7 +89,7 @@ CoreInitializeDebugImageInfoTable (
   //
   // Free overallocated pages
   //
-  AlignedMemory  = ((UINTN)Memory + AlignmentMask) & ~AlignmentMask;
+  AlignedMemory  = ((UINTPTR_T)Memory + AlignmentMask) & ~AlignmentMask;
   UnalignedPages = EFI_SIZE_TO_PAGES (AlignedMemory - (UINTN)Memory);
   if (UnalignedPages > 0) {
     //

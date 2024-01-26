@@ -438,7 +438,7 @@ ProtectUefiImage (
 
   ImageAddress = LoadedImage->ImageBase;
 
-  PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTN)ImageAddress);
+  PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageAddress);
   if (PdbPointer != NULL) {
     DEBUG ((DEBUG_VERBOSE, "  Image - %a\n", PdbPointer));
   }
@@ -446,13 +446,13 @@ ProtectUefiImage (
   //
   // Check PE/COFF image
   //
-  DosHdr             = (EFI_IMAGE_DOS_HEADER *)(UINTN)ImageAddress;
+  DosHdr             = (EFI_IMAGE_DOS_HEADER *)(UINTPTR_T)ImageAddress;
   PeCoffHeaderOffset = 0;
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     PeCoffHeaderOffset = DosHdr->e_lfanew;
   }
 
-  Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINT8 *)(UINTN)ImageAddress + PeCoffHeaderOffset);
+  Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINT8 *)(UINTPTR_T)ImageAddress + PeCoffHeaderOffset);
   if (Hdr.Pe32->Signature != EFI_IMAGE_NT_SIGNATURE) {
     DEBUG ((DEBUG_VERBOSE, "Hdr.Pe32->Signature invalid - 0x%x\n", Hdr.Pe32->Signature));
     // It might be image in SMM.
@@ -475,7 +475,7 @@ ProtectUefiImage (
       "!!!!!!!!  ProtectUefiImageCommon - Section Alignment(0x%x) is incorrect  !!!!!!!!\n",
       SectionAlignment
       ));
-    PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTN)ImageAddress);
+    PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageAddress);
     if (PdbPointer != NULL) {
       DEBUG ((DEBUG_VERBOSE, "!!!!!!!!  Image - %a  !!!!!!!!\n", PdbPointer));
     }
@@ -484,7 +484,7 @@ ProtectUefiImage (
   }
 
   Section = (EFI_IMAGE_SECTION_HEADER *)(
-                                         (UINT8 *)(UINTN)ImageAddress +
+                                         (UINT8 *)(UINTPTR_T)ImageAddress +
                                          PeCoffHeaderOffset +
                                          sizeof (UINT32) +
                                          sizeof (EFI_IMAGE_FILE_HEADER) +
@@ -556,7 +556,7 @@ ProtectUefiImage (
     // of course).
     //
     DEBUG ((DEBUG_WARN, "!!!!!!!!  ProtectUefiImageCommon - CodeSegmentCount is 0  !!!!!!!!\n"));
-    PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTN)ImageAddress);
+    PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageAddress);
     if (PdbPointer != NULL) {
       DEBUG ((DEBUG_WARN, "!!!!!!!!  Image - %a  !!!!!!!!\n", PdbPointer));
     }

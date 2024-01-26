@@ -324,15 +324,15 @@ DxeMain (
   // Report DXE Core image information to the PE/COFF Extra Action Library
   //
   ZeroMem (&ImageContext, sizeof (ImageContext));
-  ImageContext.ImageAddress  = (EFI_PHYSICAL_ADDRESS)(UINTN)gDxeCoreLoadedImage->ImageBase;
-  ImageContext.PdbPointer    = PeCoffLoaderGetPdbPointer ((VOID *)(UINTN)ImageContext.ImageAddress);
-  ImageContext.SizeOfHeaders = PeCoffGetSizeOfHeaders ((VOID *)(UINTN)ImageContext.ImageAddress);
-  Status                     = PeCoffLoaderGetEntryPoint ((VOID *)(UINTN)ImageContext.ImageAddress, &EntryPoint);
+  ImageContext.ImageAddress  = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)gDxeCoreLoadedImage->ImageBase;
+  ImageContext.PdbPointer    = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageContext.ImageAddress);
+  ImageContext.SizeOfHeaders = PeCoffGetSizeOfHeaders ((VOID *)(UINTPTR_T)ImageContext.ImageAddress);
+  Status                     = PeCoffLoaderGetEntryPoint ((VOID *)(UINTPTR_T)ImageContext.ImageAddress, &EntryPoint);
   if (Status == EFI_SUCCESS) {
-    ImageContext.EntryPoint = (EFI_PHYSICAL_ADDRESS)(UINTN)EntryPoint;
+    ImageContext.EntryPoint = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)EntryPoint;
   }
 
-  ImageContext.Handle    = (VOID *)(UINTN)gDxeCoreLoadedImage->ImageBase;
+  ImageContext.Handle    = (VOID *)(UINTPTR_T)gDxeCoreLoadedImage->ImageBase;
   ImageContext.ImageRead = PeCoffLoaderImageReadFromMemory;
   PeCoffLoaderRelocateImageExtraAction (&ImageContext);
 

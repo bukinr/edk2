@@ -277,7 +277,7 @@ BltVideoFill (
 
   Status               = EFI_SUCCESS;
   PixelInformation     = &This->Mode->Info->PixelInformation;
-  FrameBufferBase      = (UINTN *)((UINTN)(This->Mode->FrameBufferBase));
+  FrameBufferBase      = (UINTN *)((UINTPTR_T)(This->Mode->FrameBufferBase));
   HorizontalResolution = This->Mode->Info->HorizontalResolution;
 
   LcdPlatformGetBpp (This->Mode->Mode, &BitsPerPixel);
@@ -430,7 +430,7 @@ BltVideoToBltBuffer (
   Status               = EFI_SUCCESS;
   PixelInformation     = &This->Mode->Info->PixelInformation;
   HorizontalResolution = This->Mode->Info->HorizontalResolution;
-  FrameBufferBase      = (UINTN *)((UINTN)(This->Mode->FrameBufferBase));
+  FrameBufferBase      = (UINTN *)((UINTPTR_T)(This->Mode->FrameBufferBase));
 
   if ((Delta != 0) && (Delta != Width * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL))) {
     // Delta is not zero and it is different from the width.
@@ -593,7 +593,7 @@ BltBufferToVideo (
   Status               = EFI_SUCCESS;
   PixelInformation     = &This->Mode->Info->PixelInformation;
   HorizontalResolution = This->Mode->Info->HorizontalResolution;
-  FrameBufferBase      = (UINTN *)((UINTN)(This->Mode->FrameBufferBase));
+  FrameBufferBase      = (UINTN *)((UINTPTR_T)(This->Mode->FrameBufferBase));
 
   if ((Delta != 0) && (Delta != Width * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL))) {
     // Delta is not zero and it is different from the width.
@@ -742,7 +742,7 @@ BltVideoToVideo (
   VOID        *FrameBufferBase;
 
   HorizontalResolution = This->Mode->Info->HorizontalResolution;
-  FrameBufferBase      = (UINTN *)((UINTN)(This->Mode->FrameBufferBase));
+  FrameBufferBase      = (UINTN *)((UINTPTR_T)(This->Mode->FrameBufferBase));
 
   //
   // BltVideo to BltVideo:
@@ -751,7 +751,7 @@ BltVideoToVideo (
   //  Destination is the Video Memory
 
   LcdPlatformGetBpp (This->Mode->Mode, &BitsPerPixel);
-  FrameBufferBase = (UINTN *)((UINTN)(This->Mode->FrameBufferBase));
+  FrameBufferBase = (UINTN *)((UINTPTR_T)(This->Mode->FrameBufferBase));
 
   // The UEFI spec currently states:
   // "There is no limitation on the overlapping of the source and destination rectangles"

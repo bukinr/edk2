@@ -210,7 +210,7 @@ CoreInitializeImageServices (
 
   DxeCoreImageBaseAddress = DxeCoreHob.MemoryAllocationModule->MemoryAllocationHeader.MemoryBaseAddress;
   DxeCoreImageLength      = DxeCoreHob.MemoryAllocationModule->MemoryAllocationHeader.MemoryLength;
-  DxeCoreEntryPoint       = (VOID *)(UINTN)DxeCoreHob.MemoryAllocationModule->EntryPoint;
+  DxeCoreEntryPoint       = (VOID *)(UINTPTR_T)DxeCoreHob.MemoryAllocationModule->EntryPoint;
   gDxeCoreFileName        = &DxeCoreHob.MemoryAllocationModule->ModuleName;
 
   //
@@ -218,12 +218,12 @@ CoreInitializeImageServices (
   //
   Image = &mCorePrivateImage;
 
-  Image->EntryPoint       = (EFI_IMAGE_ENTRY_POINT)(UINTN)DxeCoreEntryPoint;
+  Image->EntryPoint       = (EFI_IMAGE_ENTRY_POINT)(UINTPTR_T)DxeCoreEntryPoint;
   Image->ImageBasePage    = DxeCoreImageBaseAddress;
-  Image->NumberOfPages    = (UINTN)(EFI_SIZE_TO_PAGES ((UINTN)(DxeCoreImageLength)));
+  Image->NumberOfPages    = (UINTN)(EFI_SIZE_TO_PAGES ((UINTPTR_T)(DxeCoreImageLength)));
   Image->Tpl              = gEfiCurrentTpl;
   Image->Info.SystemTable = gDxeCoreST;
-  Image->Info.ImageBase   = (VOID *)(UINTN)DxeCoreImageBaseAddress;
+  Image->Info.ImageBase   = (VOID *)(UINTPTR_T)DxeCoreImageBaseAddress;
   Image->Info.ImageSize   = DxeCoreImageLength;
 
   //
@@ -501,7 +501,7 @@ GetPeCoffImageFixLoadingAssignedAddress (
     SectionHeaderOffset += sizeof (EFI_IMAGE_SECTION_HEADER);
   }
 
-  DEBUG ((DEBUG_INFO|DEBUG_LOAD, "LOADING MODULE FIXED INFO: Loading module at fixed address 0x%11p. Status = %r \n", (VOID *)(UINTN)(ImageContext->ImageAddress), Status));
+  DEBUG ((DEBUG_INFO|DEBUG_LOAD, "LOADING MODULE FIXED INFO: Loading module at fixed address 0x%11p. Status = %r \n", (VOID *)(UINTPTR_T)(ImageContext->ImageAddress), Status));
   return Status;
 }
 
@@ -771,7 +771,7 @@ CoreLoadPeImage (
   //
   // Flush the Instruction Cache
   //
-  InvalidateInstructionCacheRange ((VOID *)(UINTN)Image->ImageContext.ImageAddress, (UINTN)Image->ImageContext.ImageSize);
+  InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)Image->ImageContext.ImageAddress, (UINTN)Image->ImageContext.ImageSize);
 
   //
   // Copy the machine type from the context to the image private data.
@@ -781,13 +781,13 @@ CoreLoadPeImage (
   //
   // Get the image entry point.
   //
-  Image->EntryPoint = (EFI_IMAGE_ENTRY_POINT)(UINTN)Image->ImageContext.EntryPoint;
+  Image->EntryPoint = (EFI_IMAGE_ENTRY_POINT)(UINTPTR_T)Image->ImageContext.EntryPoint;
 
   //
   // Fill in the image information for the Loaded Image Protocol
   //
   Image->Type               = Image->ImageContext.ImageType;
-  Image->Info.ImageBase     = (VOID *)(UINTN)Image->ImageContext.ImageAddress;
+  Image->Info.ImageBase     = (VOID *)(UINTPTR_T)Image->ImageContext.ImageAddress;
   Image->Info.ImageSize     = Image->ImageContext.ImageSize;
   Image->Info.ImageCodeType = (EFI_MEMORY_TYPE)(Image->ImageContext.ImageCodeMemoryType);
   Image->Info.ImageDataType = (EFI_MEMORY_TYPE)(Image->ImageContext.ImageDataMemoryType);
@@ -830,7 +830,7 @@ CoreLoadPeImage (
   DEBUG ((
     DEBUG_INFO | DEBUG_LOAD,
     "Loading driver at 0x%11p EntryPoint=0x%11p ",
-    (VOID *)(UINTN)Image->ImageContext.ImageAddress,
+    (VOID *)(UINTPTR_T)Image->ImageContext.ImageAddress,
     FUNCTION_ENTRY_POINT (Image->ImageContext.EntryPoint)
     ));
 
@@ -1048,7 +1048,7 @@ CoreUnloadAndCloseImage (
       Status = CoreUninstallProtocolInterface (
                  Image->Handle,
                  &gEfiHiiPackageListProtocolGuid,
-                 (VOID *)(UINTN)Image->ImageContext.HiiResourceData
+                 (VOID *)(UINTPTR_T)Image->ImageContext.HiiResourceData
                  );
     }
   }
@@ -1451,7 +1451,7 @@ CoreLoadImageCommon (
                &Image->Handle,
                &gEfiHiiPackageListProtocolGuid,
                EFI_NATIVE_INTERFACE,
-               (VOID *)(UINTN)Image->ImageContext.HiiResourceData
+               (VOID *)(UINTPTR_T)Image->ImageContext.HiiResourceData
                );
     if (EFI_ERROR (Status)) {
       goto Done;
@@ -1556,7 +1556,7 @@ CoreLoadImage (
              FilePath,
              SourceBuffer,
              SourceSize,
-             (EFI_PHYSICAL_ADDRESS)(UINTN)NULL,
+             (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)NULL,
              NULL,
              ImageHandle,
              NULL,

@@ -32,6 +32,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "DxeMain.h"
 
 //
@@ -1064,7 +1065,7 @@ FindChildNode (
       // If the current node is an encapsulating node, recurse into it...
       //
       Status = FindChildNode (
-                 (CORE_SECTION_STREAM_NODE *)CurrentChildNode->EncapsulatedStreamHandle,
+		 (CORE_SECTION_STREAM_NODE *)MakeCap(CurrentChildNode->EncapsulatedStreamHandle),
                  SearchType,
                  SectionInstance,
                  SectionDefinitionGuid,

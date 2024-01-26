@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "DxeMain.h"
 #include "FwVolDriver.h"
 
@@ -161,7 +162,7 @@ FvGetNextFile (
       //
       // Key is pointer to FFsFileEntry, so get next one
       //
-      Link = (LIST_ENTRY *)(*KeyValue);
+      Link = (LIST_ENTRY *)MakeCap(*KeyValue);
     }
 
     if (Link->ForwardLink == &FvDevice->FfsFileListHeader) {

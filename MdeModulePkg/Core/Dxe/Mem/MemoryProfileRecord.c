@@ -272,7 +272,7 @@ InternalPeCoffGetSubsystem (
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTN)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
@@ -328,7 +328,7 @@ InternalPeCoffGetEntryPoint (
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTN)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
@@ -341,10 +341,10 @@ InternalPeCoffGetEntryPoint (
   // AddressOfEntryPoint is common for PE32 & PE32+
   //
   if (Hdr.Te->Signature == EFI_TE_IMAGE_HEADER_SIGNATURE) {
-    *EntryPoint = (VOID *)((UINTN)Pe32Data + (UINTN)(Hdr.Te->AddressOfEntryPoint & 0x0ffffffff) + sizeof (EFI_TE_IMAGE_HEADER) - Hdr.Te->StrippedSize);
+    *EntryPoint = (VOID *)((UINTPTR_T)Pe32Data + (UINTN)(Hdr.Te->AddressOfEntryPoint & 0x0ffffffff) + sizeof (EFI_TE_IMAGE_HEADER) - Hdr.Te->StrippedSize);
     return RETURN_SUCCESS;
   } else if (Hdr.Pe32->Signature == EFI_IMAGE_NT_SIGNATURE) {
-    *EntryPoint = (VOID *)((UINTN)Pe32Data + (UINTN)(Hdr.Pe32->OptionalHeader.AddressOfEntryPoint & 0x0ffffffff));
+    *EntryPoint = (VOID *)((UINTPTR_T)Pe32Data + (UINTN)(Hdr.Pe32->OptionalHeader.AddressOfEntryPoint & 0x0ffffffff));
     return RETURN_SUCCESS;
   }
 
@@ -388,7 +388,7 @@ BuildDriverInfo (
   PdbOccupiedSize = 0;
   PdbString       = NULL;
   if (ImageBase != 0) {
-    PdbString = PeCoffLoaderGetPdbPointer ((VOID *)(UINTN)ImageBase);
+    PdbString = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageBase);
     if (PdbString != NULL) {
       PdbSize         = AsciiStrSize (PdbString);
       PdbOccupiedSize = GET_OCCUPIED_SIZE (PdbSize, sizeof (UINT64));
@@ -429,7 +429,7 @@ BuildDriverInfo (
     // If the EntryPoint is not in the range of image buffer, it should come from emulation environment.
     // So patch ImageBuffer here to align the EntryPoint.
     //
-    Status = InternalPeCoffGetEntryPoint ((VOID *)(UINTN)ImageBase, &EntryPointInImage);
+    Status = InternalPeCoffGetEntryPoint ((VOID *)(UINTPTR_T)ImageBase, &EntryPointInImage);
     ASSERT_EFI_ERROR (Status);
     DriverInfo->ImageBase = ImageBase + EntryPoint - (PHYSICAL_ADDRESS)(UINTN)EntryPointInImage;
   }
@@ -510,7 +510,7 @@ NeedRecordThisDriver (
     //
     // Get next instance.
     //
-    DevicePathInstance = (EFI_DEVICE_PATH_PROTOCOL *)((UINTN)DevicePathInstance + DevicePathSize + DevicePathNodeLength (TmpDevicePath));
+    DevicePathInstance = (EFI_DEVICE_PATH_PROTOCOL *)((UINTPTR_T)DevicePathInstance + DevicePathSize + DevicePathNodeLength (TmpDevicePath));
   } while (DevicePathSubType (TmpDevicePath) != END_ENTIRE_DEVICE_PATH_SUBTYPE);
 
   return FALSE;
@@ -572,7 +572,7 @@ RegisterDxeCore (
                      ImageBase,
                      DxeCoreHob.MemoryAllocationModule->MemoryAllocationHeader.MemoryLength,
                      DxeCoreHob.MemoryAllocationModule->EntryPoint,
-                     InternalPeCoffGetSubsystem ((VOID *)(UINTN)ImageBase),
+                     InternalPeCoffGetSubsystem ((VOID *)(UINTPTR_T)ImageBase),
                      EFI_FV_FILETYPE_DXE_CORE
                      );
   if (DriverInfoData == NULL) {
@@ -862,9 +862,9 @@ UnregisterMemoryProfileImage (
     // If the EntryPoint is not in the range of image buffer, it should come from emulation environment.
     // So patch ImageAddress here to align the EntryPoint.
     //
-    Status = InternalPeCoffGetEntryPoint ((VOID *)(UINTN)ImageAddress, &EntryPointInImage);
+    Status = InternalPeCoffGetEntryPoint ((VOID *)(UINTPTR_T)ImageAddress, &EntryPointInImage);
     ASSERT_EFI_ERROR (Status);
-    ImageAddress = ImageAddress + (UINTN)DriverEntry->ImageContext.EntryPoint - (UINTN)EntryPointInImage;
+    ImageAddress = ImageAddress + (UINTPTR_T)DriverEntry->ImageContext.EntryPoint - (UINTN)EntryPointInImage;
   }
 
   if (FileName != NULL) {
@@ -1306,7 +1306,7 @@ CoreUpdateProfileFree (
           AllocInfo->Action,
           AllocInfo->MemoryType,
           (UINTN)((PHYSICAL_ADDRESS)(UINTN)Buffer - AllocInfo->Buffer),
-          (VOID *)(UINTN)AllocInfo->Buffer,
+          (VOID *)(UINTPTR_T)AllocInfo->Buffer,
           AllocInfoData->ActionString
           );
       }
@@ -1317,7 +1317,7 @@ CoreUpdateProfileFree (
           AllocInfo->Action,
           AllocInfo->MemoryType,
           (UINTN)((AllocInfo->Buffer + AllocInfo->Size) - ((PHYSICAL_ADDRESS)(UINTN)Buffer + Size)),
-          (VOID *)((UINTN)Buffer + Size),
+          (VOID *)((UINTPTR_T)Buffer + Size),
           AllocInfoData->ActionString
           );
       }
@@ -1533,10 +1533,10 @@ MemoryProfileCopyData (
     CopyMem (DriverInfo, &DriverInfoData->DriverInfo, sizeof (MEMORY_PROFILE_DRIVER_INFO));
     if (DriverInfo->PdbStringOffset != 0) {
       PdbSize = AsciiStrSize (DriverInfoData->PdbString);
-      CopyMem ((VOID *)((UINTN)DriverInfo + DriverInfo->PdbStringOffset), DriverInfoData->PdbString, PdbSize);
+      CopyMem ((VOID *)((UINTPTR_T)DriverInfo + DriverInfo->PdbStringOffset), DriverInfoData->PdbString, PdbSize);
     }
 
-    AllocInfo = (MEMORY_PROFILE_ALLOC_INFO *)((UINTN)DriverInfo + DriverInfo->Header.Length);
+    AllocInfo = (MEMORY_PROFILE_ALLOC_INFO *)((UINTPTR_T)DriverInfo + DriverInfo->Header.Length);
 
     AllocInfoList = DriverInfoData->AllocInfoList;
     for (AllocLink = AllocInfoList->ForwardLink;
@@ -1552,10 +1552,10 @@ MemoryProfileCopyData (
       CopyMem (AllocInfo, &AllocInfoData->AllocInfo, sizeof (MEMORY_PROFILE_ALLOC_INFO));
       if (AllocInfo->ActionStringOffset != 0) {
         ActionStringSize = AsciiStrSize (AllocInfoData->ActionString);
-        CopyMem ((VOID *)((UINTN)AllocInfo + AllocInfo->ActionStringOffset), AllocInfoData->ActionString, ActionStringSize);
+        CopyMem ((VOID *)((UINTPTR_T)AllocInfo + AllocInfo->ActionStringOffset), AllocInfoData->ActionString, ActionStringSize);
       }
 
-      AllocInfo = (MEMORY_PROFILE_ALLOC_INFO *)((UINTN)AllocInfo + AllocInfo->Header.Length);
+      AllocInfo = (MEMORY_PROFILE_ALLOC_INFO *)((UINTPTR_T)AllocInfo + AllocInfo->Header.Length);
     }
 
     DriverInfo = (MEMORY_PROFILE_DRIVER_INFO *)AllocInfo;
@@ -1644,10 +1644,10 @@ ProfileProtocolRegisterImage (
   DriverEntry.Info.FilePath             = FilePath;
   DriverEntry.ImageContext.ImageAddress = ImageBase;
   DriverEntry.ImageContext.ImageSize    = ImageSize;
-  Status                                = InternalPeCoffGetEntryPoint ((VOID *)(UINTN)ImageBase, &EntryPointInImage);
+  Status                                = InternalPeCoffGetEntryPoint ((VOID *)(UINTPTR_T)ImageBase, &EntryPointInImage);
   ASSERT_EFI_ERROR (Status);
   DriverEntry.ImageContext.EntryPoint = (PHYSICAL_ADDRESS)(UINTN)EntryPointInImage;
-  DriverEntry.ImageContext.ImageType  = InternalPeCoffGetSubsystem ((VOID *)(UINTN)ImageBase);
+  DriverEntry.ImageContext.ImageType  = InternalPeCoffGetSubsystem ((VOID *)(UINTPTR_T)ImageBase);
 
   return RegisterMemoryProfileImage (&DriverEntry, FileType);
 }
@@ -1683,7 +1683,7 @@ ProfileProtocolUnregisterImage (
   DriverEntry.Info.FilePath             = FilePath;
   DriverEntry.ImageContext.ImageAddress = ImageBase;
   DriverEntry.ImageContext.ImageSize    = ImageSize;
-  Status                                = InternalPeCoffGetEntryPoint ((VOID *)(UINTN)ImageBase, &EntryPointInImage);
+  Status                                = InternalPeCoffGetEntryPoint ((VOID *)(UINTPTR_T)ImageBase, &EntryPointInImage);
   ASSERT_EFI_ERROR (Status);
   DriverEntry.ImageContext.EntryPoint = (PHYSICAL_ADDRESS)(UINTN)EntryPointInImage;
 

@@ -10,6 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 --*/
 
+#include <Library/CheriLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include "CpuDxe.h"
 
@@ -139,7 +140,7 @@ GetFirstPageAttribute (
     // Only valid for Levels 0, 1 and 2
 
     // Get the attribute of the subsequent table
-    return GetFirstPageAttribute ((UINT64 *)(FirstEntry & TT_ADDRESS_MASK_DESCRIPTION_TABLE), TableLevel + 1);
+    return GetFirstPageAttribute ((UINT64 *)MakeCap(FirstEntry & TT_ADDRESS_MASK_DESCRIPTION_TABLE), TableLevel + 1);
   } else if (((FirstEntry & TT_TYPE_MASK) == TT_TYPE_BLOCK_ENTRY) ||
              ((TableLevel == 3) && ((FirstEntry & TT_TYPE_MASK) == TT_TYPE_BLOCK_ENTRY_LEVEL3)))
   {
@@ -226,7 +227,7 @@ GetNextEntryAttribute (
 
       // Increase the level number and scan the sub-level table
       GetNextEntryAttribute (
-        (UINT64 *)(Entry & TT_ADDRESS_MASK_DESCRIPTION_TABLE),
+        (UINT64 *)MakeCap(Entry & TT_ADDRESS_MASK_DESCRIPTION_TABLE),
         TT_ENTRY_COUNT,
         TableLevel + 1,
         (BaseAddress + (Index * TT_ADDRESS_AT_LEVEL (TableLevel))),
@@ -439,17 +440,17 @@ GetMemoryRegionRec (
   }
 
   // Find the block entry linked to the Base Address
-  BlockEntry = (UINT64 *)TT_GET_ENTRY_FOR_ADDRESS (TranslationTable, TableLevel, *BaseAddress);
+  BlockEntry = (UINT64 *)(TT_GET_ENTRY_FOR_ADDRESS (TranslationTable, TableLevel, *BaseAddress));
   EntryType  = *BlockEntry & TT_TYPE_MASK;
 
   if ((TableLevel < 3) && (EntryType == TT_TYPE_TABLE_ENTRY)) {
-    NextTranslationTable = (UINT64 *)(*BlockEntry & TT_ADDRESS_MASK_DESCRIPTION_TABLE);
+    NextTranslationTable = (UINT64 *)MakeCap(*BlockEntry & TT_ADDRESS_MASK_DESCRIPTION_TABLE);
 
     // The entry is a page table, so we go to the next level
     Status = GetMemoryRegionRec (
                NextTranslationTable, // Address of the next level page table
                TableLevel + 1,       // Next Page Table level
-               (UINTN *)TT_LAST_BLOCK_ADDRESS (NextTranslationTable, TT_ENTRY_COUNT),
+               (UINTN *)(TT_LAST_BLOCK_ADDRESS (NextTranslationTable, TT_ENTRY_COUNT)),
                BaseAddress,
                RegionLength,
                RegionAttributes
