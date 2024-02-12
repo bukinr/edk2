@@ -413,9 +413,9 @@ ASM_FUNC(ArmReadVBar)
 
 ASM_FUNC(ArmEnableVFP)
   // Check whether floating-point is implemented in the processor.
-  mov   x1, x30                 // Save LR
+  mov   c1, c30                 // Save LR
   bl    ArmReadIdAA64Pfr0       // Read EL1 Processor Feature Register (PFR0)
-  mov   x30, x1                 // Restore LR
+  mov   c30, c1                 // Restore LR
   ubfx  x0, x0, #16, #4         // Extract the FP bits 16:19
   cmp   x0, #0xF                // Check if FP bits are '1111b',
                                 // i.e. Floating Point not implemented

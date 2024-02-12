@@ -1552,7 +1552,6 @@ WriteSections64 (
             *(UINT32 *)Targ &= 0x3ff;
             *(UINT32 *)Targ |= 0x91000000 | ((Sym->st_value & 0xfff) << 10);
             break;
-
           case R_AARCH64_ADR_GOT_PAGE:
             //
             // This relocation points to the GOT entry that contains the absolute
@@ -1678,44 +1677,25 @@ WriteSections64 (
           case R_AARCH64_ABS64:
             *(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr + mCoffSectionsOffset[Sym->st_shndx];
             break;
-          case R_MORELLO_TSTBR14:
-          case R_MORELLO_CONDBR19:
-          case R_MORELLO_JUMP26:
-          case R_MORELLO_CALL26:
-          case R_MORELLO_LD_PREL_LO17:
-          case R_MORELLO_ADR_PREL_PG_HI20:
-          case R_MORELLO_ADR_PREL_PG_HI20_NC:
-          case R_MORELLO_ADR_GOT_PAGE:
+
           case R_MORELLO_LD128_GOT_LO12_NC:
-          case R_MORELLO_MOVW_SIZE_G0:
-          case R_MORELLO_MOVW_SIZE_G0_NC:
-          case R_MORELLO_MOVW_SIZE_G1:
-          case R_MORELLO_MOVW_SIZE_G1_NC:
-          case R_MORELLO_MOVW_SIZE_G2:
-          case R_MORELLO_MOVW_SIZE_G2_NC:
-          case R_MORELLO_MOVW_SIZE_G3:
-          case R_MORELLO_TLSDESC_ADR_PAGE20:
-          case R_MORELLO_TLSDESC_LD128_LO12:
-          case R_MORELLO_TLSDESC_CALL:
-          case R_MORELLO_TLSIE_ADR_GOTTPREL_PAGE20:
-          case R_MORELLO_TLSIE_ADD_LO12:
-          case R_MORELLO_DESC_GLOBAL_CALL26:
-          case R_MORELLO_DESC_GLOBAL_JUMP26:
-          case R_MORELLO_DESC_ADR_PREL_PG_HI20:
-          case R_MORELLO_DESC_ADR_PREL_PG_HI20_NC:
-          case R_MORELLO_DESC_ADR_GOT_PAGE:
-          case R_MORELLO_DESC_LD128_GOT_LO12_NC:
-          case R_MORELLO_DESC_CAPINIT:
-          case R_MORELLO_DESC_CALL:
-          case R_MORELLO_DESC_TCALL:
+          case R_MORELLO_ADR_GOT_PAGE:
+	    break;
+
+	  case R_MORELLO_CALL26:
+	    //Error(NULL, 0, 3000, "Inv0", "m call26 %lx %lx %lx\n", *(UINT64 *)Targ, SymShdr->sh_addr, mCoffSectionsOffset[Sym->st_shndx]);
+	    break;
+	  case R_MORELLO_ADR_PREL_PG_HI20:
+	    /* Test */
+	    //Error(NULL, 0, 3000, "Inv", "m adr prel pg hi20: %lx %lx %lx\n", *(UINT64 *)Targ, SymShdr->sh_addr, mCoffSectionsOffset[Sym->st_shndx]);
+	    //*(UINT64 *)Targ = *(UINT64 *)Targ + 2;
+            //*(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr; // + mCoffSectionsOffset[Sym->st_shndx];
+	    break;
+
           case R_MORELLO_CAPINIT:
-          case R_MORELLO_GLOB_DAT:
-          case R_MORELLO_JUMP_SLOT:
-          case R_MORELLO_RELATIVE:
-          case R_MORELLO_IRELATIVE:
-          case R_MORELLO_TLSDESC:
-          case R_MORELLO_TLS_TPREL128:
-            break;
+          case R_MORELLO_JUMP26:
+	    break;
+
           default:
             Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation 0x%x.", mInImageName, (unsigned) ELF_R_TYPE(Rel->r_info));
           }
@@ -2020,43 +2000,19 @@ WriteRelocations64 (
                 + (Rel->r_offset - SecShdr->sh_addr)),
                 EFI_IMAGE_REL_BASED_HIGHLOW);
              break;
-            case R_MORELLO_TSTBR14:
-            case R_MORELLO_CONDBR19:
-            case R_MORELLO_JUMP26:
-            case R_MORELLO_CALL26:
-            case R_MORELLO_LD_PREL_LO17:
-            case R_MORELLO_ADR_PREL_PG_HI20:
-            case R_MORELLO_ADR_PREL_PG_HI20_NC:
+	    case R_MORELLO_JUMP26:
+	    case R_MORELLO_ADR_PREL_PG_HI20:
+	    case R_MORELLO_CALL26:
+            case R_MORELLO_CAPINIT:
             case R_MORELLO_ADR_GOT_PAGE:
             case R_MORELLO_LD128_GOT_LO12_NC:
-            case R_MORELLO_MOVW_SIZE_G0:
-            case R_MORELLO_MOVW_SIZE_G0_NC:
-            case R_MORELLO_MOVW_SIZE_G1:
-            case R_MORELLO_MOVW_SIZE_G1_NC:
-            case R_MORELLO_MOVW_SIZE_G2:
-            case R_MORELLO_MOVW_SIZE_G2_NC:
-            case R_MORELLO_MOVW_SIZE_G3:
-            case R_MORELLO_TLSDESC_ADR_PAGE20:
-            case R_MORELLO_TLSDESC_LD128_LO12:
-            case R_MORELLO_TLSDESC_CALL:
-            case R_MORELLO_TLSIE_ADR_GOTTPREL_PAGE20:
-            case R_MORELLO_TLSIE_ADD_LO12:
-            case R_MORELLO_DESC_GLOBAL_CALL26:
-            case R_MORELLO_DESC_GLOBAL_JUMP26:
-            case R_MORELLO_DESC_ADR_PREL_PG_HI20:
-            case R_MORELLO_DESC_ADR_PREL_PG_HI20_NC:
-            case R_MORELLO_DESC_ADR_GOT_PAGE:
-            case R_MORELLO_DESC_LD128_GOT_LO12_NC:
-            case R_MORELLO_DESC_CAPINIT:
-            case R_MORELLO_DESC_CALL:
-            case R_MORELLO_DESC_TCALL:
-            case R_MORELLO_CAPINIT:
-            case R_MORELLO_GLOB_DAT:
-            case R_MORELLO_JUMP_SLOT:
-            case R_MORELLO_RELATIVE:
-            case R_MORELLO_IRELATIVE:
-            case R_MORELLO_TLSDESC:
-            case R_MORELLO_TLS_TPREL128:
+	      /* Test */
+#if 0
+              CoffAddFixup(
+                (UINT32) ((UINT64) mCoffSectionsOffset[RelShdr->sh_info]
+                + (Rel->r_offset - SecShdr->sh_addr)),
+                EFI_IMAGE_REL_BASED_HIGHLOW);
+#endif
               break;
             default:
                 Error (NULL, 0, 3000, "Invalid", "WriteRelocations64(): %s unsupported ELF EM_AARCH64 relocation 0x%x.", mInImageName, (unsigned) ELF_R_TYPE(Rel->r_info));

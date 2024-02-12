@@ -36,6 +36,10 @@ SECTIONS {
     *:AutoGen.obj(.data.g*Guid)
   }
 
+  __cap_relocs : ALIGN(0x1000) {
+     *(__cap_relocs*)
+  }
+
   /*
    * The alignment of the .data section should be less than or equal to the
    * alignment of the .text section. This ensures that the relative offset

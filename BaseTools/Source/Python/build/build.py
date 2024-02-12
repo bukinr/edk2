@@ -217,6 +217,8 @@ def LaunchCommand(Command, WorkingDir,ModuleAuto = None):
     if not os.path.isdir(WorkingDir):
         EdkLogger.error("build", FILE_NOT_FOUND, ExtraData=WorkingDir)
 
+    print("COMMAND: %s" % Command)
+
     # Command is used as the first Argument in following Popen().
     # It could be a string or sequence. We find that if command is a string in following Popen(),
     # ubuntu may fail with an error message that the command is not found.
@@ -2612,6 +2614,8 @@ def Main():
         LogLevel = Option.debug + 1
     else:
         EdkLogger.SetLevel(EdkLogger.INFO)
+
+    EdkLogger.SetLevel(EdkLogger.VERBOSE)
 
     if Option.WarningAsError == True:
         EdkLogger.SetWarningAsError()

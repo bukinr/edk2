@@ -10,12 +10,14 @@
 
 // Setup EL1 while in EL1
 ASM_FUNC(SetupExceptionLevel1)
-   mov  x5, x30                   // Save LR
+   mov  c5, c30                   // Save LR
 
+#ifdef CHERI_TODO
    mov  x0, #CPACR_CP_FULL_ACCESS
    bl   ASM_PFX(ArmWriteCpacr)    // Disable copro traps to EL1
+#endif
 
-   ret  x5
+   ret  c5
 
 // Setup EL2 while in EL2
 ASM_FUNC(SetupExceptionLevel2)

@@ -15,6 +15,7 @@
 //
 // Include common header file for this module.
 //
+#include <Library/CheriLib.h>
 #include "BaseIoLibIntrinsicInternal.h"
 
 /**
@@ -385,18 +386,6 @@ IoWriteFifo32 (
   )
 {
   ASSERT (FALSE);
-}
-
-UINTPTR_T
-MakeCap(UINTN addr)
-{
-  UINTPTR_T Ptr;
-
-  /* TODO */
-
-  Ptr = 0;
-
-  return (Ptr);
 }
 
 /**

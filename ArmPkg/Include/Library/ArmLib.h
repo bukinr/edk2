@@ -58,7 +58,7 @@ typedef VOID (*CACHE_OPERATION)(
   VOID
   );
 typedef VOID (*LINE_OPERATION)(
-  UINTN
+  UINTPTR_T
   );
 
 //
@@ -209,31 +209,31 @@ ArmInvalidateInstructionCache (
 VOID
 EFIAPI
 ArmInvalidateDataCacheEntryByMVA (
-  IN  UINTN  Address
+  IN  UINTPTR_T  Address
   );
 
 VOID
 EFIAPI
 ArmCleanDataCacheEntryToPoUByMVA (
-  IN  UINTN  Address
+  IN  UINTPTR_T  Address
   );
 
 VOID
 EFIAPI
 ArmInvalidateInstructionCacheEntryToPoUByMVA (
-  IN  UINTN  Address
+  IN  UINTPTR_T  Address
   );
 
 VOID
 EFIAPI
 ArmCleanDataCacheEntryByMVA (
-  IN  UINTN  Address
+  IN  UINTPTR_T  Address
   );
 
 VOID
 EFIAPI
 ArmCleanInvalidateDataCacheEntryByMVA (
-  IN  UINTN  Address
+  IN  UINTPTR_T  Address
   );
 
 VOID

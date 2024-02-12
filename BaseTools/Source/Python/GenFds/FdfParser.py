@@ -1797,6 +1797,9 @@ class FdfParser:
         RegionObj.Offset = Offset
         theFd.RegionList.append(RegionObj)
 
+        print("Appending region")
+        EdkLogger.info("hello")
+
         if not self._IsToken(TAB_VALUE_SPLIT):
             raise Warning.Expected("'|'", self.FileName, self.CurrentLineNumber)
 

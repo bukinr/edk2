@@ -8,51 +8,13 @@
 #include <AsmMacroIoLibV8.h>
 #include "armreg.h"
 #include "hypervisor.h"
+#include <Library/CheriLib.h>
 
 #define LENTRY(sym)                                   \
 	.text		;                             \
 	.align 2; .type sym,#function; sym:           \
 
 #define LEND(sym) .ltorg	; .size sym, . - sym
-
-#if 0
-/* CPACR_EL1 */
-#define	CPACR_ZEN_MASK		(0x3 << 16)
-#define	CPACR_ZEN_TRAP_ALL1	(0x0 << 16) /* Traps from EL0 and EL1 */
-#define	CPACR_ZEN_TRAP_EL0	(0x1 << 16) /* Traps from EL0 */
-#define	CPACR_ZEN_TRAP_ALL2	(0x2 << 16) /* Traps from EL0 and EL1 */
-#define	CPACR_ZEN_TRAP_NONE	(0x3 << 16) /* No traps */
-#if __has_feature(capabilities)
-#define	CPACR_CEN_MASK		(0x3 << 18)
-#define	CPACR_CEN_TRAP_ALL1	(0x0 << 18) /* Traps from EL0 and EL1 */
-#define	CPACR_CEN_TRAP_EL0	(0x1 << 18) /* Traps from EL0 */
-#define	CPACR_CEN_TRAP_ALL2	(0x2 << 18) /* Traps from EL0 and EL1 */
-#define	CPACR_CEN_TRAP_NONE	(0x3 << 18) /* No traps */
-#endif
-#define	CPACR_FPEN_MASK		(0x3 << 20)
-#define	CPACR_FPEN_TRAP_ALL1	(0x0 << 20) /* Traps from EL0 and EL1 */
-#define	CPACR_FPEN_TRAP_EL0	(0x1 << 20) /* Traps from EL0 */
-#define	CPACR_FPEN_TRAP_ALL2	(0x2 << 20) /* Traps from EL0 and EL1 */
-#define	CPACR_FPEN_TRAP_NONE	(0x3 << 20) /* No traps */
-#define	CPACR_TTA		(0x1 << 28)
-
-#if __has_feature(capabilities)
-/* CCTLR_EL0 - Capability Control Register */
-#define	CCTLR_SBL_MASK		(0x1 << 7) /* Capability sealing by branch and link */
-#define	CCTLR_PERMVCT_MASK	(0x1 << 6) /* Permit access to CNTVCT w/o System */
-#define	CCTLR_ADRDPB_MASK	(0x1 << 4) /* ADRPD base selection */
-#define	CCTLR_PCCBO_MASK	(0x1 << 3) /* PCC base offset enable */
-#define	CCTLR_DDCBO_MASK	(0x1 << 2) /* DCC base offset enable */
-/*
- * CCTLR_EL1/2 - Capability Control Register
- * The rest of the fields mirror CCTLR_EL0
- */
-#define	CCTLR_EL1_C64E_MASK	(0x1 << 5) /* Enable C64 mode upon exception */
-#define	CCTLR_EL1_TGEN1_MASK	(0x1 << 1) /* Page table CLG bit for TTBR1 */
-#define	CCTLR_EL1_TGEN0_MASK	(0x1 << 0) /* Page table CLG bit for TTBR0 */
-#define	CCTLR_EL2_C64E_MASK	(0x1 << 5) /* Enable C64 mode upon exception */
-#endif
-#endif
 
 /*
  * If we are started in EL2, configure the required hypervisor
@@ -243,6 +205,34 @@ ASM_FUNC(_ModuleEntryPoint)
 
   morello_cpu_init
 
+#if 1
+  ldr     x0, =~CHERI_PERMS_KERNEL_DATA
+  mrs     c1, ddc
+  clrperm c1, c1, x0
+  ldr     x0, =~CHERI_PERMS_KERNEL_CODE
+  adr     c2, #0
+  clrperm c2, c2, x0
+  bl      crt_init_globals
+#else
+ #ifdef __CHERI_PURE_CAPABILITY__
+	        /* Do capability relocations */
+	        ldr     x0, =~CHERI_PERMS_KERNEL_DATA
+	        mrs     c1, ddc
+	        clrperm c1, c1, x0
+	        ldr     x0, =~CHERI_PERMS_KERNEL_CODE
+	        adr     c2, #0
+	        clrperm c2, c2, x0
+	        /* Assume can we reach _DYNAMIC from PCC */
+	        adrp    c0, _DYNAMIC
+	        add     c0, c0, :lo12:_DYNAMIC
+	        //bl      elf_reloc_self
+  #endif
+#endif
+	
+  /* Initialize root capability. */
+  mrs   c0, ddc
+  bl    cheri_init_capabilities
+
   // Do early platform specific actions
   bl    ASM_PFX(ArmPlatformPeiBootAction)
 
@@ -250,7 +240,7 @@ ASM_FUNC(_ModuleEntryPoint)
 //       and configure the system accordingly. EL2 is default if possible.
 // If we started in EL3 we need to switch and run at EL2.
 // If we are running at EL2 stay in EL2
-// If we are starting at EL1 stay in EL1.
+// If we are starting at EL1 stay in EL1.	
 
 // If started at EL3 Sec is run and switches to EL2 before jumping to PEI.
 // If started at EL1 or EL2 Sec jumps directly to PEI without making any
@@ -275,6 +265,7 @@ ASM_PFX(MainEntryPoint):
 
   // Get the top of the primary stacks (and the base of the secondary stacks)
   MOV64 (x1, FixedPcdGet64(PcdCPUCoresStackBase) + FixedPcdGet32(PcdCPUCorePrimaryStackSize))
+  cvtd c1, x1
 
   // x0 is equal to 1 if I am the primary core
   cmp   x0, #1
@@ -299,27 +290,34 @@ _SetupSecondaryCoreStack:
 _PrepareArguments:
   // The PEI Core Entry Point has been computed by GenFV and stored in the second entry of the Reset Vector
   MOV64 (x2, FixedPcdGet64(PcdFvBaseAddress))
+  cvtd  c2, x2
   ldr   x1, [x2, #8]
+  cvtd  c1, x1
 
   // Move sec startup address into a data register
   // Ensure we're jumping to FV version of the code (not boot remapped alias)
-  ldr   x3, =ASM_PFX(CEntryPoint)
+  // ldr   x3, =ASM_PFX(CEntryPoint)
+  // cvtd  c3, x3
+  adr c3, CEntryPoint
 
   // Set the frame pointer to NULL so any backtraces terminate here
   mov   x29, xzr
 
   // Jump to PrePeiCore C code
   //    x0 = mp_id
-  //    x1 = pei_core_address
+  //    c1 = pei_core_address
   mov   x0, x5
-  blr   x3
+  blr   c3
 
 _SetupPrimaryCoreStack:
-  mov   sp, x1
+  mov   csp, c1
   MOV64 (x8, FixedPcdGet64 (PcdCPUCoresStackBase))
   MOV64 (x9, FixedPcdGet32 (PcdInitValueInTempStack) |\
              FixedPcdGet32 (PcdInitValueInTempStack) << 32)
-0:stp   x9, x9, [c8], #16
+  cvtd  c8, x8
+  cvtd  c9, x9
+
+0:stp   c9, c9, [c8], #32
   cmp   x8, x1
   b.lt  0b
   b     _PrepareArguments

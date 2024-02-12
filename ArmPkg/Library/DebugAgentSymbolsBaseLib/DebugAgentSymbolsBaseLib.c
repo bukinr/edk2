@@ -15,6 +15,7 @@
 #include <Library/PcdLib.h>
 #include <Library/PeCoffExtraActionLib.h>
 #include <Library/PeCoffLib.h>
+#include <Library/CheriLib.h>
 
 #include <Pi/PiFirmwareFile.h>
 #include <Pi/PiFirmwareVolume.h>
@@ -219,9 +220,9 @@ GetImageContext (
       ImageAddress += sizeof (EFI_TE_IMAGE_HEADER) - ((EFI_TE_IMAGE_HEADER *)EfiImage)->StrippedSize;
     }
 
-    DebugEntry = (EFI_IMAGE_DEBUG_DIRECTORY_ENTRY *)(ImageAddress + ImageContext->DebugDirectoryEntryRva);
+    DebugEntry = (EFI_IMAGE_DEBUG_DIRECTORY_ENTRY *)MakeCap(ImageAddress + ImageContext->DebugDirectoryEntryRva);
     if (DebugEntry->Type == EFI_IMAGE_DEBUG_TYPE_CODEVIEW) {
-      CodeViewEntryPointer = (VOID *)(ImageAddress + (UINTN)DebugEntry->RVA);
+      CodeViewEntryPointer = (VOID *)MakeCap(ImageAddress + (UINTN)DebugEntry->RVA);
       switch (*(UINT32 *)CodeViewEntryPointer) {
         case CODEVIEW_SIGNATURE_NB10:
           ImageContext->PdbPointer = (CHAR8 *)CodeViewEntryPointer + sizeof (EFI_IMAGE_DEBUG_CODEVIEW_NB10_ENTRY);
@@ -282,7 +283,7 @@ InitializeDebugAgent (
     //
     // Get the Sec or PrePeiCore module (defined as SEC type module)
     //
-    Status = GetFfsFile ((EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)PcdGet64 (PcdSecureFvBaseAddress), EFI_FV_FILETYPE_SECURITY_CORE, &FfsHeader);
+    Status = GetFfsFile ((EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)MakeCap(PcdGet64 (PcdSecureFvBaseAddress)), EFI_FV_FILETYPE_SECURITY_CORE, &FfsHeader);
     if (!EFI_ERROR (Status)) {
       Status = GetImageContext (FfsHeader, &ImageContext);
       if (!EFI_ERROR (Status)) {
@@ -293,7 +294,7 @@ InitializeDebugAgent (
     //
     // Get the PrePi or PrePeiCore module (defined as SEC type module)
     //
-    Status = GetFfsFile ((EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)PcdGet64 (PcdFvBaseAddress), EFI_FV_FILETYPE_SECURITY_CORE, &FfsHeader);
+    Status = GetFfsFile ((EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)MakeCap(PcdGet64 (PcdFvBaseAddress)), EFI_FV_FILETYPE_SECURITY_CORE, &FfsHeader);
     if (!EFI_ERROR (Status)) {
       Status = GetImageContext (FfsHeader, &ImageContext);
       if (!EFI_ERROR (Status)) {
@@ -304,7 +305,7 @@ InitializeDebugAgent (
     //
     // Get the PeiCore module (defined as PEI_CORE type module)
     //
-    Status = GetFfsFile ((EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)PcdGet64 (PcdFvBaseAddress), EFI_FV_FILETYPE_PEI_CORE, &FfsHeader);
+    Status = GetFfsFile ((EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)MakeCap(PcdGet64 (PcdFvBaseAddress)), EFI_FV_FILETYPE_PEI_CORE, &FfsHeader);
     if (!EFI_ERROR (Status)) {
       Status = GetImageContext (FfsHeader, &ImageContext);
       if (!EFI_ERROR (Status)) {

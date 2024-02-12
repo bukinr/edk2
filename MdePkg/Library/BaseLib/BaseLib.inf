@@ -26,6 +26,8 @@
 
 [Sources]
   CheckSum.c
+  Cheri.c
+  crt_init_globals.c
   SwitchStack.c
   SwapBytes64.c
   SwapBytes32.c

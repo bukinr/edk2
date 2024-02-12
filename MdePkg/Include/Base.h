@@ -710,6 +710,7 @@ typedef CHAR8 *VA_LIST;
 ///
 typedef UINTN *BASE_LIST;
 typedef        __uintcap_t     UINTPTR_T;
+typedef        __intcap_t      INTPTR_T;
 
 /**
   Returns the size of a data type in sizeof(UINTN) units rounded up to the nearest UINTN boundary.
