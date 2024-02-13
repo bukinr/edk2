@@ -231,7 +231,8 @@ cheri_init_globals_impl(const struct capreloc *start_relocs,
 static __attribute__((always_inline)) void
 cheri_init_globals_3(void *__capability data_cap,
                      const void *__capability code_cap,
-                     const void *__capability rodata_cap) {
+                     const void *__capability rodata_cap,
+                     __SIZE_TYPE__ base_addr) {
   const struct capreloc *start_relocs;
   const struct capreloc *stop_relocs;
   __SIZE_TYPE__ start_addr, stop_addr;
@@ -312,12 +313,12 @@ cheri_init_globals_3(void *__capability data_cap,
    * location of the capreloc.
    */
   cheri_init_globals_impl(start_relocs, stop_relocs, data_cap, code_cap,
-                          rodata_cap, can_set_code_bounds, 0xe0020000);
+                          rodata_cap, can_set_code_bounds, base_addr);
 }
 
 static __attribute__((always_inline, unused)) void
 cheri_init_globals_gdc(void *__capability gdc) {
-  cheri_init_globals_3(gdc, __builtin_cheri_program_counter_get(), gdc);
+  cheri_init_globals_3(gdc, __builtin_cheri_program_counter_get(), gdc, 0);
 }
 
 #ifndef CHERI_INIT_GLOBALS_GDC_ONLY

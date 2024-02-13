@@ -34,8 +34,8 @@
 #include "cheri_init_globals.h"
 
 void
-crt_init_globals(void *arg, void *data_cap, void *code_cap)
+crt_init_globals(void *arg, void *data_cap, void *code_cap, uint64_t base_addr)
 {
 
-	cheri_init_globals_3(data_cap, code_cap, data_cap);
+	cheri_init_globals_3(data_cap, code_cap, data_cap, base_addr);
 }
