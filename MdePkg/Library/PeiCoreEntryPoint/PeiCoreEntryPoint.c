@@ -54,6 +54,20 @@ _ModuleEntryPoint (
   IN CONST  EFI_PEI_PPI_DESCRIPTOR  *PpiList
   )
 {
+
+  __asm__ __volatile__("mov c11, c0");
+  __asm__ __volatile__("mov c12, c1");
+
+  __asm__ __volatile__("mrs c1, ddc");
+  __asm__ __volatile__("adr c2, #0");
+  __asm__ __volatile__("mov x3, #0xB000");
+  __asm__ __volatile__("movk x3, #0xE003, lsl 16");
+  __asm__ __volatile__("bl crt_init_globals");
+
+  __asm__ __volatile__("mov c0, c11");
+  __asm__ __volatile__("mov c1, c12");
+  __asm__ __volatile__("mov x2, 0");
+
   ProcessModuleEntryPointList (SecCoreData, PpiList, NULL);
 
   //
