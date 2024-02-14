@@ -14,6 +14,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/PeiCoreEntryPoint.h>
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 
 /**
   The entry point of PE/COFF Image for the PEI Core.
@@ -54,20 +55,13 @@ _ModuleEntryPoint (
   IN CONST  EFI_PEI_PPI_DESCRIPTOR  *PpiList
   )
 {
+  VOID* ddc_reg;
+  VOID* dcc_reg;
 
-  __asm__ __volatile__("mov c11, c0");
-  __asm__ __volatile__("mov c12, c1");
+  __asm__ __volatile__("mrs %0, ddc" : "=C" (ddc_reg));
+  __asm__ __volatile__("adr %0, #0" : "=C" (dcc_reg));
 
-  __asm__ __volatile__("mrs c1, ddc");
-  __asm__ __volatile__("adr c2, #0");
-  __asm__ __volatile__("mov x3, #0xB000");
-  __asm__ __volatile__("movk x3, #0xE003, lsl 16");
-  __asm__ __volatile__("bl crt_init_globals");
-
-  __asm__ __volatile__("mov c0, c11");
-  __asm__ __volatile__("mov c1, c12");
-  __asm__ __volatile__("mov x2, 0");
-
+  crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE003A000);
   ProcessModuleEntryPointList (SecCoreData, PpiList, NULL);
 
   //
