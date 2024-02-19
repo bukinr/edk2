@@ -157,7 +157,7 @@ CopyExceptionHandlers (
   UINT32         *VectorBase;
 
   // ensure that the destination value specifies an address meeting the vector alignment requirements
-  ASSERT ((BaseAddress & gExceptionVectorAlignmentMask) == 0);
+  ASSERT (((UINT64)BaseAddress & gExceptionVectorAlignmentMask) == 0);
 
   //
   // Copy an implementation of the exception vectors to PcdCpuVectorBaseAddress.

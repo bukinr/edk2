@@ -322,7 +322,7 @@ GetNextVariablePtr (
       //
       // Next variable is in spare block.
       //
-      Value = (UINTPTR_T)SpareAddress + (Value - (UINTN)TargetAddress);
+      Value = (UINTPTR_T)SpareAddress + ((UINTN)Value - (UINTN)TargetAddress);
     }
   }
 
