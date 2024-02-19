@@ -213,6 +213,7 @@ ASM_FUNC(_ModuleEntryPoint)
   adr     c2, #0
   clrperm c2, c2, x0
   mov     x3, 0xe0020000
+  mov     x4, 0
   bl      crt_init_globals
 #else
  #ifdef __CHERI_PURE_CAPABILITY__
