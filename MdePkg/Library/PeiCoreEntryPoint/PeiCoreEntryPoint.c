@@ -58,10 +58,19 @@ _ModuleEntryPoint (
   VOID* ddc_reg;
   VOID* dcc_reg;
 
+#if 0
+  if ((UINT64)SecCoreData->BootFirmwareVolumeBase == 0x12345678)
+    while (1);
+  if ((UINT64)SecCoreData->TemporaryRamBase == 0x12345679)
+    while (1);
+#endif
+
   __asm__ __volatile__("mrs %0, ddc" : "=C" (ddc_reg));
   __asm__ __volatile__("adr %0, #0" : "=C" (dcc_reg));
 
-  crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE003A000);
+  crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE003A000, 0x240);
+  cheri_init_capabilities(ddc_reg);
+
   ProcessModuleEntryPointList (SecCoreData, PpiList, NULL);
 
   //

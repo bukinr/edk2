@@ -181,7 +181,7 @@ cheri_init_globals_impl(const struct capreloc *start_relocs,
                         void *__capability data_cap,
                         const void *__capability code_cap,
                         const void *__capability rodata_cap,
-                        bool tight_code_bounds, __SIZE_TYPE__ base_addr) {
+                        bool tight_code_bounds, __SIZE_TYPE__ base_addr, __SIZE_TYPE__ obj_offset) {
   data_cap =
       __builtin_cheri_perms_and(data_cap, global_pointer_permissions_mask);
   code_cap =
@@ -215,7 +215,7 @@ cheri_init_globals_impl(const struct capreloc *start_relocs,
       base_cap = data_cap; /* read-write data */
     }
     const void *__capability src =
-        cheri_address_or_offset_set(base_cap, reloc->object + base_addr);
+        cheri_address_or_offset_set(base_cap, reloc->object + base_addr - obj_offset);
     if (can_set_bounds && (reloc->size != 0)) {
       src = __builtin_cheri_bounds_set(src, reloc->size);
     }
@@ -232,7 +232,8 @@ static __attribute__((always_inline)) void
 cheri_init_globals_3(void *__capability data_cap,
                      const void *__capability code_cap,
                      const void *__capability rodata_cap,
-                     __SIZE_TYPE__ base_addr) {
+                     __SIZE_TYPE__ base_addr,
+		     __SIZE_TYPE__ obj_offset) {
   const struct capreloc *start_relocs;
   const struct capreloc *stop_relocs;
   __SIZE_TYPE__ start_addr, stop_addr;
@@ -313,12 +314,12 @@ cheri_init_globals_3(void *__capability data_cap,
    * location of the capreloc.
    */
   cheri_init_globals_impl(start_relocs, stop_relocs, data_cap, code_cap,
-                          rodata_cap, can_set_code_bounds, base_addr);
+                          rodata_cap, can_set_code_bounds, base_addr, obj_offset);
 }
 
 static __attribute__((always_inline, unused)) void
 cheri_init_globals_gdc(void *__capability gdc) {
-  cheri_init_globals_3(gdc, __builtin_cheri_program_counter_get(), gdc, 0);
+  cheri_init_globals_3(gdc, __builtin_cheri_program_counter_get(), gdc, 0, 0);
 }
 
 #ifndef CHERI_INIT_GLOBALS_GDC_ONLY

@@ -6,6 +6,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
+
 #include "UefiDevicePathLib.h"
 
 /**
@@ -515,8 +517,8 @@ DevPathFromTextMemoryMapped (
                                                );
 
   MemMap->MemoryType = (UINT32)Strtoi (MemoryTypeStr);
-  Strtoi64 (StartingAddressStr, &MemMap->StartingAddress);
-  Strtoi64 (EndingAddressStr, &MemMap->EndingAddress);
+  Strtoi64 (StartingAddressStr, (void *)MakeCap((UINT64)&MemMap->StartingAddress));
+  Strtoi64 (EndingAddressStr, (void *)MakeCap((UINT64)&MemMap->EndingAddress));
 
   return (EFI_DEVICE_PATH_PROTOCOL *)MemMap;
 }

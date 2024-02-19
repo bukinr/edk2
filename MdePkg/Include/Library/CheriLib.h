@@ -20,7 +20,6 @@ MakeCap(UINTN addr)
 #ifdef __CHERI_PURE_CAPABILITY__
   Cap = (UINTPTR_T)cheri_setaddress(kernel_root_cap, addr);
 #else
-aaa
   Cap = (UINTPTR_T)addr;
 #endif
 
@@ -30,5 +29,6 @@ aaa
 
 UINTPTR_T MakeCap(UINTN addr);
 VOID cheri_init_capabilities(VOID * __capability kroot);
+void crt_init_globals(void *arg, void *data_cap, void *code_cap, UINT64 base_addr, UINT64 obj_offset);
 
 #endif
