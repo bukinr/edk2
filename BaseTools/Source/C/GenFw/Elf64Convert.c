@@ -1678,22 +1678,12 @@ WriteSections64 (
             *(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr + mCoffSectionsOffset[Sym->st_shndx];
             break;
 
-          case R_MORELLO_LD128_GOT_LO12_NC:
-          case R_MORELLO_ADR_GOT_PAGE:
-	    break;
-
+	  case R_MORELLO_LD128_GOT_LO12_NC:
+	  case R_MORELLO_ADR_GOT_PAGE:
 	  case R_MORELLO_CALL26:
-	    //Error(NULL, 0, 3000, "Inv0", "m call26 %lx %lx %lx\n", *(UINT64 *)Targ, SymShdr->sh_addr, mCoffSectionsOffset[Sym->st_shndx]);
-	    break;
 	  case R_MORELLO_ADR_PREL_PG_HI20:
-	    /* Test */
-	    //Error(NULL, 0, 3000, "Inv", "m adr prel pg hi20: %lx %lx %lx\n", *(UINT64 *)Targ, SymShdr->sh_addr, mCoffSectionsOffset[Sym->st_shndx]);
-	    //*(UINT64 *)Targ = *(UINT64 *)Targ + 2;
-            //*(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr; // + mCoffSectionsOffset[Sym->st_shndx];
-	    break;
-
-          case R_MORELLO_CAPINIT:
-          case R_MORELLO_JUMP26:
+	  case R_MORELLO_CAPINIT:
+	  case R_MORELLO_JUMP26:
 	    break;
 
           default:
@@ -2003,16 +1993,9 @@ WriteRelocations64 (
 	    case R_MORELLO_JUMP26:
 	    case R_MORELLO_ADR_PREL_PG_HI20:
 	    case R_MORELLO_CALL26:
-            case R_MORELLO_CAPINIT:
-            case R_MORELLO_ADR_GOT_PAGE:
-            case R_MORELLO_LD128_GOT_LO12_NC:
-	      /* Test */
-#if 0
-              CoffAddFixup(
-                (UINT32) ((UINT64) mCoffSectionsOffset[RelShdr->sh_info]
-                + (Rel->r_offset - SecShdr->sh_addr)),
-                EFI_IMAGE_REL_BASED_HIGHLOW);
-#endif
+	    case R_MORELLO_CAPINIT:
+	    case R_MORELLO_ADR_GOT_PAGE:
+	    case R_MORELLO_LD128_GOT_LO12_NC:
               break;
             default:
                 Error (NULL, 0, 3000, "Invalid", "WriteRelocations64(): %s unsupported ELF EM_AARCH64 relocation 0x%x.", mInImageName, (unsigned) ELF_R_TYPE(Rel->r_info));
