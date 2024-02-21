@@ -1552,6 +1552,7 @@ WriteSections64 (
             *(UINT32 *)Targ &= 0x3ff;
             *(UINT32 *)Targ |= 0x91000000 | ((Sym->st_value & 0xfff) << 10);
             break;
+
           case R_AARCH64_ADR_GOT_PAGE:
             //
             // This relocation points to the GOT entry that contains the absolute
@@ -1633,10 +1634,8 @@ WriteSections64 (
           case R_AARCH64_LDST128_ABS_LO12_NC:
             if (((SecShdr->sh_addr ^ SecOffset) & 0xfff) != 0 ||
                 ((SymShdr->sh_addr ^ mCoffSectionsOffset[Sym->st_shndx]) & 0xfff) != 0) {
-#if 0
               Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s AARCH64 small code model requires identical ELF and PE/COFF section offsets modulo 4 KB.",
                 mInImageName);
-#endif
               break;
             }
             /* fall through */
@@ -1665,11 +1664,8 @@ WriteSections64 (
             //
             if ((SymShdr->sh_addr - SecShdr->sh_addr) !=
                 (mCoffSectionsOffset[Sym->st_shndx] - SecOffset)) {
-	      printf("%llx %llx %x %x\n", SymShdr->sh_addr, SecShdr->sh_addr, mCoffSectionsOffset[Sym->st_shndx], SecOffset);
-#if 0
               Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s AARCH64 relative relocations require identical ELF and PE/COFF section offsets",
                 mInImageName);
-#endif
             }
             break;
 
