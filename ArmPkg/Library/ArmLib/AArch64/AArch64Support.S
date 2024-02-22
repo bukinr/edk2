@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------
+	#------------------------------------------------------------------------------
 #
 # Copyright (c) 2008 - 2010, Apple Inc. All rights reserved.<BR>
 # Copyright (c) 2011 - 2017, ARM Limited. All rights reserved.
@@ -450,13 +450,13 @@ ASM_FUNC(ArmReadMpidr)
 
 // Keep old function names for C compatibility for now. Change later?
 ASM_FUNC(ArmReadTpidrurw)
-  mrs   x0, tpidr_el0           // read tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
+  mrs   c0, ctpidr_el0           // read tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
   ret
 
 
 // Keep old function names for C compatibility for now. Change later?
 ASM_FUNC(ArmWriteTpidrurw)
-  msr   tpidr_el0, x0           // write tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
+  msr   ctpidr_el0, c0           // write tpidr_el0 (v7 TPIDRURW) -> (v8 TPIDR_EL0)
   ret
 
 

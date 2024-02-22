@@ -155,7 +155,7 @@ ArmReadTpidrurw (
 VOID
 EFIAPI
 ArmWriteTpidrurw (
-  UINTN  Value
+  UINTPTR_T  Value
   );
 
 UINTN
