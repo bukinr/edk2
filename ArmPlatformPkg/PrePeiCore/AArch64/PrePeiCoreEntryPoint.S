@@ -31,36 +31,8 @@ LENTRY(drop_to_el1)
 	b.eq	1f
 	ret
 1:
-	/*
-	 * Disable the MMU. If the HCR_EL2.E2H field is set we will clear it
-	 * which may break address translation.
-	 */
-	dsb	sy
-	mrs	x2, sctlr_el2
-	bic	x2, x2, SCTLR_M
-	msr	sctlr_el2, x2
-	isb
 
-	/* Configure the Hypervisor */
-	ldr	x2, =(HCR_RW | HCR_APK | HCR_API)
-	msr	hcr_el2, x2
-
-	/* Stash value of HCR_EL2 for later */
-	isb
-	mrs	x4, hcr_el2
-
-	/* Load the Virtualization Process ID Register */
-	mrs	x2, midr_el1
-	msr	vpidr_el2, x2
-
-	/* Load the Virtualization Multiprocess ID Register */
-	mrs	x2, mpidr_el1
-	msr	vmpidr_el2, x2
-
-	/* Set the bits that need to be 1 in sctlr_el1 */
-	ldr	x2, .Lsctlr_res1
-	msr	sctlr_el1, x2
-
+#if 1
 	/*
 	 * On some hardware, e.g., Apple M1, we can't clear E2H, so make sure we
 	 * don't trap to EL2 for SIMD register usage to have at least a
@@ -71,7 +43,8 @@ LENTRY(drop_to_el1)
 	mov	x5, #CPTR_FPEN	/* HCR_E2H == 1 */
 	csel	x2, x3, x5, eq
 	msr	cptr_el2, x2
-
+#endif
+	
 #if __has_feature(capabilities)
 	/*
 	 * Wait for the write to cptr_el2 to complete. It will enable the
@@ -82,6 +55,7 @@ LENTRY(drop_to_el1)
 	isb
 #endif
 
+#if 1
 	/* Don't trap to EL2 for CP15 traps */
 	msr	hstr_el2, xzr
 
@@ -93,37 +67,12 @@ LENTRY(drop_to_el1)
 	/* Set the counter offset to a known value */
 	msr	cntvoff_el2, xzr
 
-#if 0
-	/* Hypervisor trap functions */
-	adrp	x2, hyp_stub_vectors
-	add	x2, x2, :lo12:hyp_stub_vectors
-#if __has_feature(capabilities)
-	cvtp	c2, x2
-	msr	cvbar_el2, c2
-#else
-	msr	vbar_el2, x2
-#endif
-#endif
-
 	/* Zero vttbr_el2 so a hypervisor can tell the host and guest apart */
 	msr	vttbr_el2, xzr
 
 	mov	x2, #(PSR_DAIF | PSR_M_EL1h)
 	msr	spsr_el2, x2
-
-	/* Configure GICv3 CPU interface */
-	mrs	x2, id_aa64pfr0_el1
-	/* Extract GIC bits from the register */
-	ubfx	x2, x2, #ID_AA64PFR0_GIC_SHIFT, #ID_AA64PFR0_GIC_BITS
-	/* GIC[3:0] == 0001 - GIC CPU interface via special regs. supported */
-	cmp	x2, #(ID_AA64PFR0_GIC_CPUIF_EN >> ID_AA64PFR0_GIC_SHIFT)
-	b.ne	2f
-
-	mrs	x2, icc_sre_el2
-	orr	x2, x2, #ICC_SRE_EL2_EN	/* Enable access from insecure EL1 */
-	orr	x2, x2, #ICC_SRE_EL2_SRE	/* Enable system registers */
-	msr	icc_sre_el2, x2
-2:
+#endif
 
 #ifdef __CHERI_PURE_CAPABILITY__
 	/* Enter exception handlers in C64 mode */
@@ -212,7 +161,8 @@ ASM_FUNC(_ModuleEntryPoint)
   ldr     x0, =~CHERI_PERMS_KERNEL_CODE
   adr     c2, #0
   clrperm c2, c2, x0
-  mov     x3, 0xe0020000
+  mov     x3, 0x3000
+  movk    x3, 0xe002, lsl 16
   mov     x4, 0
   bl      crt_init_globals
 #else
