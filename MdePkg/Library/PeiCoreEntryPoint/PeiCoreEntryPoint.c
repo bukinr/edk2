@@ -48,6 +48,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
                       service calls and/or code in these early PPIs.
 
 **/
+
 VOID
 EFIAPI
 _ModuleEntryPoint (
@@ -68,7 +69,7 @@ _ModuleEntryPoint (
   __asm__ __volatile__("mrs %0, ddc" : "=C" (ddc_reg));
   __asm__ __volatile__("adr %0, #0" : "=C" (dcc_reg));
 
-  crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE003A000, 0x240);
+  crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE0041000, 0);
   cheri_init_capabilities(ddc_reg);
 
   ProcessModuleEntryPointList (SecCoreData, PpiList, NULL);
