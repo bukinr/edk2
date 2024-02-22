@@ -42,9 +42,53 @@ InternalMemCopyMem (
   CONST UINT32     *Source32;
   volatile UINT64  *Destination64;
   CONST UINT64     *Source64;
+  volatile UINTPTR_T  *Destination128;
+  CONST UINTPTR_T     *Source128;
   UINTN            Alignment;
 
-  if ((((UINTN)DestinationBuffer & 0x7) == 0) && (((UINTN)SourceBuffer & 0x7) == 0) && (Length >= 8)) {
+  if ((((UINTN)DestinationBuffer & 0xf) == 0) && (((UINTN)SourceBuffer & 0xf) == 0) && (Length >= 16)) {
+    if (SourceBuffer > DestinationBuffer) {
+      Destination128 = (UINTPTR_T *)DestinationBuffer;
+      Source128      = (CONST UINTPTR_T *)SourceBuffer;
+      while (Length >= 16) {
+        *(Destination128++) = *(Source128++);
+        Length            -= 16;
+      }
+
+      // Finish if there are still some bytes to copy
+      Destination8 = (UINT8 *)Destination128;
+      Source8      = (CONST UINT8 *)Source128;
+      while (Length-- != 0) {
+        *(Destination8++) = *(Source8++);
+      }
+    } else if (SourceBuffer < DestinationBuffer) {
+      Destination128 = (UINTPTR_T *)((UINTPTR_T)DestinationBuffer + Length);
+      Source128      = (CONST UINTPTR_T *)((UINTPTR_T)SourceBuffer + Length);
+
+      // Destination64 and Source64 were aligned on a 64-bit boundary
+      // but if length is not a multiple of 8 bytes then they won't be
+      // anymore.
+
+      Alignment = Length & 0xf;
+      if (Alignment != 0) {
+        Destination8 = (UINT8 *)Destination128;
+        Source8      = (CONST UINT8 *)Source128;
+
+        while (Alignment-- != 0) {
+          *(--Destination8) = *(--Source8);
+          --Length;
+        }
+
+        Destination128 = (UINTPTR_T *)Destination8;
+        Source128      = (CONST UINTPTR_T *)Source8;
+      }
+
+      while (Length > 0) {
+        *(--Destination128) = *(--Source128);
+        Length            -= 16;
+      }
+    }
+  } else if ((((UINTN)DestinationBuffer & 0x7) == 0) && (((UINTN)SourceBuffer & 0x7) == 0) && (Length >= 8)) {
     if (SourceBuffer > DestinationBuffer) {
       Destination64 = (UINT64 *)DestinationBuffer;
       Source64      = (CONST UINT64 *)SourceBuffer;
