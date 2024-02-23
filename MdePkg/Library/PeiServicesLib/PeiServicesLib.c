@@ -186,7 +186,7 @@ PeiServicesGetHobList (
   CONST EFI_PEI_SERVICES  **PeiServices;
 
   PeiServices = GetPeiServicesTablePointer ();
-  return MakeCap((*PeiServices)->GetHobList (PeiServices, HobList));
+  return (*PeiServices)->GetHobList (PeiServices, HobList);
 }
 
 /**
