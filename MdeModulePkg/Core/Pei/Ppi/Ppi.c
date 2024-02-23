@@ -804,6 +804,7 @@ InternalPeiNotifyPpi (
         TempPtr = AllocateZeroPool (
                     sizeof (PEI_PPI_LIST_POINTERS) * (DispatchNotifyListPointer->MaxCount + DISPATCH_NOTIFY_GROWTH_STEP)
                     );
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "sz %d, ptr %p\r\n", sizeof (PEI_PPI_LIST_POINTERS) * (DispatchNotifyListPointer->MaxCount + DISPATCH_NOTIFY_GROWTH_STEP), TempPtr));
         ASSERT (TempPtr != NULL);
         CopyMem (
           TempPtr,
@@ -815,7 +816,7 @@ InternalPeiNotifyPpi (
         DispatchNotifyListPointer->MaxCount   = DispatchNotifyListPointer->MaxCount + DISPATCH_NOTIFY_GROWTH_STEP;
       }
 
-      DEBUG((DEBUG_LOAD | DEBUG_INFO, "NotifyPtrs\r\n"));
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "NotifyPtrs idx %d\r\n", DispatchNotifyIndex));
 
       DEBUG((DEBUG_LOAD | DEBUG_INFO, "NotifyPtrs %p\r\n", &DispatchNotifyListPointer->NotifyPtrs[DispatchNotifyIndex]));
 
