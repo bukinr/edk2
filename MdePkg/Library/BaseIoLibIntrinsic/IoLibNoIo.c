@@ -442,7 +442,7 @@ MmioWrite8 (
   )
 {
   BOOLEAN  Flag;
-  UINTPTR_T Ptr;
+  VOID *Ptr;
 
   Ptr = MakeCap(Address);
   Flag = FilterBeforeMmIoWrite (FilterWidth8, Address, &Value);
@@ -511,7 +511,7 @@ MmioWrite16 (
   )
 {
   BOOLEAN  Flag;
-  UINTPTR_T Ptr;
+  VOID *Ptr;
 
   ASSERT ((Address & 1) == 0);
 
@@ -582,7 +582,7 @@ MmioWrite32 (
   )
 {
   BOOLEAN  Flag;
-  UINTPTR_T Ptr;
+  VOID * Ptr;
 
   ASSERT ((Address & 3) == 0);
 
@@ -653,7 +653,7 @@ MmioWrite64 (
   )
 {
   BOOLEAN  Flag;
-  UINTPTR_T Ptr;
+  VOID * Ptr;
 
   ASSERT ((Address & 7) == 0);
 
