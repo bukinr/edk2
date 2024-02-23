@@ -13,24 +13,41 @@
 #if 0
 void *kernel_root_cap = (void *)(INTPTR_T) - 1;
 
+static inline VOID *
+MakeCap(UINT64 addr)
+{
+  VOID *Cap;
+
+  /* TODO */
+
+#ifdef __CHERI_PURE_CAPABILITY__
+  Cap = (VOID *)cheri_setaddress(kernel_root_cap, addr);
+#else
+  Cap = (VOID *)addr;
+#endif
+
+  return (Cap);
+};
+
 static inline UINTPTR_T
-MakeCap(UINTN addr)
+MakeUCap(UINT64 addr)
 {
   UINTPTR_T Cap;
 
   /* TODO */
 
 #ifdef __CHERI_PURE_CAPABILITY__
-  Cap = (UINTPTR_T)cheri_setaddress(kernel_root_cap, addr);
+  Cap = (VOID *)cheri_setaddress(kernel_root_cap, addr);
 #else
-  Cap = (UINTPTR_T)addr;
+  Cap = (VOID *)addr;
 #endif
 
   return (Cap);
 };
 #endif
 
-UINTPTR_T MakeCap(UINTN addr);
+VOID * MakeCap(UINT64 addr);
+UINTPTR_T MakeUCap(UINT64 addr);
 VOID cheri_init_capabilities(VOID * __capability kroot);
 void crt_init_globals(void *arg, void *data_cap, void *code_cap, UINT64 base_addr, UINT64 obj_offset);
 
