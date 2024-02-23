@@ -46,6 +46,8 @@ typedef struct {
   /// This field must always be set to zero.
   ///
   UINT32    Reserved;
+  UINT32    Reserved1;
+  UINT32    Reserved2;
 } EFI_HOB_GENERIC_HEADER;
 
 ///
