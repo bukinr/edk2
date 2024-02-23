@@ -22,7 +22,7 @@ cheri_init_capabilities(VOID * __capability kroot)
 
 
 UINTPTR_T
-MakeCap(UINTN addr)
+MakeUCap(UINT64 addr)
 {
   UINTPTR_T Cap;
 
@@ -32,6 +32,22 @@ MakeCap(UINTN addr)
   Cap = (UINTPTR_T)cheri_setaddress(kernel_root_cap, addr);
 #else
   Cap = (UINTPTR_T)addr;
+#endif
+
+  return (Cap);
+};
+
+VOID *
+MakeCap(UINT64 addr)
+{
+  VOID * Cap;
+
+  /* TODO */
+
+#ifdef __CHERI_PURE_CAPABILITY__
+  Cap = (VOID *)cheri_setaddress(kernel_root_cap, addr);
+#else
+  Cap = (VOID *)addr;
 #endif
 
   return (Cap);
