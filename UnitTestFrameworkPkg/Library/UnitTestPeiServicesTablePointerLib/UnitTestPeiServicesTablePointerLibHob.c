@@ -82,7 +82,7 @@ UnitTestCreateHob (
     return EFI_INVALID_PARAMETER;
   }
 
-  Length = (UINT16)((Length + 0x7) & (~0x7));
+  Length = (UINT16)((Length + 0xf) & (~0xf));
 
   FreeMemory = HandOffHob->EfiFreeMemoryTop -
                HandOffHob->EfiFreeMemoryBottom;

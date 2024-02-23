@@ -34,7 +34,7 @@ CreateHob (
 
   HandOffHob = GetHobList ();
 
-  HobLength = (UINT16)((HobLength + 0x7) & (~0x7));
+  HobLength = (UINT16)((HobLength + 0xf) & (~0xf));
 
   FreeMemory = HandOffHob->EfiFreeMemoryTop - HandOffHob->EfiFreeMemoryBottom;
 
