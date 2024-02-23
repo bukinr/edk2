@@ -110,13 +110,13 @@ PeiCreateHob (
   ((EFI_HOB_GENERIC_HEADER *)*Hob)->Reserved  = 0;
 
   HobEnd                      = (EFI_HOB_GENERIC_HEADER *)MakeCap((UINTN)*Hob + Length);
-  HandOffHob->EfiEndOfHobList = (EFI_PHYSICAL_ADDRESS)(UINTN)HobEnd;
+  HandOffHob->EfiEndOfHobList = (EFI_PHYSICAL_ADDRESS)HobEnd;
 
   HobEnd->HobType   = EFI_HOB_TYPE_END_OF_HOB_LIST;
   HobEnd->HobLength = (UINT16)sizeof (EFI_HOB_GENERIC_HEADER);
   HobEnd->Reserved  = 0;
   HobEnd++;
-  HandOffHob->EfiFreeMemoryBottom = (EFI_PHYSICAL_ADDRESS)(UINTN)HobEnd;
+  HandOffHob->EfiFreeMemoryBottom = (EFI_PHYSICAL_ADDRESS)HobEnd;
 
   return EFI_SUCCESS;
 }
