@@ -7,6 +7,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "FwVol.h"
 
 EFI_PEI_NOTIFY_DESCRIPTOR  mNotifyOnFvInfoList[] = {
@@ -287,7 +288,7 @@ FindFileEx (
   //
   // Convert the handle of FV to FV header for memory-mapped firmware volume
   //
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)FvHandle;
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)MakeCap((UINT64)FvHandle);
   FileHeader  = (EFI_FFS_FILE_HEADER **)FileHandle;
 
   IsFfs3Fv = CompareGuid (&FwVolHeader->FileSystemGuid, &gEfiFirmwareFileSystem3Guid);
@@ -482,7 +483,7 @@ PeiInitializeFv (
   //
   PeiServicesInstallPpi (&mPeiFfs3FvPpiList);
 
-  BfvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)SecCoreData->BootFirmwareVolumeBase;
+  BfvHeader = (EFI_FIRMWARE_VOLUME_HEADER *)MakeCap((UINT64)SecCoreData->BootFirmwareVolumeBase);
 
   //
   // The FV_PPI in BFV's format should be installed.

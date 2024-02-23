@@ -9,6 +9,7 @@
 
 **/
 
+#include <Library/CheriLib.h>
 #include "BaseLibInternals.h"
 
 /**
@@ -35,8 +36,8 @@ ReadUnaligned16 (
 
   ASSERT (Buffer != NULL);
 
-  LowerByte  = ((UINT8 *)Buffer)[0];
-  HigherByte = ((UINT8 *)Buffer)[1];
+  LowerByte  = ((UINT8 *)MakeCap((UINT64)Buffer))[0];
+  HigherByte = ((UINT8 *)MakeCap((UINT64)Buffer))[1];
 
   return (UINT16)(LowerByte | (HigherByte << 8));
 }

@@ -40,7 +40,7 @@ PrePeiSetHobList (
   IN  VOID  *HobList
   )
 {
-  ArmWriteTpidrurw ((UINTN)HobList);
+  ArmWriteTpidrurw (MakeCap(HobList));
 
   return EFI_SUCCESS;
 }

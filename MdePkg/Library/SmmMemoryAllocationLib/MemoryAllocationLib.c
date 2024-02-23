@@ -617,6 +617,8 @@ InternalAllocateZeroPool (
 {
   VOID  *Memory;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "InternalAllocateZeroPool\r\n"));
+
   Memory = InternalAllocatePool (PoolType, AllocationSize);
   if (Memory != NULL) {
     Memory = ZeroMem (Memory, AllocationSize);

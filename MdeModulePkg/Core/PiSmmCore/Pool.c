@@ -250,6 +250,8 @@ SmmInternalAllocatePool (
 
   Address = 0;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "SmmInternalAllocatePool\r\n"));
+
   if ((PoolType != EfiRuntimeServicesCode) &&
       (PoolType != EfiRuntimeServicesData))
   {

@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "PeiMain.h"
 
 EFI_PEI_LOAD_FILE_PPI  mPeiLoadImagePpi = {
@@ -286,7 +287,7 @@ LoadAndRelocatePeCoffImage (
   ReturnStatus = EFI_SUCCESS;
   IsXipImage   = FALSE;
   ZeroMem (&ImageContext, sizeof (ImageContext));
-  ImageContext.Handle    = Pe32Data;
+  ImageContext.Handle    = (VOID *)MakeCap((UINT64)Pe32Data);
   ImageContext.ImageRead = PeiImageRead;
 
   Status = PeCoffLoaderGetImageInfo (&ImageContext);
@@ -312,7 +313,7 @@ LoadAndRelocatePeCoffImage (
   //
   // XIP image that ImageAddress is same to Image handle.
   //
-  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data) {
+  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)MakeCap((UINT64)Pe32Data)) {
     IsXipImage = TRUE;
   }
 

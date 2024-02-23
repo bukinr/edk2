@@ -75,6 +75,11 @@ PeCoffLoaderRelocateImageExtraAction (
   CHAR8  Temp[512];
  #endif
 
+  if (ImageContext->PdbPointer)
+    DEBUG ((DEBUG_LOAD | DEBUG_INFO, "point\r\n"));
+  else
+    DEBUG ((DEBUG_LOAD | DEBUG_INFO, "nopoint\r\n"));
+
   if (ImageContext->PdbPointer) {
  #ifdef __CC_ARM
     // Print out the command for the DS-5 to load symbols for this image
@@ -82,11 +87,13 @@ PeCoffLoaderRelocateImageExtraAction (
  #elif __GNUC__
     // This may not work correctly if you generate PE/COFF directly as then the Offset would not be required
     DEBUG ((DEBUG_LOAD | DEBUG_INFO, "add-symbol-file %a 0x%p\n", DeCygwinPathIfNeeded (ImageContext->PdbPointer, Temp, sizeof (Temp)), (UINTN)(ImageContext->ImageAddress + ImageContext->SizeOfHeaders)));
+    DEBUG ((DEBUG_LOAD | DEBUG_INFO, "test1\r\n"));
+    DEBUG ((DEBUG_LOAD | DEBUG_INFO, "test2\r\n"));
  #else
     DEBUG ((DEBUG_LOAD | DEBUG_INFO, "Loading driver at 0x%11p EntryPoint=0x%11p\n", (VOID *)(UINTPTR_T)ImageContext->ImageAddress, FUNCTION_ENTRY_POINT (ImageContext->EntryPoint)));
  #endif
   } else {
-    DEBUG ((DEBUG_LOAD | DEBUG_INFO, "Loading driver at 0x%11p EntryPoint=0x%11p\n", (VOID *)(UINTPTR_T)ImageContext->ImageAddress, FUNCTION_ENTRY_POINT (ImageContext->EntryPoint)));
+    DEBUG ((DEBUG_LOAD | DEBUG_INFO, "Loading driver1 at 0x%11p EntryPoint=0x%11p\n", (VOID *)(UINTPTR_T)ImageContext->ImageAddress, FUNCTION_ENTRY_POINT (ImageContext->EntryPoint)));
   }
 }
 

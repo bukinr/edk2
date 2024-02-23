@@ -597,6 +597,8 @@ InternalAllocateZeroPool (
 {
   VOID  *Memory;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "MdeModulePkg: InternalAllocateZeroPool\r\n"));
+
   Memory = InternalAllocatePool (PoolType, AllocationSize);
   if (Memory != NULL) {
     Memory = ZeroMem (Memory, AllocationSize);

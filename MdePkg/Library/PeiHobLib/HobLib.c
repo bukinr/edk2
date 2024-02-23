@@ -12,6 +12,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Library/HobLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 #include <Library/PeiServicesLib.h>
 #include <Library/BaseMemoryLib.h>
 
@@ -44,7 +45,7 @@ GetHobList (
   ASSERT_EFI_ERROR (Status);
   ASSERT (HobList != NULL);
 
-  return HobList;
+  return (void *)MakeCap((UINTN)HobList);
 }
 
 /**
@@ -183,6 +184,8 @@ GetFirstGuidHob (
   )
 {
   VOID  *HobList;
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "getf\r\n"));
 
   HobList = GetHobList ();
   return GetNextGuidHob (Guid, HobList);

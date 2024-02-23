@@ -179,6 +179,10 @@ PeiCore (
   EFI_PEI_TEMPORARY_RAM_DONE_PPI  *TemporaryRamDonePpi;
   UINTN                           Index;
 
+  DebugPrint(DEBUG_INFO, "test\n");
+
+      DEBUG ((DEBUG_LOAD | DEBUG_INFO, "Hello\n"));
+
   //
   // Retrieve context passed into PEI Core
   //
@@ -194,6 +198,7 @@ PeiCore (
     //
     ZeroMem (&PrivateData, sizeof (PEI_CORE_INSTANCE));
     PrivateData.Signature = PEI_CORE_HANDLE_SIGNATURE;
+      DEBUG ((DEBUG_LOAD | DEBUG_INFO, "copymem0\n"));
     CopyMem (&PrivateData.ServiceTableShadow, &gPs, sizeof (gPs));
   } else {
     //
@@ -360,14 +365,18 @@ PeiCore (
     //
     // Memory is available to the PEI Core and the PEI Core has been shadowed to memory.
     //
+
+      DEBUG ((DEBUG_LOAD | DEBUG_INFO, "copymem\n"));
     CopyMem (&NewSecCoreData, SecCoreDataPtr, sizeof (NewSecCoreData));
     SecCoreData = &NewSecCoreData;
 
+      DEBUG ((DEBUG_LOAD | DEBUG_INFO, "copymem1\n"));
     CopyMem (&PrivateData, OldCoreData, sizeof (PrivateData));
 
     CpuIo  = (VOID *)PrivateData.ServiceTableShadow.CpuIo;
     PciCfg = (VOID *)PrivateData.ServiceTableShadow.PciCfg;
 
+      DEBUG ((DEBUG_LOAD | DEBUG_INFO, "copymem2\n"));
     CopyMem (&PrivateData.ServiceTableShadow, &gPs, sizeof (gPs));
 
     PrivateData.ServiceTableShadow.CpuIo  = CpuIo;

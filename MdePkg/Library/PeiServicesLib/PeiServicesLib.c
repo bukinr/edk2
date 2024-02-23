@@ -17,6 +17,7 @@
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/CheriLib.h>
 
 /**
   This service enables a given PEIM to register an interface into the PEI Foundation.
@@ -185,7 +186,7 @@ PeiServicesGetHobList (
   CONST EFI_PEI_SERVICES  **PeiServices;
 
   PeiServices = GetPeiServicesTablePointer ();
-  return (*PeiServices)->GetHobList (PeiServices, HobList);
+  return MakeCap((*PeiServices)->GetHobList (PeiServices, HobList));
 }
 
 /**

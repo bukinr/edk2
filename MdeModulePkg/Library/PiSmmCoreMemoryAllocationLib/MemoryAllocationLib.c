@@ -649,6 +649,8 @@ AllocateZeroPool (
 {
   VOID  *Buffer;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "MdeModulePkg: AllocateZeroPool\r\n")
+
   Buffer = InternalAllocateZeroPool (EfiRuntimeServicesData, AllocationSize);
   if (Buffer != NULL) {
     MemoryProfileLibRecord (

@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "PeiMain.h"
 
 /**
@@ -686,10 +687,10 @@ PeiLocatePpi (
     // Instead we compare the GUID as INT32 at a time and branch
     // on the first failed comparison.
     //
-    if ((((INT32 *)Guid)[0] == ((INT32 *)CheckGuid)[0]) &&
-        (((INT32 *)Guid)[1] == ((INT32 *)CheckGuid)[1]) &&
-        (((INT32 *)Guid)[2] == ((INT32 *)CheckGuid)[2]) &&
-        (((INT32 *)Guid)[3] == ((INT32 *)CheckGuid)[3]))
+    if ((((INT32 *)MakeCap((UINT64)Guid))[0] == ((INT32 *)CheckGuid)[0]) &&
+        (((INT32 *)MakeCap((UINT64)Guid))[1] == ((INT32 *)CheckGuid)[1]) &&
+        (((INT32 *)MakeCap((UINT64)Guid))[2] == ((INT32 *)CheckGuid)[2]) &&
+        (((INT32 *)MakeCap((UINT64)Guid))[3] == ((INT32 *)CheckGuid)[3]))
     {
       if (Instance == 0) {
         if (PpiDescriptor != NULL) {
@@ -809,11 +810,19 @@ InternalPeiNotifyPpi (
           DispatchNotifyListPointer->NotifyPtrs,
           sizeof (PEI_PPI_LIST_POINTERS) * DispatchNotifyListPointer->MaxCount
           );
+        DEBUG((DEBUG_LOAD | DEBUG_INFO, "new NotifyPtrs\r\n"));
         DispatchNotifyListPointer->NotifyPtrs = TempPtr;
         DispatchNotifyListPointer->MaxCount   = DispatchNotifyListPointer->MaxCount + DISPATCH_NOTIFY_GROWTH_STEP;
       }
 
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "NotifyPtrs\r\n"));
+
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "NotifyPtrs %p\r\n", &DispatchNotifyListPointer->NotifyPtrs[DispatchNotifyIndex]));
+
       DispatchNotifyListPointer->NotifyPtrs[DispatchNotifyIndex].Notify = (EFI_PEI_NOTIFY_DESCRIPTOR *)NotifyList;
+
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "NotifyPtrs done\r\n"));
+
       DispatchNotifyIndex++;
       DispatchNotifyListPointer->CurrentCount++;
     }
@@ -1058,7 +1067,10 @@ ProcessPpiListFromSec (
   // returned into the HOB list. It does this after installing all PPIs passed from SEC
   // into the PPI database and before dispatching any PEIMs.
   //
-  Status = PeiLocatePpi (PeiServices, &gEfiSecHobDataPpiGuid, 0, NULL, (VOID **)&SecHobDataPpi);
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "PeiLocatePpi %p\r\n", &gEfiSecHobDataPpiGuid));
+
+  Status = PeiLocatePpi (PeiServices, (VOID *)MakeCap((UINT64)&gEfiSecHobDataPpiGuid), 0, NULL, (VOID **)&SecHobDataPpi);
   if (!EFI_ERROR (Status)) {
     Status = SecHobDataPpi->GetHobs (SecHobDataPpi, &SecHobList);
     if (!EFI_ERROR (Status)) {

@@ -1232,7 +1232,7 @@ extern LIST_ENTRY  mSmmMemoryMap;
 //
 // MIN_POOL_SHIFT must not be less than 5
 //
-#define MIN_POOL_SHIFT  6
+#define MIN_POOL_SHIFT  7
 #define MIN_POOL_SIZE   (1 << MIN_POOL_SHIFT)
 
 //

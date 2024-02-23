@@ -12,6 +12,7 @@
 #include <PiPei.h>
 #include <Library/PeiServicesTablePointerLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 
 CONST EFI_PEI_SERVICES  **gPeiServices;
 
@@ -33,7 +34,7 @@ SetPeiServicesTablePointer (
   )
 {
   ASSERT (PeiServicesTablePointer != NULL);
-  gPeiServices = PeiServicesTablePointer;
+  gPeiServices = MakeCap(PeiServicesTablePointer);
 }
 
 /**
