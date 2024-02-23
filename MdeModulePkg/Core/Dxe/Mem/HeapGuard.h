@@ -204,7 +204,7 @@ CoreConvertPages (
 **/
 EFI_STATUS
 CoreConvertPagesWithGuard (
-  IN UINT64           Start,
+  IN UINTPTR_T        Start,
   IN UINTN            NumberOfPages,
   IN EFI_MEMORY_TYPE  NewType
   );

@@ -10,6 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Pi/PrePiDxeCis.h>
 #include <Pi/PrePiHob.h>
+#include <Library/CheriLib.h>
 #include "DxeMain.h"
 #include "Gcd.h"
 #include "Mem/HeapGuard.h"
@@ -1094,7 +1095,7 @@ CoreAllocateSpace (
   )
 {
   EFI_STATUS            Status;
-  EFI_PHYSICAL_ADDRESS  AlignmentMask;
+  UINT64  AlignmentMask;
   EFI_PHYSICAL_ADDRESS  MaxAddress;
   LIST_ENTRY            *Map;
   LIST_ENTRY            *Link;

@@ -7,6 +7,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "PciHostBridge.h"
 #include "PciRootBridge.h"
 #include "PciHostResource.h"
@@ -449,7 +450,7 @@ InitializePciHostBridge (
   UINTN                     MemApertureIndex;
   BOOLEAN                   ResourceAssigned;
   LIST_ENTRY                *Link;
-  UINT64                    HostAddress;
+  UINTPTR_T                    HostAddress;
 
   RootBridges = PciHostBridgeGetRootBridges (&RootBridgeCount);
   if ((RootBridges == NULL) || (RootBridgeCount == 0)) {
@@ -498,7 +499,7 @@ InitializePciHostBridge (
       // For GCD resource manipulation, we need to use host address.
       //
       HostAddress = TO_HOST_ADDRESS (
-                      RootBridges[Index].Io.Base,
+                      MakeUCap(RootBridges[Index].Io.Base),
                       RootBridges[Index].Io.Translation
                       );
 
@@ -539,7 +540,7 @@ InitializePciHostBridge (
         // For GCD resource manipulation, we need to use host address.
         //
         HostAddress = TO_HOST_ADDRESS (
-                        MemApertures[MemApertureIndex]->Base,
+                        MakeUCap(MemApertures[MemApertureIndex]->Base),
                         MemApertures[MemApertureIndex]->Translation
                         );
         Status = AddMemoryMappedIoSpace (
@@ -778,7 +779,7 @@ AllocateResource (
                         EfiGcdMemoryTypeMemoryMappedIo,
                         BitsOfAlignment,
                         Length,
-                        &BaseAddress,
+                        MakeCap((UINT64)&BaseAddress),
                         gImageHandle,
                         NULL
                         );
@@ -788,7 +789,7 @@ AllocateResource (
                         EfiGcdIoTypeIo,
                         BitsOfAlignment,
                         Length,
-                        &BaseAddress,
+                        MakeCap((UINT64)&BaseAddress),
                         gImageHandle,
                         NULL
                         );
@@ -983,7 +984,7 @@ NotifyPhase (
                                 RootBridge->ResAllocNode[Index].Length,
                                 MIN (15, BitsOfAlignment),
                                 TO_HOST_ADDRESS (
-                                  ALIGN_VALUE (RootBridge->Io.Base, Alignment + 1),
+                                  MakeUCap(ALIGN_VALUE (RootBridge->Io.Base, Alignment + 1)),
                                   RootBridge->Io.Translation
                                   ),
                                 TO_HOST_ADDRESS (
@@ -999,11 +1000,11 @@ NotifyPhase (
                                 RootBridge->ResAllocNode[Index].Length,
                                 MIN (63, BitsOfAlignment),
                                 TO_HOST_ADDRESS (
-                                  ALIGN_VALUE (RootBridge->MemAbove4G.Base, Alignment + 1),
+                                  MakeUCap(ALIGN_VALUE (RootBridge->MemAbove4G.Base, Alignment + 1)),
                                   RootBridge->MemAbove4G.Translation
                                   ),
                                 TO_HOST_ADDRESS (
-                                  RootBridge->MemAbove4G.Limit,
+                                  MakeUCap(RootBridge->MemAbove4G.Limit),
                                   RootBridge->MemAbove4G.Translation
                                   )
                                 );
@@ -1021,11 +1022,11 @@ NotifyPhase (
                                 RootBridge->ResAllocNode[Index].Length,
                                 MIN (31, BitsOfAlignment),
                                 TO_HOST_ADDRESS (
-                                  ALIGN_VALUE (RootBridge->Mem.Base, Alignment + 1),
+                                  MakeUCap(ALIGN_VALUE (RootBridge->Mem.Base, Alignment + 1)),
                                   RootBridge->Mem.Translation
                                   ),
                                 TO_HOST_ADDRESS (
-                                  RootBridge->Mem.Limit,
+                                  MakeUCap(RootBridge->Mem.Limit),
                                   RootBridge->Mem.Translation
                                   )
                                 );
@@ -1037,11 +1038,11 @@ NotifyPhase (
                                 RootBridge->ResAllocNode[Index].Length,
                                 MIN (63, BitsOfAlignment),
                                 TO_HOST_ADDRESS (
-                                  ALIGN_VALUE (RootBridge->PMemAbove4G.Base, Alignment + 1),
+                                  MakeUCap(ALIGN_VALUE (RootBridge->PMemAbove4G.Base, Alignment + 1)),
                                   RootBridge->PMemAbove4G.Translation
                                   ),
                                 TO_HOST_ADDRESS (
-                                  RootBridge->PMemAbove4G.Limit,
+                                  MakeUCap(RootBridge->PMemAbove4G.Limit),
                                   RootBridge->PMemAbove4G.Translation
                                   )
                                 );
@@ -1058,11 +1059,11 @@ NotifyPhase (
                                 RootBridge->ResAllocNode[Index].Length,
                                 MIN (31, BitsOfAlignment),
                                 TO_HOST_ADDRESS (
-                                  ALIGN_VALUE (RootBridge->PMem.Base, Alignment + 1),
+                                  MakeUCap(ALIGN_VALUE (RootBridge->PMem.Base, Alignment + 1)),
                                   RootBridge->PMem.Translation
                                   ),
                                 TO_HOST_ADDRESS (
-                                  RootBridge->PMem.Limit,
+                                  MakeUCap(RootBridge->PMem.Limit),
                                   RootBridge->PMem.Translation
                                   )
                                 );
