@@ -14,6 +14,7 @@
 #include <Library/PeiServicesTablePointerLib.h>
 #include <Library/ArmLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 
 /**
   Caches a pointer PEI Services Table.
@@ -31,7 +32,7 @@ SetPeiServicesTablePointer (
   IN CONST EFI_PEI_SERVICES  **PeiServicesTablePointer
   )
 {
-  ArmWriteTpidrurw ((UINTN)PeiServicesTablePointer);
+  ArmWriteTpidrurw ((UINTPTR_T)PeiServicesTablePointer);
 }
 
 /**
