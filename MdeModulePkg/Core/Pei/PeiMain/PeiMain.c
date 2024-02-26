@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "PeiMain.h"
 
 EFI_PEI_PPI_DESCRIPTOR  mMemoryDiscoveredPpi = {
@@ -295,7 +296,7 @@ PeiCore (
       //
       // Update HandOffHob for new installed permanent memory
       //
-      HandoffInformationTable = OldCoreData->HobList.HandoffInformationTable;
+      HandoffInformationTable = MakeCap((UINT64)OldCoreData->HobList.HandoffInformationTable);
       if (OldCoreData->HeapOffsetPositive) {
         HandoffInformationTable->EfiEndOfHobList = HandoffInformationTable->EfiEndOfHobList + OldCoreData->HeapOffset;
       } else {

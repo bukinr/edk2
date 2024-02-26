@@ -295,13 +295,24 @@ LoadAndRelocatePeCoffImage (
     return Status;
   }
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage 0\n"));
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage %p\n", &Private->HobList.HandoffInformationTable));
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage %p\n", &Private->HobList));
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage %p\n", Private->HobList.HandoffInformationTable));
+
   //
   // Initialize local IsS3Boot and IsRegisterForShadow variable
   //
   IsS3Boot = FALSE;
-  if (Private->HobList.HandoffInformationTable->BootMode == BOOT_ON_S3_RESUME) {
+
+  EFI_HOB_HANDOFF_INFO_TABLE *HandoffTable;
+  HandoffTable = MakeCap((UINT64)Private->HobList.HandoffInformationTable);
+
+  if (HandoffTable->BootMode == BOOT_ON_S3_RESUME) {
     IsS3Boot = TRUE;
   }
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage 1\n"));
 
   IsRegisterForShadow = FALSE;
   if (  (Private->CurrentFileHandle == FileHandle)
@@ -310,12 +321,16 @@ LoadAndRelocatePeCoffImage (
     IsRegisterForShadow = TRUE;
   }
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage 2\n"));
+
   //
   // XIP image that ImageAddress is same to Image handle.
   //
-  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)MakeCap((UINT64)Pe32Data)) {
+  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)MakeCap((UINT64)Pe32Data)) {
     IsXipImage = TRUE;
   }
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "LoadAndRelocatePeCoffImage 3\n"));
 
   //
   // Get file type first

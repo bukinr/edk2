@@ -12,6 +12,7 @@
 
 #include <Library/PeCoffGetEntryPointLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 
 #include <IndustryStandard/PeImage.h>
 
@@ -244,7 +245,7 @@ PeCoffLoaderGetPdbPointer (
   for (DirCount = 0; DirCount < DirectoryEntry->Size; DirCount += sizeof (EFI_IMAGE_DEBUG_DIRECTORY_ENTRY), DebugEntry++) {
     if (DebugEntry->Type == EFI_IMAGE_DEBUG_TYPE_CODEVIEW) {
       if (DebugEntry->SizeOfData > 0) {
-        CodeViewEntryPointer = (VOID *)((UINTPTR_T)DebugEntry->RVA + ((UINTN)Pe32Data) + (UINTN)TEImageAdjust);
+        CodeViewEntryPointer = (VOID *)(MakeUCap((UINT64)DebugEntry->RVA) + (UINTN)Pe32Data + (UINTN)TEImageAdjust);
         switch (*(UINT32 *)CodeViewEntryPointer) {
           case CODEVIEW_SIGNATURE_NB10:
             return (VOID *)((CHAR8 *)CodeViewEntryPointer + sizeof (EFI_IMAGE_DEBUG_CODEVIEW_NB10_ENTRY));

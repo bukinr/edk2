@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "PeiMain.h"
+#include <Library/CheriLib.h>
 
 /**
 
@@ -1407,7 +1408,7 @@ PeiDispatcher (
             //
             // Call the PEIM entry point
             //
-            PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTPTR_T)EntryPoint;
+            PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)MakeCap((UINT64)EntryPoint);
 
             PERF_START_IMAGE_BEGIN (PeimFileHandle);
             PeimEntryPoint (PeimFileHandle, (const EFI_PEI_SERVICES **)&Private->Ps);
@@ -1538,7 +1539,7 @@ PeiDispatcher (
                   //
                   // Call the PEIM entry point for PEIM driver
                   //
-                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTPTR_T)EntryPoint;
+                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)MakeCap((UINT64)EntryPoint);
                   PeimEntryPoint (PeimFileHandle, (const EFI_PEI_SERVICES **)PeiServices);
                   Private->PeimDispatchOnThisPass = TRUE;
                 } else {
@@ -1600,7 +1601,7 @@ PeiDispatcher (
                            &AuthenticationState
                            );
                 if (Status == EFI_SUCCESS) {
-                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)(UINTPTR_T)EntryPoint;
+                  PeimEntryPoint = (EFI_PEIM_ENTRY_POINT2)MakeCap((UINT64)EntryPoint);
                 }
               }
 
