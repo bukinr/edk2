@@ -10,6 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Library/PeimEntryPoint.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 
 /**
   The entry point of PE/COFF Image for a PEIM.
@@ -31,6 +32,19 @@ _ModuleEntryPoint (
   IN CONST EFI_PEI_SERVICES  **PeiServices
   )
 {
+  VOID* ddc_reg;
+  VOID* dcc_reg;
+  __volatile__ UINT64 addr;
+
+  addr = ((UINT64)cheri_getpcc() & ~0xfff) - 0x1000;
+
+  __asm__ __volatile__("mrs %0, ddc" : "=C" (ddc_reg));
+  __asm__ __volatile__("adr %0, #0" : "=C" (dcc_reg));
+  crt_init_globals(NULL, ddc_reg, dcc_reg, addr, 0);
+  cheri_init_capabilities(ddc_reg);
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "PEIM Image Relocated\r\n"));
+
   if (_gPeimRevision != 0) {
     //
     // Make sure that the PEI spec revision of the platform is >= PEI spec revision of the driver
