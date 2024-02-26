@@ -9,6 +9,7 @@
 #define cheri_getlen(x) __builtin_cheri_length_get((x))
 #define cheri_getoffset(x)      __builtin_cheri_offset_get((x))
 #define cheri_gettag(x)         __builtin_cheri_tag_get((x))
+#define cheri_getpcc() __builtin_cheri_program_counter_get()
 
 #if 0
 void *kernel_root_cap = (void *)(INTPTR_T) - 1;
