@@ -10,6 +10,7 @@
 #include <Library/ArmLib.h>
 #include <Library/DebugLib.h>
 #include <Library/PcdLib.h>
+#include <Library/CheriLib.h>
 
 STATIC
 VOID
@@ -26,8 +27,8 @@ CacheRangeOperation (
   UINTPTR_T  EndAddress;
 
   ArmCacheLineAlignmentMask = LineLength - 1;
-  AlignedAddress            = (UINTPTR_T)Start - ((UINTPTR_T)Start & ArmCacheLineAlignmentMask);
-  EndAddress                = (UINTPTR_T)Start + Length;
+  AlignedAddress            = (UINTPTR_T)MakeUCap((UINT64)Start) - ((UINT64)Start & ArmCacheLineAlignmentMask);
+  EndAddress                = (UINTPTR_T)MakeUCap((UINT64)Start) + Length;
 
   // Perform the line operation on an address in each cache line
   while (AlignedAddress < EndAddress) {
