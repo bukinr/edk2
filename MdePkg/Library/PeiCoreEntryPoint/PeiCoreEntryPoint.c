@@ -72,6 +72,8 @@ _ModuleEntryPoint (
   crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE0041000, 0);
   cheri_init_capabilities(ddc_reg);
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "Image Relocated\r\n"));
+
   ProcessModuleEntryPointList (SecCoreData, PpiList, NULL);
 
   //
