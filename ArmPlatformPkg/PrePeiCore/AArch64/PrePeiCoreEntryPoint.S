@@ -150,6 +150,9 @@ ASM_FUNC(_ModuleEntryPoint)
 .arch_extension a64c
 #endif
 
+  mov x19, x0
+  mov x20, x1
+
   bl drop_to_el1
 
   morello_cpu_init
@@ -184,6 +187,9 @@ ASM_FUNC(_ModuleEntryPoint)
   /* Initialize root capability. */
   mrs   c0, ddc
   bl    cheri_init_capabilities
+
+  mov c0, c19
+  mov c1, c20
 
   // Do early platform specific actions
   bl    ASM_PFX(ArmPlatformPeiBootAction)
