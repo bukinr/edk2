@@ -14,6 +14,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/HobLib.h>
+#include <Library/CheriLib.h>
 
 /**
   Allocates one or more 4KB pages of a certain memory type.
@@ -68,7 +69,11 @@ AllocatePages (
   IN UINTN  Pages
   )
 {
-  return InternalAllocatePages (EfiBootServicesData, Pages);
+  VOID *pages;
+
+  pages = InternalAllocatePages (EfiBootServicesData, Pages);
+
+  return MakeCap((UINT64)pages);
 }
 
 /**
