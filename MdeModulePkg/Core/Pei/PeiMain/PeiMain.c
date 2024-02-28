@@ -184,6 +184,8 @@ PeiCore (
 
       DEBUG ((DEBUG_LOAD | DEBUG_INFO, "Hello\n"));
 
+  SecCoreDataPtr = MakeCap((UINT64)SecCoreDataPtr);
+
   //
   // Retrieve context passed into PEI Core
   //

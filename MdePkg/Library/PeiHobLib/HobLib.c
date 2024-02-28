@@ -498,7 +498,7 @@ InternalCheckFvAlignment (
   UINT32                      FvAlignment;
 
   FvAlignment = 0;
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)BaseAddress;
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)MakeCap((UINT64)BaseAddress);
 
   //
   // If EFI_FVB2_WEAK_ALIGNMENT is set in the volume header then the first byte of the volume
