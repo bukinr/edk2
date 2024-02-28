@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <Library/CheriLib.h>
 #include "PeiMain.h"
 
 /**
@@ -118,8 +119,13 @@ MigrateMemoryPages (
   EFI_PHYSICAL_ADDRESS  NewMemPagesBase;
   EFI_PHYSICAL_ADDRESS  MemPagesBase;
 
-  Private->MemoryPages.Size = (UINTN)(Private->HobList.HandoffInformationTable->EfiMemoryTop -
-                                      Private->HobList.HandoffInformationTable->EfiFreeMemoryTop);
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "Private %p\n\r", Private));
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%p\n\r", &Private->HobList));
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%p\n\r", Private->HobList.HandoffInformationTable));
+
+  Private->HobList.HandoffInformationTable = MakeCap((UINT64)Private->HobList.HandoffInformationTable);
+
+  Private->MemoryPages.Size = (UINTN)(Private->HobList.HandoffInformationTable->EfiMemoryTop - Private->HobList.HandoffInformationTable->EfiFreeMemoryTop);
   if (Private->MemoryPages.Size == 0) {
     //
     // No any memory page allocated in pre-memory phase.

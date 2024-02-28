@@ -48,17 +48,17 @@ PeCoffLoaderGetEntryPoint (
   ASSERT (Pe32Data   != NULL);
   ASSERT (EntryPoint != NULL);
 
-  DosHdr = (EFI_IMAGE_DOS_HEADER *)Pe32Data;
+  DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data); 
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeCap((UINT64)Pe32Data) + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)Pe32Data;
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)MakeCap((UINT64)Pe32Data);
   }
 
   //
@@ -99,17 +99,17 @@ PeCoffLoaderGetMachineType (
 
   ASSERT (Pe32Data != NULL);
 
-  DosHdr = (EFI_IMAGE_DOS_HEADER *)Pe32Data;
+  DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data);
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeCap((UINT64)Pe32Data) + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)Pe32Data;
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)MakeCap((UINT64)Pe32Data);
   }
 
   if (Hdr.Te->Signature == EFI_TE_IMAGE_HEADER_SIGNATURE) {
@@ -163,17 +163,17 @@ PeCoffLoaderGetPdbPointer (
   DebugEntry          = NULL;
   NumberOfRvaAndSizes = 0;
 
-  DosHdr = (EFI_IMAGE_DOS_HEADER *)Pe32Data;
+  DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data);
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeCap((UINT64)Pe32Data) + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)Pe32Data;
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)MakeCap((UINT64)Pe32Data);
   }
 
   if (Hdr.Te->Signature == EFI_TE_IMAGE_HEADER_SIGNATURE) {
@@ -287,17 +287,17 @@ PeCoffGetSizeOfHeaders (
 
   ASSERT (Pe32Data   != NULL);
 
-  DosHdr = (EFI_IMAGE_DOS_HEADER *)Pe32Data;
+  DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data);
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeCap((UINT64)Pe32Data) + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)Pe32Data;
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)MakeCap((UINT64)Pe32Data);
   }
 
   if (Hdr.Te->Signature == EFI_TE_IMAGE_HEADER_SIGNATURE) {
@@ -340,14 +340,14 @@ PeCoffSearchImageBase (
   //
   // Find Image Base
   //
-  Pe32Data = Address & ~(PE_COFF_IMAGE_ALIGN_SIZE - 1);
+  Pe32Data = MakeUCap((UINT64)(Address & ~(PE_COFF_IMAGE_ALIGN_SIZE - 1)));
   while (Pe32Data != 0) {
-    DosHdr = (EFI_IMAGE_DOS_HEADER *)Pe32Data;
+    DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data); 
     if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
       //
       // DOS image header is present, so read the PE header after the DOS image header.
       //
-      Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+      Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeCap((UINT64)Pe32Data) + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
       //
       // Make sure PE header address does not overflow and is less than the initial address.
       //
@@ -360,7 +360,7 @@ PeCoffSearchImageBase (
       //
       // DOS image header is not present, TE header is at the image base.
       //
-      Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)Pe32Data;
+      Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)MakeCap((UINT64)Pe32Data);
       if ((Hdr.Te->Signature == EFI_TE_IMAGE_HEADER_SIGNATURE) &&
           ((Hdr.Te->Machine == IMAGE_FILE_MACHINE_I386)  || (Hdr.Te->Machine == IMAGE_FILE_MACHINE_IA64) ||
            (Hdr.Te->Machine == IMAGE_FILE_MACHINE_EBC)   || (Hdr.Te->Machine == IMAGE_FILE_MACHINE_X64)  ||

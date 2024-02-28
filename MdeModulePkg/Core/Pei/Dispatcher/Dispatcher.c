@@ -715,33 +715,59 @@ PeiCheckAndSwitchStack (
     UINT32                *StackPointer;
     EFI_PEI_HOB_POINTERS  Hob;
 
-    for (  StackPointer = (UINT32 *)SecCoreData->StackBase;
-           (StackPointer < (UINT32 *)((UINTPTR_T)SecCoreData->StackBase + SecCoreData->StackSize)) \
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "begin iterate\n"));
+    for (  StackPointer = (UINT32 *)MakeCap((UINT64)SecCoreData->StackBase);
+           (StackPointer < ((UINT32 *)MakeCap((UINT64)SecCoreData->StackBase) + SecCoreData->StackSize)) \
         && (*StackPointer == PcdGet32 (PcdInitValueInTempStack));
            StackPointer++)
     {
     }
 
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "compl iterate stack %p\n", StackPointer));
+
     DEBUG ((DEBUG_INFO, "Temp Stack : BaseAddress=0x%p Length=0x%X\n", SecCoreData->StackBase, (UINT32)SecCoreData->StackSize));
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "ok1\n"));
+
     DEBUG ((DEBUG_INFO, "Temp Heap  : BaseAddress=0x%p Length=0x%X\n", SecCoreData->PeiTemporaryRamBase, (UINT32)SecCoreData->PeiTemporaryRamSize));
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "ok1\n"));
+
     DEBUG ((DEBUG_INFO, "Total temporary memory:    %d bytes.\n", (UINT32)SecCoreData->TemporaryRamSize));
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "ok1\n"));
+
     DEBUG ((
       DEBUG_INFO,
       "  temporary memory stack ever used:       %d bytes.\n",
       (UINT32)(SecCoreData->StackSize - ((UINTN)StackPointer - (UINTN)SecCoreData->StackBase))
       ));
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "ok1\n"));
+
+#if 0
     DEBUG ((
       DEBUG_INFO,
       "  temporary memory heap used for HobList: %d bytes.\n",
       (UINT32)((UINTN)Private->HobList.HandoffInformationTable->EfiFreeMemoryBottom - (UINTN)Private->HobList.Raw)
       ));
+#endif
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "ok1\n"));
+
+#if 0
     DEBUG ((
       DEBUG_INFO,
       "  temporary memory heap occupied by memory pages: %d bytes.\n",
       (UINT32)(UINTN)(Private->HobList.HandoffInformationTable->EfiMemoryTop - Private->HobList.HandoffInformationTable->EfiFreeMemoryTop)
       ));
+#endif
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "hob.raw\n"));
+
     for (Hob.Raw = Private->HobList.Raw; !END_OF_HOB_LIST (Hob); Hob.Raw = GET_NEXT_HOB (Hob)) {
       if (GET_HOB_TYPE (Hob) == EFI_HOB_TYPE_MEMORY_ALLOCATION) {
+#if 0
         DEBUG ((
           DEBUG_INFO,
           "Memory Allocation 0x%08x 0x%0lx - 0x%0lx\n", \
@@ -749,10 +775,15 @@ PeiCheckAndSwitchStack (
           Hob.MemoryAllocation->AllocDescriptor.MemoryBaseAddress,        \
           Hob.MemoryAllocation->AllocDescriptor.MemoryBaseAddress + Hob.MemoryAllocation->AllocDescriptor.MemoryLength - 1
           ));
+#endif
       }
     }
 
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "hob.raw 1\n"));
+
     DEBUG_CODE_END ();
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "hob.raw 2\n"));
 
     if ((PcdGet64 (PcdLoadModuleAtFixAddressEnable) != 0) && (Private->HobList.HandoffInformationTable->BootMode != BOOT_ON_S3_RESUME)) {
       //
@@ -778,7 +809,7 @@ PeiCheckAndSwitchStack (
     NewStackSize = RShiftU64 (Private->PhysicalMemoryLength, 1);
     NewStackSize = ALIGN_VALUE (NewStackSize, EFI_PAGE_SIZE);
     NewStackSize = MIN (PcdGet32 (PcdPeiCoreMaxPeiStackSize), NewStackSize);
-    DEBUG ((DEBUG_INFO, "Old Stack size %d, New stack size %d\n", (UINT32)SecCoreData->StackSize, (UINT32)NewStackSize));
+    DEBUG ((DEBUG_INFO | DEBUG_LOAD, "Old Stack size %d, New stack size %d\n", (UINT32)SecCoreData->StackSize, (UINT32)NewStackSize));
     ASSERT (NewStackSize >= SecCoreData->StackSize);
 
     //
@@ -848,6 +879,8 @@ PeiCheckAndSwitchStack (
         SecCoreData = (CONST EFI_SEC_PEI_HAND_OFF *)((UINTPTR_T)(VOID *)SecCoreData - StackOffset);
         Private     = (PEI_CORE_INSTANCE *)((UINTPTR_T)(VOID *)Private - StackOffset);
       }
+
+      Private = MakeCap((UINT64)Private);
 
       //
       // Temporary Ram Support PPI is provided by platform, it will copy

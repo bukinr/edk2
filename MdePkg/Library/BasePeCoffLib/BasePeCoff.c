@@ -23,6 +23,7 @@
 
 **/
 
+#include <Library/CheriLib.h>
 #include "BasePeCoffLibInternals.h"
 
 /**
@@ -618,16 +619,16 @@ PeCoffLoaderGetImageInfo (
       //
       // Use PE32 offset
       //
-      ImageContext->ImageAddress = Hdr.Pe32->OptionalHeader.ImageBase;
+      ImageContext->ImageAddress = MakeUCap((UINT64)Hdr.Pe32->OptionalHeader.ImageBase);
     } else {
       //
       // Use PE32+ offset
       //
-      ImageContext->ImageAddress = Hdr.Pe32Plus->OptionalHeader.ImageBase;
+      ImageContext->ImageAddress = MakeUCap((UINT64)Hdr.Pe32Plus->OptionalHeader.ImageBase);
     }
   } else {
     TeStrippedOffset           = (UINT32)Hdr.Te->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
-    ImageContext->ImageAddress = (PHYSICAL_ADDRESS)(Hdr.Te->ImageBase + TeStrippedOffset);
+    ImageContext->ImageAddress = MakeUCap((UINT64)Hdr.Te->ImageBase + TeStrippedOffset);
   }
 
   //
@@ -1041,7 +1042,7 @@ PeCoffLoaderRelocateImage (
       RelocDir = NULL;
     }
   } else {
-    Hdr.Te           = (EFI_TE_IMAGE_HEADER *)(UINTPTR_T)(ImageContext->ImageAddress);
+    Hdr.Te           = (EFI_TE_IMAGE_HEADER *)MakeUCap((UINT64)ImageContext->ImageAddress);
     TeStrippedOffset = (UINT32)Hdr.Te->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
     Adjust           = (UINT64)(BaseAddress - (Hdr.Te->ImageBase + TeStrippedOffset));
     if (Adjust != 0) {
@@ -1366,11 +1367,8 @@ PeCoffLoaderLoadImage (
                              (void *)(UINTPTR_T)ImageContext->ImageAddress
                              );
 
-    Hdr.Te       = (EFI_TE_IMAGE_HEADER *)(UINTPTR_T)(ImageContext->ImageAddress);
-    FirstSection = (EFI_IMAGE_SECTION_HEADER *)(
-                                                (UINTPTR_T)ImageContext->ImageAddress +
-                                                sizeof (EFI_TE_IMAGE_HEADER)
-                                                );
+    Hdr.Te       = (EFI_TE_IMAGE_HEADER *)MakeUCap((UINT64)ImageContext->ImageAddress);
+    FirstSection = (EFI_IMAGE_SECTION_HEADER *)(MakeUCap((UINT64)ImageContext->ImageAddress + sizeof (EFI_TE_IMAGE_HEADER)));
     NumberOfSections = (UINTN)(Hdr.Te->NumberOfSections);
     TeStrippedOffset = (UINT32)Hdr.Te->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
   }
@@ -1513,11 +1511,11 @@ PeCoffLoaderLoadImage (
   // Load the Codeview information if present
   //
   if (ImageContext->DebugDirectoryEntryRva != 0) {
-    DebugEntry = PeCoffLoaderImageAddress (
+    DebugEntry = MakeCap((UINT64)PeCoffLoaderImageAddress (
                    ImageContext,
                    ImageContext->DebugDirectoryEntryRva,
                    TeStrippedOffset
-                   );
+                   ));
     if (DebugEntry == NULL) {
       ImageContext->ImageError = IMAGE_ERROR_FAILED_RELOCATION;
       return RETURN_LOAD_ERROR;
@@ -1562,7 +1560,7 @@ PeCoffLoaderLoadImage (
         DebugEntry->RVA = TempDebugEntryRva;
       }
 
-      switch (*(UINT32 *)ImageContext->CodeView) {
+      switch (*(UINT32 *)MakeCap((UINT64)ImageContext->CodeView)) {
         case CODEVIEW_SIGNATURE_NB10:
           if (DebugEntry->SizeOfData < sizeof (EFI_IMAGE_DEBUG_CODEVIEW_NB10_ENTRY)) {
             ImageContext->ImageError = IMAGE_ERROR_UNSUPPORTED;
@@ -1776,7 +1774,7 @@ PeCoffLoaderRelocateImageForRuntime (
   NewBase = (CHAR8 *)((UINTPTR_T)VirtImageBase);
   Adjust  = (UINTN)NewBase - (UINTN)OldBase;
 
-  ImageContext.ImageAddress = ImageBase;
+  ImageContext.ImageAddress = MakeUCap((UINT64)ImageBase);
   ImageContext.ImageSize    = ImageSize;
 
   //

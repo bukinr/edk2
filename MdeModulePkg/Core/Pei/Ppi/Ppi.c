@@ -33,9 +33,9 @@ ConvertPointer (
       ((UINTN)*Pointer >= TempBottom))
   {
     if (OffsetPositive) {
-      *Pointer = (VOID *)((UINTPTR_T)*Pointer + Offset);
+      *Pointer = (VOID *)(MakeUCap((UINT64)*Pointer) + Offset);
     } else {
-      *Pointer = (VOID *)((UINTPTR_T)*Pointer - Offset);
+      *Pointer = (VOID *)(MakeUCap((UINT64)*Pointer) - Offset);
     }
   }
 }
@@ -130,6 +130,9 @@ ConvertSinglePpiPointer (
   IN PEI_PPI_LIST_POINTERS       *PpiPointer
   )
 {
+
+  SecCoreData = MakeCap((UINT64)SecCoreData);
+
   //
   // 1. Convert the pointer to the PPI descriptor from the old TempRam
   //    to the relocated physical memory.

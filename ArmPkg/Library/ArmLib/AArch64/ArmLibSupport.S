@@ -198,10 +198,13 @@ ASM_FUNC(ArmWriteSctlr)
 4:ret
 
 ASM_FUNC(ArmGetPhysicalAddressBits)
+#if 0
   mrs   x0, id_aa64mmfr0_el1
   adrp  c1, .LPARanges
   and   x0, x0, #0xf
   ldrb  w0, [x1, x0]
+#endif
+  mov     x0, 48
   ret
 
 //

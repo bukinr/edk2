@@ -218,7 +218,7 @@ PeiCoreBuildHobHandoffInfoTable (
   EFI_HOB_GENERIC_HEADER      *HobEnd;
 
   Hob                   = (VOID *)MakeCap(MemoryBegin);
-  HobEnd                = (EFI_HOB_GENERIC_HEADER *)(Hob+1);
+  HobEnd                = (EFI_HOB_GENERIC_HEADER *)(Hob + 1);
   Hob->Header.HobType   = EFI_HOB_TYPE_HANDOFF;
   Hob->Header.HobLength = (UINT16)sizeof (EFI_HOB_HANDOFF_INFO_TABLE);
   Hob->Header.Reserved  = 0;

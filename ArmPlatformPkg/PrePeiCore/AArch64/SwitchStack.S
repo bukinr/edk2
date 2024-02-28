@@ -25,8 +25,8 @@
 #  )#
 #
 ASM_FUNC(SecSwitchStack)
-    mov   x1, sp
-    add   x1, x0, x1
-    mov   sp, x1
+    mov   c1, csp
+    add   c1, c1, x0
+    mov   csp, c1
     ret
 

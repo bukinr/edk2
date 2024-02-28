@@ -16,10 +16,37 @@
 #include <Library/CacheMaintenanceLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/ArmLib.h>
+#include <Library/CheriLib.h>
 #include <Library/ArmMmuLib.h>
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/HobLib.h>
+
+#define TCR_HWU162_SHIFT        50
+#define TCR_HWU162              (1UL << TCR_HWU162_SHIFT)
+#define TCR_HWU161_SHIFT        49
+#define TCR_HWU161              (1UL << TCR_HWU161_SHIFT)
+#define TCR_HWU160_SHIFT        48
+#define TCR_HWU160              (1UL << TCR_HWU160_SHIFT)
+#define TCR_HWU159_SHIFT        47
+#define TCR_HWU159              (1UL << TCR_HWU159_SHIFT)
+#define TCR_HWU1                \
+    (TCR_HWU159 | TCR_HWU160 | TCR_HWU161 | TCR_HWU162)
+#define TCR_HWU062_SHIFT        46
+#define TCR_HWU062              (1UL << TCR_HWU062_SHIFT)
+#define TCR_HWU061_SHIFT        45
+#define TCR_HWU061              (1UL << TCR_HWU061_SHIFT)
+#define TCR_HWU060_SHIFT        44
+#define TCR_HWU060              (1UL << TCR_HWU060_SHIFT)
+#define TCR_HWU059_SHIFT        43
+#define TCR_HWU059              (1UL << TCR_HWU059_SHIFT)
+#define TCR_HWU0                \
+    (TCR_HWU059 | TCR_HWU060 | TCR_HWU061 | TCR_HWU062)
+
+#define TCR_HPD0 (1UL << 41)
+#define TCR_HPD1 (1UL << 42)
+
+#define TCR_MORELLO    (TCR_HPD0 | TCR_HPD1 | TCR_HWU0 | TCR_HWU1)
 
 STATIC
 VOID (
@@ -243,7 +270,7 @@ UpdateRegionMappingRecursive (
 
   for ( ; RegionStart < RegionEnd; RegionStart = BlockEnd) {
     BlockEnd = MIN (RegionEnd, (RegionStart | BlockMask) + 1);
-    Entry    = &PageTable[(RegionStart >> (64 - BlockShift)) & (TT_ENTRY_COUNT - 1)];
+    Entry    = MakeCap((UINT64)&PageTable[(RegionStart >> (64 - BlockShift)) & (TT_ENTRY_COUNT - 1)]);
 
     //
     // If RegionStart or BlockEnd is not aligned to the block size at this
@@ -354,6 +381,7 @@ UpdateRegionMappingRecursive (
 
       if (!IsTableEntry (*Entry, Level)) {
         EntryValue = (UINTN)TranslationTable | TT_TYPE_TABLE_ENTRY;
+        EntryValue |= (1ULL << 60) | (1ULL << 61);
         ReplaceTableEntry (
           Entry,
           EntryValue,
@@ -365,6 +393,7 @@ UpdateRegionMappingRecursive (
     } else {
       EntryValue  = (*Entry & AttributeClearMask) | AttributeSetMask;
       EntryValue |= RegionStart;
+      EntryValue |= (1ULL << 60) | (1ULL << 61);
       EntryValue |= (Level == 3) ? TT_TYPE_BLOCK_ENTRY_LEVEL3
                                  : TT_TYPE_BLOCK_ENTRY;
 
@@ -393,6 +422,9 @@ UpdateRegionMapping (
   }
 
   T0SZ = ArmGetTCR () & TCR_T0SZ_MASK;
+
+  //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: T0SZ %x level %x\n", __func__,
+  //  T0SZ, GetRootTableLevel (T0SZ)));
 
   return UpdateRegionMappingRecursive (
            RegionStart,
@@ -547,7 +579,7 @@ ArmSetMemoryAttributes (
            Length,
            PageAttributes,
            PageAttributeMask,
-           ArmGetTTBR0BaseAddress (),
+           MakeCap((UINT64)ArmGetTTBR0BaseAddress ()),
            TRUE
            );
 }
@@ -584,6 +616,7 @@ ArmConfigureMmu (
   MaxAddress     = LShiftU64 (1ULL, MaxAddressBits) - 1;
 
   T0SZ                = 64 - MaxAddressBits;
+  //DEBUG((DEBUG_LOAD | DEBUG_INFO, "T0SZ %d\n", T0SZ));
   RootTableEntryCount = GetRootTableEntryCount (T0SZ);
 
   //
@@ -660,6 +693,11 @@ ArmConfigureMmu (
   TCR |= TCR_SH_INNER_SHAREABLE |
          TCR_RGN_OUTER_WRITE_BACK_ALLOC |
          TCR_RGN_INNER_WRITE_BACK_ALLOC;
+
+#if ENABLE_MORELLO_CAP
+  /* Enable capability loads and stores */
+  TCR |= TCR_MORELLO;
+#endif
 
   // Set TCR
   ArmSetTCR (TCR);

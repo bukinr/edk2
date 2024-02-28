@@ -58,6 +58,7 @@ _ModuleEntryPoint (
 {
   VOID* ddc_reg;
   VOID* dcc_reg;
+  __volatile__ UINT64 addr;
 
 #if 0
   if ((UINT64)SecCoreData->BootFirmwareVolumeBase == 0x12345678)
@@ -69,10 +70,12 @@ _ModuleEntryPoint (
   __asm__ __volatile__("mrs %0, ddc" : "=C" (ddc_reg));
   __asm__ __volatile__("adr %0, #0" : "=C" (dcc_reg));
 
-  crt_init_globals(NULL, ddc_reg, dcc_reg, 0xE0041000, 0);
+  addr = ((UINT64)cheri_getpcc() & ~0xfff) - 0x1000;
+
+  crt_init_globals(NULL, ddc_reg, dcc_reg, addr, 0);
   cheri_init_capabilities(ddc_reg);
 
-  DEBUG((DEBUG_LOAD | DEBUG_INFO, "Image Relocated\r\n"));
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "Image at addr %x relocated\r\n", addr));
 
   ProcessModuleEntryPointList (SecCoreData, PpiList, NULL);
 

@@ -44,8 +44,8 @@ PeiImageRead (
   CHAR8  *Destination8;
   CHAR8  *Source8;
 
-  Destination8 = Buffer;
-  Source8      = (CHAR8 *)((UINTPTR_T)FileHandle + FileOffset);
+  Destination8 = MakeCap((UINT64)Buffer);
+  Source8      = (CHAR8 *)(MakeUCap((UINT64)FileHandle) + FileOffset);
   if (Destination8 != Source8) {
     CopyMem (Destination8, Source8, *ReadSize);
   }
@@ -326,7 +326,7 @@ LoadAndRelocatePeCoffImage (
   //
   // XIP image that ImageAddress is same to Image handle.
   //
-  if (ImageContext.ImageAddress == (EFI_PHYSICAL_ADDRESS)MakeCap((UINT64)Pe32Data)) {
+  if (ImageContext.ImageAddress == MakeUCap((UINT64)Pe32Data)) {
     IsXipImage = TRUE;
   }
 
@@ -364,7 +364,7 @@ LoadAndRelocatePeCoffImage (
   //
   // Set default base address to current image address.
   //
-  ImageContext.ImageAddress = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data;
+  ImageContext.ImageAddress = MakeUCap((UINT64)Pe32Data);
 
   //
   // Allocate Memory for the image when memory is ready, and image is relocatable.
@@ -381,7 +381,7 @@ LoadAndRelocatePeCoffImage (
     // Allocate more buffer to avoid buffer overflow.
     //
     if (ImageContext.IsTeImage) {
-      AlignImageSize = ImageContext.ImageSize + ((EFI_TE_IMAGE_HEADER *)Pe32Data)->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
+      AlignImageSize = ImageContext.ImageSize + ((EFI_TE_IMAGE_HEADER *)MakeCap((UINT64)Pe32Data))->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
     } else {
       AlignImageSize = ImageContext.ImageSize;
     }
@@ -427,7 +427,7 @@ LoadAndRelocatePeCoffImage (
       //
       if (ImageContext.IsTeImage) {
         ImageContext.ImageAddress = ImageContext.ImageAddress +
-                                    ((EFI_TE_IMAGE_HEADER *)Pe32Data)->StrippedSize -
+                                    ((EFI_TE_IMAGE_HEADER *)MakeCap((UINT64)Pe32Data))->StrippedSize -
                                     sizeof (EFI_TE_IMAGE_HEADER);
       }
     } else {
@@ -438,7 +438,7 @@ LoadAndRelocatePeCoffImage (
         //
         // XIP image can still be invoked.
         //
-        ImageContext.ImageAddress = (EFI_PHYSICAL_ADDRESS)(UINTN)Pe32Data;
+        ImageContext.ImageAddress = MakeUCap((UINT64)Pe32Data);
         ReturnStatus              = EFI_WARN_BUFFER_TOO_SMALL;
       } else {
         //
@@ -473,7 +473,7 @@ LoadAndRelocatePeCoffImage (
   //
   // Flush the instruction cache so the image data is written before we execute it
   //
-  if (ImageContext.ImageAddress != (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data) {
+  if (ImageContext.ImageAddress != MakeUCap((UINT64)Pe32Data)) {
     InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)ImageContext.ImageAddress, (UINTN)ImageContext.ImageSize);
   }
 
@@ -504,7 +504,7 @@ LoadAndRelocatePeCoffImageInPlace (
   PE_COFF_LOADER_IMAGE_CONTEXT  ImageContext;
 
   ZeroMem (&ImageContext, sizeof (ImageContext));
-  ImageContext.Handle    = Pe32Data;
+  ImageContext.Handle    = MakeCap((UINT64)Pe32Data);
   ImageContext.ImageRead = PeiImageRead;
 
   Status = PeCoffLoaderGetImageInfo (&ImageContext);
@@ -536,7 +536,7 @@ LoadAndRelocatePeCoffImageInPlace (
   //
   // Flush the instruction cache so the image data is written before we execute it
   //
-  if (ImageContext.ImageAddress != (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)Pe32Data) {
+  if (ImageContext.ImageAddress != MakeUCap((UINT64)Pe32Data)) {
     InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)ImageContext.ImageAddress, (UINTN)ImageContext.ImageSize);
   }
 
@@ -703,7 +703,7 @@ PeiLoadImageLoadImage (
   //
   // Got the entry point from the loaded Pe32Data
   //
-  Pe32Data    = (VOID *)((UINTPTR_T)ImageAddress);
+  Pe32Data    = (VOID *)(MakeCap((UINT64)ImageAddress));
   *EntryPoint = ImageEntryPoint;
 
   Machine = PeCoffLoaderGetMachineType (Pe32Data);
@@ -840,17 +840,17 @@ RelocationIsStrip (
 
   ASSERT (Pe32Data != NULL);
 
-  DosHdr = (EFI_IMAGE_DOS_HEADER *)Pe32Data;
+  DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data);
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     //
     // DOS image header is present, so read the PE header after the DOS image header.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINTPTR_T)Pe32Data + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeCap((UINT64)Pe32Data) + (UINTN)((DosHdr->e_lfanew) & 0x0ffff));
   } else {
     //
     // DOS image header is not present, so PE header is at the image base.
     //
-    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)Pe32Data;
+    Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)MakeCap((UINT64)Pe32Data);
   }
 
   //

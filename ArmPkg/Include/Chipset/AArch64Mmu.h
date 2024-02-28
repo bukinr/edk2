@@ -77,7 +77,7 @@
 #define TT_UXN_MASK  BIT54                              // EL1&0
 #define TT_XN_MASK   BIT54                              // EL2 / EL3
 
-#define TT_ATTRIBUTES_MASK  ((0xFFFULL << 52) | (0x3FFULL << 2))
+#define TT_ATTRIBUTES_MASK  ((0xFFFCULL << 48) | (0x3FFULL << 2) | (1ULL << 60) | (1ULL << 61))
 
 #define TT_TABLE_PXN  BIT59
 #define TT_TABLE_UXN  BIT60                             // EL1&0

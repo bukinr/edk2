@@ -10,7 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <PiDxe.h>
 #include <Library/PeCoffLib.h>
-
+#include <Library/CheriLib.h>
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/BaseMemoryLib.h>
@@ -35,6 +35,8 @@ DeCygwinPathIfNeeded (
   CHAR8  *Ptr;
   UINTN  Index;
   UINTN  Index2;
+
+  Name = MakeCap((UINT64)Name);
 
   Ptr = AsciiStrStr (Name, "/cygdrive/");
   if (Ptr == NULL) {
