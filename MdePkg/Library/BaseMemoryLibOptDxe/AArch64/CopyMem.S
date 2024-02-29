@@ -72,8 +72,8 @@
 
 __memcpy:
     prfm    PLDL1KEEP, [Csrc]
-    add     srcend, src, count
-    add     dstend, dstin, count
+    add     Csrcend, Csrc, count
+    add     Cdstend, Cdstin, count
     cmp     count, 16
     b.ls    L(copy16)
     cmp     count, 96
@@ -81,17 +81,17 @@ __memcpy:
 
     // Medium copies: 17..96 bytes.
     sub     tmp1, count, 1
-    ldp     A_l, A_h, [Csrc]
+    ldp     CA_l, CA_h, [Csrc]
     tbnz    tmp1, 6, L(copy96)
-    ldp     D_l, D_h, [Csrcend, -16]
+    ldp     CD_l, CD_h, [Csrcend, -16]
     tbz     tmp1, 5, 1f
-    ldp     B_l, B_h, [Csrc, 16]
-    ldp     C_l, C_h, [Csrcend, -32]
-    stp     B_l, B_h, [Cdstin, 16]
-    stp     C_l, C_h, [Cdstend, -32]
+    ldp     CB_l, CB_h, [Csrc, 16]
+    ldp     CC_l, CC_h, [Csrcend, -32]
+    stp     CB_l, CB_h, [Cdstin, 16]
+    stp     CC_l, CC_h, [Cdstend, -32]
 1:
-    stp     A_l, A_h, [Cdstin]
-    stp     D_l, D_h, [Cdstend, -16]
+    stp     CA_l, CA_h, [Cdstin]
+    stp     CD_l, CD_h, [Cdstend, -16]
     ret
 
     .p2align 4
@@ -99,10 +99,10 @@ __memcpy:
 L(copy16):
     cmp     count, 8
     b.lo    1f
-    ldr     A_l, [Csrc]
-    ldr     A_h, [Csrcend, -8]
-    str     A_l, [Cdstin]
-    str     A_h, [Cdstend, -8]
+    ldr     CA_l, [Csrc]
+    ldr     CA_h, [Csrcend, -8]
+    str     CA_l, [Cdstin]
+    str     CA_h, [Cdstend, -8]
     ret
     .p2align 4
 1:
@@ -130,17 +130,17 @@ L(copy16):
     // Copy 64..96 bytes.  Copy 64 bytes from the start and
     // 32 bytes from the end.
 L(copy96):
-    ldp     B_l, B_h, [Csrc, 16]
-    ldp     C_l, C_h, [Csrc, 32]
-    ldp     D_l, D_h, [Csrc, 48]
-    ldp     E_l, E_h, [Csrcend, -32]
-    ldp     F_l, F_h, [Csrcend, -16]
-    stp     A_l, A_h, [Cdstin]
-    stp     B_l, B_h, [Cdstin, 16]
-    stp     C_l, C_h, [Cdstin, 32]
-    stp     D_l, D_h, [Cdstin, 48]
-    stp     E_l, E_h, [Cdstend, -32]
-    stp     F_l, F_h, [Cdstend, -16]
+    ldp     CB_l, CB_h, [Csrc, 16]
+    ldp     CC_l, CC_h, [Csrc, 32]
+    ldp     CD_l, CD_h, [Csrc, 48]
+    ldp     CE_l, CE_h, [Csrcend, -32]
+    ldp     CF_l, CF_h, [Csrcend, -16]
+    stp     CA_l, CA_h, [Cdstin]
+    stp     CB_l, CB_h, [Cdstin, 16]
+    stp     CC_l, CC_h, [Cdstin, 32]
+    stp     CD_l, CD_h, [Cdstin, 48]
+    stp     CE_l, CE_h, [Cdstend, -32]
+    stp     CF_l, CF_h, [Cdstend, -16]
     ret
 
     // Align DST to 16 byte alignment so that we don't cross cache line
