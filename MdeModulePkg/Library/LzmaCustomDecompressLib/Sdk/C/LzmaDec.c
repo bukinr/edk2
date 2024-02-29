@@ -9,6 +9,8 @@
 
 /* #include "CpuArch.h" */
 #include "LzmaDec.h"
+#include <Library/CheriLib.h>
+#include <Library/DebugLib.h>
 
 #define kNumTopBits  24
 #define kTopValue    ((UInt32)1 << kNumTopBits)
@@ -535,6 +537,9 @@ LZMA_DECODE_REAL (
         }
       }
     }
+
+  if ((dicPos % 1000) == 0)
+    DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a %lx %lx %p %p\r\n", __func__, dicPos, limit, buf, bufLimit));
   } while (dicPos < limit && buf < bufLimit);
 
   NORMALIZE;
