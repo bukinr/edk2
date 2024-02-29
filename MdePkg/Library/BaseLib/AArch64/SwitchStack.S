@@ -37,10 +37,10 @@ GCC_ASM_EXPORT(CpuPause)
 ASM_PFX(InternalSwitchStackAsm):
     AARCH64_BTI(c)
     mov   x29, #0
-    mov   x30, x0
-    mov   sp, x3
-    mov   x0, x1
-    mov   x1, x2
+    mov   c30, c0
+    mov   csp, c3
+    mov   c0, c1
+    mov   c1, c2
     ret
 
 #/**
