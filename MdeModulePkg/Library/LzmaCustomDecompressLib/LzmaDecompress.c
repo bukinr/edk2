@@ -11,6 +11,8 @@
 #include "Sdk/C/7zVersion.h"
 #include "Sdk/C/LzmaDec.h"
 
+#include <Library/CheriLib.h>
+
 #define SCRATCH_BUFFER_REQUEST_SIZE  SIZE_64KB
 
 typedef struct {
@@ -38,8 +40,10 @@ SzAlloc (
 
   Private = (ISzAllocWithData *)P;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: %ld\n", __func__, Size));
+
   if (Private->BufferSize >= Size) {
-    Addr                 = Private->Buffer;
+    Addr                 = MakeCap((UINT64)Private->Buffer);
     Private->Buffer      = (VOID *)((UINT8 *)Addr + Size);
     Private->BufferSize -= Size;
     return Addr;
@@ -66,6 +70,7 @@ SzFree (
   // operation required.  The scratch buffer will be freed by the caller
   // of the decompression code.
   //
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: %p\n", __func__, Address));
 }
 
 #define LZMA_HEADER_SIZE  (LZMA_PROPS_SIZE + 8)
@@ -200,17 +205,23 @@ LzmaUefiDecompress (
   DecodedBufSize  = (SizeT)GetDecodedSizeOfBuf ((UINT8 *)Source);
   EncodedDataSize = (SizeT)(SourceSize - LZMA_HEADER_SIZE);
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: decomp\n", __func__));
+  __asm__ __volatile__("hlt 0x1");
+
   LzmaResult = LzmaDecode (
-                 Destination,
+                 MakeCap((UINT64)Destination),
                  &DecodedBufSize,
-                 (Byte *)((UINT8 *)Source + LZMA_HEADER_SIZE),
+                 (Byte *)MakeCap((UINT64)((UINT8 *)Source + LZMA_HEADER_SIZE)),
                  &EncodedDataSize,
-                 Source,
+                 MakeCap((UINT64)Source),
                  LZMA_PROPS_SIZE,
                  LZMA_FINISH_END,
                  &Status,
                  &(AllocFuncs.Functions)
                  );
+
+  __asm__ __volatile__("hlt 0x1");
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: decomp done\n", __func__));
 
   if (LzmaResult == SZ_OK) {
     return RETURN_SUCCESS;
