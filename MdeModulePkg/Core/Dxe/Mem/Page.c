@@ -10,6 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "Imem.h"
 #include "HeapGuard.h"
 #include <Pi/PrePiDxeCis.h>
+#include <Library/CheriLib.h>
 
 //
 // Entry for tracking the memory regions for each memory type to coalesce similar memory types
@@ -182,7 +183,7 @@ CoreAddRange (
   //
   if ((Type == EfiConventionalMemory) && (Start == 0) && (End >= EFI_PAGE_SIZE - 1)) {
     if ((PcdGet8 (PcdNullPointerDetectionPropertyMask) & BIT0) == 0) {
-      SetMem ((VOID *)(UINTPTR_T)Start, EFI_PAGE_SIZE, 0);
+      SetMem (MakeCap((UINT64)Start), EFI_PAGE_SIZE, 0);
     }
   }
 
@@ -933,10 +934,10 @@ CoreConvertPagesEx (
       //
       if (Start == 0) {
         if (RangeEnd > EFI_PAGE_SIZE) {
-          DEBUG_CLEAR_MEMORY ((VOID *)(UINTPTR_T)EFI_PAGE_SIZE, (UINTN)(RangeEnd - EFI_PAGE_SIZE + 1));
+          DEBUG_CLEAR_MEMORY (MakeCap((UINT64)EFI_PAGE_SIZE), (UINTN)(RangeEnd - EFI_PAGE_SIZE + 1));
         }
       } else {
-        DEBUG_CLEAR_MEMORY ((VOID *)(UINTPTR_T)Start, (UINTN)(RangeEnd - Start + 1));
+        DEBUG_CLEAR_MEMORY (MakeCap((UINT64)Start), (UINTN)(RangeEnd - Start + 1));
       }
     }
 
@@ -1493,7 +1494,7 @@ CoreAllocatePages (
       MemoryProfileActionAllocatePages,
       MemoryType,
       EFI_PAGES_TO_SIZE (NumberOfPages),
-      (VOID *)(UINTPTR_T)*Memory,
+      MakeCap((UINT64)*Memory),
       NULL
       );
     InstallMemoryAttributesTableOnMemoryAllocation (MemoryType);
@@ -1625,7 +1626,7 @@ CoreFreePages (
       MemoryProfileActionFreePages,
       MemoryType,
       EFI_PAGES_TO_SIZE (NumberOfPages),
-      (VOID *)(UINTPTR_T)Memory,
+      MakeCap((UINT64)Memory),
       NULL
       );
     InstallMemoryAttributesTableOnMemoryAllocation (MemoryType);
@@ -2101,7 +2102,7 @@ CoreAllocatePoolPages (
     }
   }
 
-  return (VOID *)(UINTPTR_T)Start;
+  return (VOID *)MakeCap((UINT64)Start);
 }
 
 /**
