@@ -1940,7 +1940,7 @@ PeiFfsFvPpiGetVolumeInfo (
   // but FvLength is UINT64 type, which requires FvHeader align at least 8 byte.
   // So, Copy FvHeader into the local FvHeader structure.
   //
-  CopyMem (&FwVolHeader, FvHandle, sizeof (EFI_FIRMWARE_VOLUME_HEADER));
+  CopyMem (&FwVolHeader, MakeCap((UINT64)FvHandle), sizeof (EFI_FIRMWARE_VOLUME_HEADER));
 
   //
   // Check FV Image Signature
@@ -1951,12 +1951,12 @@ PeiFfsFvPpiGetVolumeInfo (
 
   ZeroMem (VolumeInfo, sizeof (EFI_FV_INFO));
   VolumeInfo->FvAttributes = FwVolHeader.Attributes;
-  VolumeInfo->FvStart      = (VOID *)FvHandle;
+  VolumeInfo->FvStart      = MakeCap((UINT64)FvHandle);
   VolumeInfo->FvSize       = FwVolHeader.FvLength;
   CopyMem (&VolumeInfo->FvFormat, &FwVolHeader.FileSystemGuid, sizeof (EFI_GUID));
 
   if (FwVolHeader.ExtHeaderOffset != 0) {
-    FwVolExHeaderInfo = (EFI_FIRMWARE_VOLUME_EXT_HEADER *)(((UINT8 *)FvHandle) + FwVolHeader.ExtHeaderOffset);
+    FwVolExHeaderInfo = (EFI_FIRMWARE_VOLUME_EXT_HEADER *)MakeCap((UINT64)(((UINT8 *)FvHandle) + FwVolHeader.ExtHeaderOffset));
     CopyMem (&VolumeInfo->FvName, &FwVolExHeaderInfo->FvName, sizeof (EFI_GUID));
   }
 
