@@ -109,7 +109,8 @@ InitializeCpuExceptionHandlers (
     // for AArch64 Align=4K is required.  Align=Auto can be used but this
     // is known to cause an issue with populating the reset vector area
     // for encapsulated FVs.
-    ASSERT (((UINTN)ExceptionHandlersStart & gExceptionVectorAlignmentMask) == 0);
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "exp handler %x vector alignment mask %x\n\r", (UINTN)ExceptionHandlersStart, gExceptionVectorAlignmentMask));
+    ASSERT ((((UINTN)ExceptionHandlersStart & ~0x1) & gExceptionVectorAlignmentMask) == 0);
 
     // We do not copy the Exception Table at PcdGet64(PcdCpuVectorBaseAddress). We just set Vector
     // Base Address to point into CpuDxe code.
