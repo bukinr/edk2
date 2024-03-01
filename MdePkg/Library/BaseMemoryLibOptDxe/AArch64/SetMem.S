@@ -11,7 +11,7 @@
 // ARMv8-a, AArch64, unaligned accesses
 //
 //
-
+#if 0
 #define Cdstin    c0
 #define Cdst      c3
 #define Cdstend   c4
@@ -206,3 +206,4 @@ L(zva_other):
     b.hs    3b
 4:  add     count, count, zva_len
     b       L(tail64)
+#endif
