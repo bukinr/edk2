@@ -247,7 +247,7 @@ typedef struct _LIST_ENTRY LIST_ENTRY;
 struct _LIST_ENTRY {
   LIST_ENTRY    *ForwardLink;
   LIST_ENTRY    *BackLink;
-};
+} __attribute__((cheri_no_subobject_bounds));
 
 //
 // Modifiers to abstract standard types to aid in debug of problems
@@ -711,6 +711,8 @@ typedef CHAR8 *VA_LIST;
 typedef UINTN *BASE_LIST;
 typedef        __uintcap_t     UINTPTR_T;
 typedef        __intcap_t      INTPTR_T;
+typedef        __uintcap_t     UINTCAP;
+typedef        __intcap_t      INTCAP;
 
 /**
   Returns the size of a data type in sizeof(UINTN) units rounded up to the nearest UINTN boundary.
@@ -976,7 +978,7 @@ STATIC_ASSERT (ALIGNOF (__VERIFY_INT32_ENUM_SIZE) == sizeof (__VERIFY_INT32_ENUM
   @return  Rounded value specified by Value.
 
 **/
-#define ALIGN_VARIABLE(Value)  ALIGN_VALUE ((Value), sizeof (UINTN))
+#define ALIGN_VARIABLE(Value)  ALIGN_VALUE ((Value), sizeof (UINTPTR_T))
 
 /**
   Return the maximum of two operands.
