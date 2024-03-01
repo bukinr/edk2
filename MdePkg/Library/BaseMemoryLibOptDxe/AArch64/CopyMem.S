@@ -46,6 +46,7 @@
 // kind of overlap, and memmove tailcalls memcpy for these cases as
 // well as non-overlapping copies.
 
+#if 0
 __memcpy:
     prfm    PLDL1KEEP, [src]
     add     srcend, src, count
@@ -235,3 +236,8 @@ ASM_PFX(InternalMemCopyMem):
     stp     B_l, B_h, [dstin, 16]
     stp     C_l, C_h, [dstin]
 3:  ret
+#endif
+
+ASM_GLOBAL ASM_PFX(InternalMemCopyMem)
+ASM_PFX(InternalMemCopyMem):
+    b       __memcpy

@@ -109,6 +109,7 @@
   SetMemWrapper.c
   CopyMemWrapper.c
   IsZeroBufferWrapper.c
+  bcopy_c.c
 
 [Packages]
   MdePkg/MdePkg.dec
