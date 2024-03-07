@@ -292,6 +292,7 @@ FvReadFile (
   }
 
   FvDevice = FV_DEVICE_FROM_THIS (This);
+  FvDevice = (FV_DEVICE *)MakeCap((UINT64)FvDevice);
 
   //
   // Keep looking until we find the matching NameGuid.
@@ -316,6 +317,13 @@ FvReadFile (
   //
   // Get a pointer to the header
   //
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "FvDevice %p\r\n", FvDevice));
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "FvDevice->LastKey %p\r\n", FvDevice->LastKey));
+
+  FvDevice->LastKey = MakeCap((UINT64)FvDevice->LastKey);
+  FvDevice->LastKey->FfsHeader = MakeCap((UINT64)FvDevice->LastKey->FfsHeader);
+
   FfsHeader = FvDevice->LastKey->FfsHeader;
   if (FvDevice->IsMemoryMapped) {
     //

@@ -520,6 +520,8 @@ CoreInstallMultipleProtocolInterfaces (
   EFI_HANDLE                DeviceHandle;
   EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a\n\r", __func__));
+
   if (Handle == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -535,6 +537,7 @@ CoreInstallMultipleProtocolInterfaces (
   //
   VA_START (Args, Handle);
   for (Index = 0, Status = EFI_SUCCESS; !EFI_ERROR (Status); Index++) {
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a index %d\n\r", __func__, Index));
     //
     // If protocol is NULL, then it's the end of the list
     //
@@ -549,10 +552,12 @@ CoreInstallMultipleProtocolInterfaces (
     // Make sure you are installing on top a device path that has already been added.
     //
     if (CompareGuid (Protocol, &gEfiDevicePathProtocolGuid)) {
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 11\n\r", __func__));
       DeviceHandle = NULL;
       DevicePath   = Interface;
       Status       = CoreLocateDevicePath (&gEfiDevicePathProtocolGuid, &DevicePath, &DeviceHandle);
       if (!EFI_ERROR (Status) && (DeviceHandle != NULL) && IsDevicePathEnd (DevicePath)) {
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 12\n\r", __func__));
         Status = EFI_ALREADY_STARTED;
         continue;
       }
@@ -575,6 +580,7 @@ CoreInstallMultipleProtocolInterfaces (
     //
     VA_START (Args, Handle);
     for ( ; Index > 1; Index--) {
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 13\n\r", __func__));
       Protocol  = VA_ARG (Args, EFI_GUID *);
       Interface = VA_ARG (Args, VOID *);
       CoreUninstallProtocolInterface (*Handle, Protocol, Interface);

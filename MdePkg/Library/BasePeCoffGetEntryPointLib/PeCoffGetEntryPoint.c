@@ -163,6 +163,8 @@ PeCoffLoaderGetPdbPointer (
   DebugEntry          = NULL;
   NumberOfRvaAndSizes = 0;
 
+  Pe32Data = MakeCap((UINT64)Pe32Data);
+
   DosHdr = (EFI_IMAGE_DOS_HEADER *)MakeCap((UINT64)Pe32Data);
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     //

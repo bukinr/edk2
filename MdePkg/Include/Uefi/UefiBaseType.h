@@ -47,12 +47,12 @@ typedef UINT64 EFI_LBA;
 ///
 /// 64-bit physical memory address.
 ///
-typedef UINTPTR_T EFI_PHYSICAL_ADDRESS;
+typedef UINT64 EFI_PHYSICAL_ADDRESS;
 
 ///
 /// 64-bit virtual memory address.
 ///
-typedef UINTPTR_T EFI_VIRTUAL_ADDRESS;
+typedef UINT64 EFI_VIRTUAL_ADDRESS;
 
 ///
 /// EFI Time Abstraction:

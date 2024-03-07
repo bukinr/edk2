@@ -10,10 +10,10 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Pi/PrePiDxeCis.h>
 #include <Pi/PrePiHob.h>
-#include <Library/CheriLib.h>
 #include "DxeMain.h"
 #include "Gcd.h"
 #include "Mem/HeapGuard.h"
+#include <Library/CheriLib.h>
 
 #define MINIMUM_INITIAL_MEMORY_SIZE  0x10000
 
@@ -1095,7 +1095,7 @@ CoreAllocateSpace (
   )
 {
   EFI_STATUS            Status;
-  UINT64  AlignmentMask;
+  EFI_PHYSICAL_ADDRESS  AlignmentMask;
   EFI_PHYSICAL_ADDRESS  MaxAddress;
   LIST_ENTRY            *Map;
   LIST_ENTRY            *Link;
@@ -1768,6 +1768,10 @@ CoreGetMemorySpaceMap (
       Descriptor = *MemorySpaceMap;
       Link       = mGcdMemorySpaceMap.ForwardLink;
       while (Link != &mGcdMemorySpaceMap) {
+        DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: entry\n", __func__));
+
+        DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: %lx %lx\n\r", __func__, BASE_CR (MakeCap((UINT64)Link), EFI_GCD_MAP_ENTRY, Link)->Signature, EFI_GCD_MAP_SIGNATURE));
+
         Entry = CR (Link, EFI_GCD_MAP_ENTRY, Link, EFI_GCD_MAP_SIGNATURE);
         BuildMemoryDescriptor (Descriptor, Entry);
         Descriptor++;
@@ -2529,7 +2533,7 @@ CoreInitializeGcdServices (
   //
   // Cache the PHIT HOB for later use
   //
-  PhitHob = (EFI_HOB_HANDOFF_INFO_TABLE *)(*HobStart);
+  PhitHob = (EFI_HOB_HANDOFF_INFO_TABLE *)MakeCap((UINT64)*HobStart);
 
   //
   // Get the number of address lines in the I/O and Memory space for the CPU
@@ -2545,8 +2549,9 @@ CoreInitializeGcdServices (
   Entry = AllocateCopyPool (sizeof (EFI_GCD_MAP_ENTRY), &mGcdMemorySpaceMapEntryTemplate);
   ASSERT (Entry != NULL);
 
-  Entry->EndAddress = LShiftU64 (1, SizeOfMemorySpace) - 1;
+  Entry->EndAddress = MakeUCap(LShiftU64 (1, SizeOfMemorySpace) - 1);
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "Inserting into sign %x mGcdMemorySpaceMap\n\r", Entry->Signature));
   InsertHeadList (&mGcdMemorySpaceMap, &Entry->Link);
 
   CoreDumpGcdMemorySpaceMap (TRUE);
@@ -2557,7 +2562,7 @@ CoreInitializeGcdServices (
   Entry = AllocateCopyPool (sizeof (EFI_GCD_MAP_ENTRY), &mGcdIoSpaceMapEntryTemplate);
   ASSERT (Entry != NULL);
 
-  Entry->EndAddress = LShiftU64 (1, SizeOfIoSpace) - 1;
+  Entry->EndAddress = MakeUCap(LShiftU64 (1, SizeOfIoSpace) - 1);
 
   InsertHeadList (&mGcdIoSpaceMap, &Entry->Link);
 

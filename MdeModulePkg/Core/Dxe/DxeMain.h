@@ -170,7 +170,7 @@ typedef struct {
   UINTN                   Signature;
   LIST_ENTRY              Link;
   EFI_PHYSICAL_ADDRESS    BaseAddress;
-  UINT64                  EndAddress;
+  UINTPTR_T               EndAddress;
   UINT64                  Capabilities;
   UINT64                  Attributes;
   EFI_GCD_MEMORY_TYPE     GcdMemoryType;

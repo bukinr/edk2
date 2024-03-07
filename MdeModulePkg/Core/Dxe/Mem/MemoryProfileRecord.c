@@ -431,7 +431,7 @@ BuildDriverInfo (
     //
     Status = InternalPeCoffGetEntryPoint ((VOID *)(UINTPTR_T)ImageBase, &EntryPointInImage);
     ASSERT_EFI_ERROR (Status);
-    DriverInfo->ImageBase = ImageBase + (UINT64)EntryPoint - (PHYSICAL_ADDRESS)(UINT64)EntryPointInImage;
+    DriverInfo->ImageBase = ImageBase + EntryPoint - (PHYSICAL_ADDRESS)(UINTN)EntryPointInImage;
   }
 
   DriverInfo->FileType          = FileType;
@@ -864,7 +864,7 @@ UnregisterMemoryProfileImage (
     //
     Status = InternalPeCoffGetEntryPoint ((VOID *)(UINTPTR_T)ImageAddress, &EntryPointInImage);
     ASSERT_EFI_ERROR (Status);
-    ImageAddress = ImageAddress + (UINT64)DriverEntry->ImageContext.EntryPoint - (UINT64)EntryPointInImage;
+    ImageAddress = ImageAddress + (UINTPTR_T)DriverEntry->ImageContext.EntryPoint - (UINTN)EntryPointInImage;
   }
 
   if (FileName != NULL) {

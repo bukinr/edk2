@@ -222,7 +222,7 @@ FindGuardedMemoryMap (
 {
   UINTN       Level;
   UINT64      *GuardMap;
-  UINTPTR_T      MapMemory;
+  UINT64      MapMemory;
   UINTN       Index;
   UINTN       Size;
   UINTN       BitsToUnitEnd;
@@ -1069,7 +1069,7 @@ AdjustPoolHeadF (
 **/
 EFI_STATUS
 CoreConvertPagesWithGuard (
-  IN UINTPTR_T           Start,
+  IN UINT64           Start,
   IN UINTN            NumberOfPages,
   IN EFI_MEMORY_TYPE  NewType
   )
@@ -1364,7 +1364,7 @@ GuardAllFreedPages (
   UINT64  Tables[GUARDED_HEAP_MAP_TABLE_DEPTH];
   UINT64  Addresses[GUARDED_HEAP_MAP_TABLE_DEPTH];
   UINT64  TableEntry;
-  UINTPTR_T  Address;
+  UINT64  Address;
   UINT64  GuardPage;
   INTN    Level;
   UINT64  BitIndex;

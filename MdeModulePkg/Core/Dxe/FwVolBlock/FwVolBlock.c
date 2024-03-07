@@ -11,6 +11,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "DxeMain.h"
 #include "FwVolBlock.h"
+#include <Library/CheriLib.h>
 
 FV_MEMMAP_DEVICE_PATH  mFvMemmapDevicePathTemplate = {
   {
@@ -235,7 +236,7 @@ FwVolBlockReadBlock (
   }
 
   LbaStart    = FvbDevice->LbaCache[LbaIndex].Base;
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTPTR_T)FvbDevice->BaseAddress);
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(MakeCap((UINT64)FvbDevice->BaseAddress));
   LbaOffset   = (UINT8 *)FwVolHeader + LbaStart + Offset;
 
   //
@@ -357,7 +358,7 @@ FwVolBlockGetBlockSize (
     return EFI_INVALID_PARAMETER;
   }
 
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)((UINTPTR_T)FvbDevice->BaseAddress);
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(MakeCap((UINT64)FvbDevice->BaseAddress));
 
   PtrBlockMapEntry = FwVolHeader->BlockMap;
 
@@ -446,12 +447,15 @@ ProduceFVBProtocolOnBuffer (
   UINT32                      FvAlignment;
   EFI_FV_BLOCK_MAP_ENTRY      *PtrBlockMapEntry;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin\n\r", __func__));
+
   FvAlignment = 0;
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTPTR_T)BaseAddress;
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)MakeCap((UINT64)BaseAddress);
   //
   // Validate FV Header, if not as expected, return
   //
   if (FwVolHeader->Signature != EFI_FVH_SIGNATURE) {
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a corrupted\n\r", __func__));
     return EFI_VOLUME_CORRUPTED;
   }
 
@@ -461,6 +465,7 @@ ProduceFVBProtocolOnBuffer (
   // its initial linked location and maintain its alignment.
   //
   if ((FwVolHeader->Attributes & EFI_FVB2_WEAK_ALIGNMENT) != EFI_FVB2_WEAK_ALIGNMENT) {
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 1\n\r", __func__));
     //
     // Get FvHeader alignment
     //
@@ -476,6 +481,7 @@ ProduceFVBProtocolOnBuffer (
       //
       // FvImage buffer is not at its required alignment.
       //
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 2\n\r", __func__));
       DEBUG ((
         DEBUG_ERROR,
         "Unaligned FvImage found at 0x%lx:0x%lx, the required alignment is 0x%x\n",
@@ -483,6 +489,7 @@ ProduceFVBProtocolOnBuffer (
         Length,
         FvAlignment
         ));
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a corrupted 1\n\r", __func__));
       return EFI_VOLUME_CORRUPTED;
     }
   }
@@ -492,9 +499,10 @@ ProduceFVBProtocolOnBuffer (
   //
   FvbDev = AllocateCopyPool (sizeof (EFI_FW_VOL_BLOCK_DEVICE), &mFwVolBlock);
   if (FvbDev == NULL) {
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a res\n\r", __func__));
     return EFI_OUT_OF_RESOURCES;
   }
-
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 3\n\r", __func__));
   FvbDev->BaseAddress                     = BaseAddress;
   FvbDev->FvbAttributes                   = FwVolHeader->Attributes;
   FvbDev->FwVolBlockInstance.ParentHandle = ParentHandle;
@@ -512,25 +520,33 @@ ProduceFVBProtocolOnBuffer (
     FvbDev->NumBlocks += PtrBlockMapEntry->NumBlocks;
   }
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 4\n\r", __func__));
+
   //
   // Second, allocate the cache
   //
   if (FvbDev->NumBlocks >= (MAX_ADDRESS / sizeof (LBA_CACHE))) {
     CoreFreePool (FvbDev);
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a res 1\n\r", __func__));
     return EFI_OUT_OF_RESOURCES;
   }
 
   FvbDev->LbaCache = AllocatePool (FvbDev->NumBlocks * sizeof (LBA_CACHE));
   if (FvbDev->LbaCache == NULL) {
     CoreFreePool (FvbDev);
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a res 2\n\r", __func__));
     return EFI_OUT_OF_RESOURCES;
   }
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 5\n\r", __func__));
   //
   // Last, fill in the cache with the linear address of the blocks
   //
   BlockIndex   = 0;
   LinearOffset = 0;
+
+  __asm__ __volatile__("hlt 0x1");
+
   for (PtrBlockMapEntry = FwVolHeader->BlockMap;
        PtrBlockMapEntry->NumBlocks != 0; PtrBlockMapEntry++)
   {
@@ -542,6 +558,8 @@ ProduceFVBProtocolOnBuffer (
     }
   }
 
+  __asm__ __volatile__("hlt 0x1");
+
   //
   // Judget whether FV name guid is produced in Fv extension header
   //
@@ -549,30 +567,42 @@ ProduceFVBProtocolOnBuffer (
     //
     // FV does not contains extension header, then produce MEMMAP_DEVICE_PATH
     //
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 7\n\r", __func__));
     FvbDev->DevicePath = (EFI_DEVICE_PATH_PROTOCOL *)AllocateCopyPool (sizeof (FV_MEMMAP_DEVICE_PATH), &mFvMemmapDevicePathTemplate);
+
+  CopyMem(FvbDev->DevicePath, &mFvMemmapDevicePathTemplate, sizeof(FV_MEMMAP_DEVICE_PATH));
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 8\n\r", __func__));
     if (FvbDev->DevicePath == NULL) {
       FreePool (FvbDev);
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a res 3\n\r", __func__));
       return EFI_OUT_OF_RESOURCES;
     }
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 9\n\r", __func__));
     ((FV_MEMMAP_DEVICE_PATH *)FvbDev->DevicePath)->MemMapDevPath.StartingAddress = BaseAddress;
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 10\n\r", __func__));
     ((FV_MEMMAP_DEVICE_PATH *)FvbDev->DevicePath)->MemMapDevPath.EndingAddress   = BaseAddress + FwVolHeader->FvLength - 1;
   } else {
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 11\n\r", __func__));
     //
     // FV contains extension header, then produce MEDIA_FW_VOL_DEVICE_PATH
     //
     FvbDev->DevicePath = (EFI_DEVICE_PATH_PROTOCOL *)AllocateCopyPool (sizeof (FV_PIWG_DEVICE_PATH), &mFvPIWGDevicePathTemplate);
     if (FvbDev->DevicePath == NULL) {
       FreePool (FvbDev);
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a res 2\n\r", __func__));
       return EFI_OUT_OF_RESOURCES;
     }
-
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 12\n\r", __func__));
     CopyGuid (
       &((FV_PIWG_DEVICE_PATH *)FvbDev->DevicePath)->FvDevPath.FvName,
       (GUID *)(UINTPTR_T)(BaseAddress + FwVolHeader->ExtHeaderOffset)
       );
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 13\n\r", __func__));
   }
-
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 14\n\r", __func__));
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 14 devicepath %a\n\r", __func__, FvbDev->DevicePath));
   //
   //
   // Attach FvVolBlock Protocol to new handle
@@ -585,6 +615,7 @@ ProduceFVBProtocolOnBuffer (
              FvbDev->DevicePath,
              NULL
              );
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a begin 15\n\r", __func__));
 
   //
   // If they want the handle back, set it.
@@ -592,6 +623,8 @@ ProduceFVBProtocolOnBuffer (
   if (FvProtocol != NULL) {
     *FvProtocol = FvbDev->Handle;
   }
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a OK\n\r", __func__));
 
   return Status;
 }
@@ -617,6 +650,8 @@ FwVolBlockDriverInit (
   EFI_PEI_HOB_POINTERS  Fv3Hob;
   UINT32                AuthenticationStatus;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a\n\r", __func__));
+
   //
   // Core Needs Firmware Volumes to function
   //
@@ -641,7 +676,7 @@ FwVolBlockDriverInit (
     //
     // Produce an FVB protocol for it
     //
-    ProduceFVBProtocolOnBuffer (FvHob.FirmwareVolume->BaseAddress, FvHob.FirmwareVolume->Length, NULL, AuthenticationStatus, NULL);
+    ProduceFVBProtocolOnBuffer (MakeUCap((UINT64)FvHob.FirmwareVolume->BaseAddress), FvHob.FirmwareVolume->Length, NULL, AuthenticationStatus, NULL);
     FvHob.Raw = GET_NEXT_HOB (FvHob);
   }
 
@@ -680,9 +715,11 @@ CoreProcessFirmwareVolume (
   VOID        *Ptr;
   EFI_STATUS  Status;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a\n\r", __func__));
+
   *FVProtocolHandle = NULL;
   Status            = ProduceFVBProtocolOnBuffer (
-                        (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)FvHeader,
+                        (EFI_PHYSICAL_ADDRESS)MakeCap((UINT64)FvHeader),
                         (UINT64)Size,
                         NULL,
                         0,
@@ -701,11 +738,14 @@ CoreProcessFirmwareVolume (
     Ptr    = NULL;
     Status = CoreHandleProtocol (*FVProtocolHandle, &gEfiFirmwareVolume2ProtocolGuid, (VOID **)&Ptr);
     if (EFI_ERROR (Status) || (Ptr == NULL)) {
+      DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a corrupted\n\r", __func__));
       return EFI_VOLUME_CORRUPTED;
     }
 
     return EFI_SUCCESS;
   }
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a OK\n\r", __func__));
 
   return Status;
 }

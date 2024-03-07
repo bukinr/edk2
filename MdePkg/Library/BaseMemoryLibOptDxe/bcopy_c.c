@@ -124,7 +124,7 @@ __memcpy(void * __capability dst0, const void * __capability src0, __SIZE_TYPE__
 			} while (--len != 0);
 		}
 	}
-	return (dst);
+	return (dst0);
 }
 #if 0
 __strong_reference(memcpy_c, memmove_c);

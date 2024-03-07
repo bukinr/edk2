@@ -36,8 +36,10 @@ ReadUnaligned16 (
 
   ASSERT (Buffer != NULL);
 
-  LowerByte  = ((UINT8 *)MakeCap((UINT64)Buffer))[0];
-  HigherByte = ((UINT8 *)MakeCap((UINT64)Buffer))[1];
+  Buffer = (UINT16 *)MakeCap((UINT64)Buffer);
+
+  LowerByte  = ((UINT8 *)Buffer)[0];
+  HigherByte = ((UINT8 *)Buffer)[1];
 
   return (UINT16)(LowerByte | (HigherByte << 8));
 }
@@ -65,6 +67,8 @@ WriteUnaligned16 (
   )
 {
   ASSERT (Buffer != NULL);
+
+  Buffer = (UINT16 *)MakeCap((UINT64)Buffer);
 
   ((volatile UINT8 *)Buffer)[0] = (UINT8)Value;
   ((volatile UINT8 *)Buffer)[1] = (UINT8)(Value >> 8);
@@ -150,6 +154,8 @@ ReadUnaligned32 (
   UINT16  LowerBytes;
   UINT16  HigherBytes;
 
+  Buffer = (UINT32 *)MakeCap((UINT64)Buffer);
+
   ASSERT (Buffer != NULL);
 
   LowerBytes  = ReadUnaligned16 ((UINT16 *)Buffer);
@@ -181,6 +187,8 @@ WriteUnaligned32 (
   )
 {
   ASSERT (Buffer != NULL);
+
+  Buffer = (UINT32 *)MakeCap((UINT64)Buffer);
 
   WriteUnaligned16 ((UINT16 *)Buffer, (UINT16)Value);
   WriteUnaligned16 ((UINT16 *)Buffer + 1, (UINT16)(Value >> 16));

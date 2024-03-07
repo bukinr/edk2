@@ -7,6 +7,7 @@
 **/
 
 #include "BaseLibInternals.h"
+#include <Library/CheriLib.h>
 
 /**
   If PcdVerifyNodeInList is TRUE, ASSERTs when SecondEntry is or is not part of
@@ -71,6 +72,8 @@ InternalBaseLibIsListValid (
   //
   // Test the validity of List and Node
   //
+  List = MakeCap((UINT64)List);
+
   ASSERT (List != NULL);
   ASSERT (List->ForwardLink != NULL);
   ASSERT (List->BackLink != NULL);
@@ -84,7 +87,12 @@ InternalBaseLibIsListValid (
     // Exit early if the number of nodes in List >= PcdMaximumLinkedListLength
     //
     do {
-      Ptr = Ptr->ForwardLink;
+      if (Ptr == NULL)
+	while (1) {
+
+        };
+
+      Ptr = MakeCap((UINT64)Ptr->ForwardLink);
       Count++;
     } while ((Ptr != List) && (Count < PcdGet32 (PcdMaximumLinkedListLength)));
 

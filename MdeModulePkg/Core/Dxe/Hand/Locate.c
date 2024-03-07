@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "DxeMain.h"
 #include "Handle.h"
+#include <Library/CheriLib.h>
 
 //
 // ProtocolRequest - Last LocateHandle request ID
@@ -463,6 +464,7 @@ CoreLocateDevicePath (
   EFI_DEVICE_PATH_PROTOCOL  *SourcePath;
   EFI_DEVICE_PATH_PROTOCOL  *TmpDevicePath;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a\n\r", __func__));
   if (Protocol == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -475,7 +477,11 @@ CoreLocateDevicePath (
   BestDevice    = NULL;
   SourcePath    = *DevicePath;
   TmpDevicePath = SourcePath;
+  TmpDevicePath = MakeCap((UINT64)TmpDevicePath);
+
   while (!IsDevicePathEnd (TmpDevicePath)) {
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a TmpDevicePath %p\n\r",
+      __func__, TmpDevicePath));
     if (IsDevicePathEndInstance (TmpDevicePath)) {
       //
       // If DevicePath is a multi-instance device path,
@@ -486,6 +492,8 @@ CoreLocateDevicePath (
 
     TmpDevicePath = NextDevicePathNode (TmpDevicePath);
   }
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 4\n\r", __func__));
 
   SourceSize = (UINTN)TmpDevicePath - (UINTN)SourcePath;
 
@@ -499,6 +507,7 @@ CoreLocateDevicePath (
 
   BestMatch = -1;
   for (Index = 0; Index < HandleCount; Index += 1) {
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 2\n\r", __func__));
     Handle = Handles[Index];
     Status = CoreHandleProtocol (Handle, &gEfiDevicePathProtocolGuid, (VOID **)&TmpDevicePath);
     if (EFI_ERROR (Status)) {
@@ -545,7 +554,11 @@ CoreLocateDevicePath (
     return EFI_INVALID_PARAMETER;
   }
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 3\n\r", __func__));
+
   *Device = BestDevice;
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 4\n\r", __func__));
 
   //
   // Return the remaining part of the device path

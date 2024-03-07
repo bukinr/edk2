@@ -48,8 +48,8 @@ _ModuleEntryPoint (
   crt_init_globals(NULL, ddc_reg, dcc_reg, addr, 0);
   cheri_init_capabilities(ddc_reg);
 
-  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: Image at addr %x relocated\r\n",
-    __func__, addr));
+  //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: Image at addr %x relocated\r\n",
+  //  __func__, addr));
 
   //
   // Cache a pointer to the HobList

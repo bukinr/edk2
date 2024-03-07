@@ -38,6 +38,8 @@ _ModuleEntryPoint (
 {
   EFI_STATUS  Status;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "xxxxx"));
+
   if (_gUefiDriverRevision != 0) {
     //
     // Make sure that the EFI/UEFI spec revision of the platform is >= EFI/UEFI spec revision of the application.

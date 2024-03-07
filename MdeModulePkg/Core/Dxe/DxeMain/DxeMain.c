@@ -286,6 +286,8 @@ DxeMain (
   gDxeCoreRT = AllocateRuntimeCopyPool (sizeof (EFI_RUNTIME_SERVICES), &mEfiRuntimeServicesTableTemplate);
   ASSERT (gDxeCoreRT != NULL);
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: gDxeCoreST %p gDxeCoreRT %p sizes %d %d\n", __func__, gDxeCoreST, gDxeCoreRT, sizeof (EFI_SYSTEM_TABLE), sizeof (EFI_RUNTIME_SERVICES)));
+
   gDxeCoreST->RuntimeServices = gDxeCoreRT;
 
   //

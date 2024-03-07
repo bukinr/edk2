@@ -7,6 +7,7 @@
 **/
 
 #include "BaseLibInternals.h"
+#include <Library/CheriLib.h>
 
 /**
   Transfers control to a function starting with a new stack.
@@ -59,7 +60,7 @@ SwitchStack (
 
   VA_START (Marker, NewStack);
 
-  InternalSwitchStack (EntryPoint, Context1, Context2, NewStack, Marker);
+  InternalSwitchStack ((SWITCH_STACK_ENTRY_POINT)MakeCap((UINT64)EntryPoint), Context1, Context2, NewStack, Marker);
 
   VA_END (Marker);
 

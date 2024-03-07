@@ -95,7 +95,7 @@ AllocateMemoryMapEntry (
   MEMORY_MAP            *Entry;
   UINTN                 Index;
 
-  // DEBUG((DEBUG_INFO, "AllocateMemoryMapEntry\n"));
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a\n\r", __func__));
 
   if (IsListEmpty (&mFreeMemoryMapEntryList)) {
     // DEBUG((DEBUG_INFO, "mFreeMemoryMapEntryList is empty\n"));
@@ -112,7 +112,7 @@ AllocateMemoryMapEntry (
                );
     ASSERT_EFI_ERROR (Status);
     if (!EFI_ERROR (Status)) {
-      FreeDescriptorEntries = (MEMORY_MAP *)(UINTN)Mem;
+      FreeDescriptorEntries = (MEMORY_MAP *)Mem;
       // DEBUG((DEBUG_INFO, "New FreeDescriptorEntries - 0x%x\n", FreeDescriptorEntries));
       //
       // Enqueue the free memory map entries into the list

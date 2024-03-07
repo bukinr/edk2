@@ -14,6 +14,7 @@
 **/
 
 #include "UefiDevicePathLib.h"
+#include <Library/CheriLib.h>
 
 //
 // Template for an end-of-device path node.
@@ -173,7 +174,14 @@ DevicePathNodeLength (
   IN CONST VOID  *Node
   )
 {
+  EFI_DEVICE_PATH_PROTOCOL *addr;
+
+  addr = (EFI_DEVICE_PATH_PROTOCOL *)(Node);
+
   ASSERT (Node != NULL);
+
+  return addr->Length[0];
+
   return ReadUnaligned16 ((UINT16 *)&((EFI_DEVICE_PATH_PROTOCOL *)(Node))->Length[0]);
 }
 
@@ -198,7 +206,10 @@ NextDevicePathNode (
   )
 {
   ASSERT (Node != NULL);
-  return (EFI_DEVICE_PATH_PROTOCOL *)((UINT8 *)(Node) + DevicePathNodeLength (Node));
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: node len %d\n", __func__, DevicePathNodeLength (Node)));
+
+  return (EFI_DEVICE_PATH_PROTOCOL *)((UINT8 *)MakeCap((UINT64)Node) + DevicePathNodeLength (Node));
 }
 
 /**
@@ -312,6 +323,9 @@ SetDevicePathNodeLength (
 {
   ASSERT (Node != NULL);
   ASSERT ((Length >= sizeof (EFI_DEVICE_PATH_PROTOCOL)) && (Length < SIZE_64KB));
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: node %p len %d\n", __func__, Node, Length));
+
   return WriteUnaligned16 ((UINT16 *)&((EFI_DEVICE_PATH_PROTOCOL *)(Node))->Length[0], (UINT16)(Length));
 }
 

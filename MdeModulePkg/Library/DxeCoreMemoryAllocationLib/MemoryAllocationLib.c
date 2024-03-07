@@ -13,6 +13,7 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CheriLib.h>
 #include "DxeCoreMemoryAllocationServices.h"
 
 #include <Library/MemoryProfileLib.h>
@@ -48,7 +49,7 @@ InternalAllocatePages (
     return NULL;
   }
 
-  return (VOID *)(UINTPTR_T)Memory;
+  return MakeCap((UINT64)Memory);
 }
 
 /**
@@ -467,7 +468,7 @@ InternalAllocatePool (
     Memory = NULL;
   }
 
-  return Memory;
+  return MakeCap((UINT64)Memory);
 }
 
 /**
@@ -601,10 +602,11 @@ InternalAllocateZeroPool (
 
   Memory = InternalAllocatePool (PoolType, AllocationSize);
   if (Memory != NULL) {
-    Memory = ZeroMem (Memory, AllocationSize);
+    //Memory = ZeroMem (Memory, AllocationSize);
+    ZeroMem (Memory, AllocationSize);
   }
 
-  return Memory;
+  return MakeCap((UINT64)Memory);
 }
 
 /**
@@ -746,10 +748,11 @@ InternalAllocateCopyPool (
 
   Memory = InternalAllocatePool (PoolType, AllocationSize);
   if (Memory != NULL) {
-    Memory = CopyMem (Memory, Buffer, AllocationSize);
+    //Memory = CopyMem (Memory, Buffer, AllocationSize);
+    CopyMem (Memory, Buffer, AllocationSize);
   }
 
-  return Memory;
+  return MakeCap((UINT64)Memory);
 }
 
 /**

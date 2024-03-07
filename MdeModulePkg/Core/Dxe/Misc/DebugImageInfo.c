@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "DxeMain.h"
+#include <Library/CheriLib.h>
 
 EFI_DEBUG_IMAGE_INFO_TABLE_HEADER  mDebugInfoTableHeader = {
   0,          // volatile UINT32                 UpdateStatus;
@@ -112,7 +113,7 @@ CoreInitializeDebugImageInfoTable (
   //
   // Set mDebugTable to the 4MB aligned allocated pages
   //
-  mDebugTable = (EFI_SYSTEM_TABLE_POINTER  *)(AlignedMemory);
+  mDebugTable = (EFI_SYSTEM_TABLE_POINTER  *)MakeCap((UINT64)AlignedMemory);
   ASSERT (mDebugTable != NULL);
 
   //

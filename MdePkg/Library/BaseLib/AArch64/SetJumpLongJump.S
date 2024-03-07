@@ -11,19 +11,19 @@ GCC_ASM_EXPORT(SetJump)
 GCC_ASM_EXPORT(InternalLongJump)
 
 #define GPR_LAYOUT                         \
-        REG_PAIR (x19, x20,  0);           \
-        REG_PAIR (x21, x22, 16);           \
-        REG_PAIR (x23, x24, 32);           \
-        REG_PAIR (x25, x26, 48);           \
-        REG_PAIR (x27, x28, 64);           \
-        REG_PAIR (x29, x30, 80);/*FP, LR*/ \
-        REG_ONE  (x16,      96) /*IP0*/
+        REG_PAIR (c19, c20,  0);           \
+        REG_PAIR (c21, c22, 32);           \
+        REG_PAIR (c23, c24, 64);           \
+        REG_PAIR (c25, c26, 96);           \
+        REG_PAIR (c27, c28, 128);           \
+        REG_PAIR (c29, c30, 160);/*FP, LR*/ \
+        REG_ONE  (c16,      192) /*IP0*/
 
 #define FPR_LAYOUT                      \
-        REG_PAIR ( d8,  d9, 104);       \
-        REG_PAIR (d10, d11, 120);       \
-        REG_PAIR (d12, d13, 136);       \
-        REG_PAIR (d14, d15, 152);
+        REG_PAIR ( d8,  d9, 208);       \
+        REG_PAIR (d10, d11, 240);       \
+        REG_PAIR (d12, d13, 272);       \
+        REG_PAIR (d14, d15, 304);
 
 #/**
 #  Saves the current CPU context that can be restored with a call to LongJump() and returns 0.#
@@ -47,7 +47,7 @@ GCC_ASM_EXPORT(InternalLongJump)
 #
 ASM_PFX(SetJump):
         AARCH64_BTI(c)
-        mov     x16, sp // use IP0 so save SP
+        mov     c16, csp // use IP0 so save SP
 #define REG_PAIR(REG1, REG2, OFFS)      stp REG1, REG2, [c0, OFFS]
 #define REG_ONE(REG1, OFFS)             str REG1, [c0, OFFS]
         GPR_LAYOUT
@@ -83,7 +83,7 @@ ASM_PFX(InternalLongJump):
         FPR_LAYOUT
 #undef REG_PAIR
 #undef REG_ONE
-        mov     sp, x16
+        mov     csp, c16
         cmp     w1, #0
         mov     w0, #1
         csel    w0, w1, w0, ne

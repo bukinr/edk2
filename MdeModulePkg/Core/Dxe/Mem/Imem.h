@@ -32,14 +32,14 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define MEMORY_MAP_SIGNATURE  SIGNATURE_32('m','m','a','p')
 typedef struct {
   UINTN              Signature;
-  LIST_ENTRY         Link;
+  LIST_ENTRY         Link; //__attribute__((cheri_no_subobject_bounds));;
   BOOLEAN            FromPages;
 
   EFI_MEMORY_TYPE    Type;
-  UINT64             Start;
-  UINT64             End;
+  UINTPTR_T          Start;
+  UINTPTR_T          End;
 
-  UINT64             VirtualStart;
+  UINTPTR_T          VirtualStart;
   UINT64             Attribute;
 } MEMORY_MAP;
 

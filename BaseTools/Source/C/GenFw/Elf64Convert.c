@@ -1671,17 +1671,16 @@ WriteSections64 (
 
           // Absolute relocations.
           case R_AARCH64_ABS64:
+
             *(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr + mCoffSectionsOffset[Sym->st_shndx];
             break;
-
+	  case R_MORELLO_CAPINIT:
 	  case R_MORELLO_LD128_GOT_LO12_NC:
 	  case R_MORELLO_ADR_GOT_PAGE:
 	  case R_MORELLO_CALL26:
 	  case R_MORELLO_ADR_PREL_PG_HI20:
-	  case R_MORELLO_CAPINIT:
 	  case R_MORELLO_JUMP26:
 	    break;
-
           default:
             Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation 0x%x.", mInImageName, (unsigned) ELF_R_TYPE(Rel->r_info));
           }
@@ -1986,10 +1985,10 @@ WriteRelocations64 (
                 + (Rel->r_offset - SecShdr->sh_addr)),
                 EFI_IMAGE_REL_BASED_HIGHLOW);
              break;
+	    case R_MORELLO_CAPINIT:
 	    case R_MORELLO_JUMP26:
 	    case R_MORELLO_ADR_PREL_PG_HI20:
 	    case R_MORELLO_CALL26:
-	    case R_MORELLO_CAPINIT:
 	    case R_MORELLO_ADR_GOT_PAGE:
 	    case R_MORELLO_LD128_GOT_LO12_NC:
               break;

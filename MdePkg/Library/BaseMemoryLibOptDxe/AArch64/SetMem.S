@@ -11,7 +11,7 @@
 // ARMv8-a, AArch64, unaligned accesses
 //
 //
-#if 0
+#if 1
 #define Cdstin    c0
 #define Cdst      c3
 #define Cdstend   c4
@@ -62,7 +62,7 @@ ASM_GLOBAL ASM_PFX(InternalMemSetMem)
 ASM_PFX(InternalMemSetMem):
     AARCH64_BTI(c)
     dup     v0.16B, valw
-0:  add     dstend, dstin, count
+0:  add     Cdstend, Cdstin, count
     mov     val, v0.D[0]
 
     cmp     count, 96
@@ -109,13 +109,14 @@ L(set96):
     nop
 L(set_long):
     bic     dst, dstin, 15
+    cvtd    Cdst, dst
     str     q0, [Cdstin]
     cmp     count, 256
     ccmp    val, 0, 0, cs
     b.eq    L(try_zva)
 L(no_zva):
     sub     count, dstend, dst        // Count is 16 too large.
-    add     dst, dst, 16
+    add     Cdst, Cdst, 16
     sub     count, count, 64 + 16     // Adjust count and bias for loop.
 1:  stp     q0, q0, [Cdst], 64
     stp     q0, q0, [Cdst, -32]
@@ -140,14 +141,15 @@ L(zva_64):
     str     q0, [Cdst, 16]
     stp     q0, q0, [Cdst, 32]
     bic     dst, dst, 63
+    cvtd    Cdst, dst
     stp     q0, q0, [Cdst, 64]
     stp     q0, q0, [Cdst, 96]
     sub     count, dstend, dst         // Count is now 128 too large.
     sub     count, count, 128+64+64    // Adjust count and bias for loop.
-    add     dst, dst, 128
+    add     Cdst, Cdst, 128
     nop
 1:  dc      zva, Cdst
-    add     dst, dst, 64
+    add     Cdst, Cdst, 64
     subs    count, count, 64
     b.hi    1b
     stp     q0, q0, [Cdst, 0]
@@ -166,11 +168,12 @@ L(zva_128):
     stp     q0, q0, [Cdst, 64]
     stp     q0, q0, [Cdst, 96]
     bic     dst, dst, 127
+    cvtd    Cdst, dst
     sub     count, dstend, dst          // Count is now 128 too large.
     sub     count, count, 128+128       // Adjust count and bias for loop.
-    add     dst, dst, 128
+    add     Cdst, Cdst, 128
 1:  dc      zva, Cdst
-    add     dst, dst, 128
+    add     Cdst, Cdst, 128
     subs    count, count, 128
     b.hi    1b
     stp     q0, q0, [Cdstend, -128]
@@ -188,7 +191,7 @@ L(zva_other):
 
     sub     tmp2, zva_len, 1
     add     tmp1, dst, zva_len
-    add     dst, dst, 16
+    add     Cdst, Cdst, 16
     subs    count, tmp1, dst            // Actual alignment bytes to write.
     bic     tmp1, tmp1, tmp2            // Aligned dc zva start address.
     beq     2f
@@ -197,11 +200,12 @@ L(zva_other):
     subs    count, count, 64
     b.hi    1b
 2:  mov     dst, tmp1
+    cvtd    Cdst, dst
     sub     count, dstend, tmp1         // Remaining bytes to write.
     subs    count, count, zva_len
     b.lo    4f
 3:  dc      zva, Cdst
-    add     dst, dst, zva_len
+    add     Cdst, Cdst, zva_len
     subs    count, count, zva_len
     b.hs    3b
 4:  add     count, count, zva_len

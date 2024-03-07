@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "DxeMain.h"
 #include "Image.h"
+#include <Library/CheriLib.h>
 
 //
 // Module Globals
@@ -210,7 +211,7 @@ CoreInitializeImageServices (
 
   DxeCoreImageBaseAddress = DxeCoreHob.MemoryAllocationModule->MemoryAllocationHeader.MemoryBaseAddress;
   DxeCoreImageLength      = DxeCoreHob.MemoryAllocationModule->MemoryAllocationHeader.MemoryLength;
-  DxeCoreEntryPoint       = (VOID *)(UINTPTR_T)DxeCoreHob.MemoryAllocationModule->EntryPoint;
+  DxeCoreEntryPoint       = (VOID *)MakeUCap((UINT64)DxeCoreHob.MemoryAllocationModule->EntryPoint);
   gDxeCoreFileName        = &DxeCoreHob.MemoryAllocationModule->ModuleName;
 
   //
@@ -218,12 +219,12 @@ CoreInitializeImageServices (
   //
   Image = &mCorePrivateImage;
 
-  Image->EntryPoint       = (EFI_IMAGE_ENTRY_POINT)(UINTPTR_T)DxeCoreEntryPoint;
+  Image->EntryPoint       = (EFI_IMAGE_ENTRY_POINT)MakeCap((UINT64)DxeCoreEntryPoint);
   Image->ImageBasePage    = DxeCoreImageBaseAddress;
   Image->NumberOfPages    = (UINTN)(EFI_SIZE_TO_PAGES ((UINTPTR_T)(DxeCoreImageLength)));
   Image->Tpl              = gEfiCurrentTpl;
   Image->Info.SystemTable = gDxeCoreST;
-  Image->Info.ImageBase   = (VOID *)(UINTPTR_T)DxeCoreImageBaseAddress;
+  Image->Info.ImageBase   = (VOID *)MakeCap((UINT64)DxeCoreImageBaseAddress);
   Image->Info.ImageSize   = DxeCoreImageLength;
 
   //
@@ -324,6 +325,8 @@ CoreReadImageFile (
     *ReadSize = 0;
   }
 
+//here dst
+  Buffer = MakeCap((UINT64)Buffer);
   CopyMem (Buffer, (CHAR8 *)FHand->Source + Offset, *ReadSize);
   return EFI_SUCCESS;
 }
@@ -781,7 +784,7 @@ CoreLoadPeImage (
   //
   // Get the image entry point.
   //
-  Image->EntryPoint = (EFI_IMAGE_ENTRY_POINT)(UINTPTR_T)Image->ImageContext.EntryPoint;
+  Image->EntryPoint = (EFI_IMAGE_ENTRY_POINT)MakeCap((UINT64)Image->ImageContext.EntryPoint);
 
   //
   // Fill in the image information for the Loaded Image Protocol
@@ -838,6 +841,8 @@ CoreLoadPeImage (
   // Print Module Name by Pdb file path.
   // Windows and Unix style file path are all trimmed correctly.
   //
+  Image->ImageContext.PdbPointer = MakeCap((UINT64)Image->ImageContext.PdbPointer);
+
   if (Image->ImageContext.PdbPointer != NULL) {
     StartIndex = 0;
     for (Index = 0; Image->ImageContext.PdbPointer[Index] != 0; Index++) {
@@ -1699,6 +1704,7 @@ CoreStartImage (
     // Call the image's entry point
     //
     Image->Started = TRUE;
+    Image->EntryPoint = MakeCap((UINT64)Image->EntryPoint);
     Image->Status  = Image->EntryPoint (ImageHandle, Image->Info.SystemTable);
 
     //

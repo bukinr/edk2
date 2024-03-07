@@ -234,7 +234,7 @@ typedef struct {
 //
 // 8-bytes unsigned value that represents a physical system address.
 //
-typedef UINTPTR_T PHYSICAL_ADDRESS;
+typedef UINT64 PHYSICAL_ADDRESS;
 
 ///
 /// LIST_ENTRY structure definition.

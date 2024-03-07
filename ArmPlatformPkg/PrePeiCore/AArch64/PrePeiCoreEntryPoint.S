@@ -145,6 +145,7 @@ LEND(drop_to_el1)
 
 ASM_FUNC(_ModuleEntryPoint)
   hlt 0x1
+
 #ifdef __CHERI_PURE_CAPABILITY__
 .arch_extension noc64
 .arch_extension a64c

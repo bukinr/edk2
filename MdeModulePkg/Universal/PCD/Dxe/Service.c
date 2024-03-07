@@ -866,19 +866,41 @@ BuildPcdDxeDataBase (
   VOID               *PcdDxeDb;
   EFI_STATUS         Status;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a\r\n", __func__));
+
   //
   // Assign PCD Entries with default value to PCD DATABASE
   //
   mPcdDatabase.DxeDb = LocateExPcdBinary ();
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 0\r\n", __func__));
+
   ASSERT (mPcdDatabase.DxeDb != NULL);
   PcdDxeDbLen = mPcdDatabase.DxeDb->Length + mPcdDatabase.DxeDb->UninitDataBaseSize;
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 00\r\n", __func__));
+
   PcdDxeDb    = AllocateZeroPool (PcdDxeDbLen);
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 000\r\n", __func__));
+
   ASSERT (PcdDxeDb != NULL);
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 0000\r\n", __func__));
+
   CopyMem (PcdDxeDb, mPcdDatabase.DxeDb, mPcdDatabase.DxeDb->Length);
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 00000\r\n", __func__));
+
   mPcdDatabase.DxeDb = PcdDxeDb;
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 1\r\n", __func__));
 
   GuidHob = GetFirstGuidHob (&gPcdDataBaseHobGuid);
   if (GuidHob != NULL) {
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 2\r\n", __func__));
+
     //
     // If no PEIMs use dynamic Pcd Entry, the Pcd Service PEIM
     // should not be included at all. So the GuidHob could
@@ -886,6 +908,8 @@ BuildPcdDxeDataBase (
     // Value to PCD Database.
     //
     PeiDatabase = (PEI_PCD_DATABASE *)GET_GUID_HOB_DATA (GuidHob);
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 3\r\n", __func__));
 
     //
     // Get next one that stores full PEI data
@@ -895,6 +919,8 @@ BuildPcdDxeDataBase (
       mPeiPcdDbBinary = (PEI_PCD_DATABASE *)GET_GUID_HOB_DATA (GuidHob);
       mPeiPcdDbSize   = (UINTN)GET_GUID_HOB_DATA_SIZE (GuidHob);
     }
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 4\r\n", __func__));
 
     //
     // Assign PCD Entries refereneced in PEI phase to PCD DATABASE
@@ -908,11 +934,16 @@ BuildPcdDxeDataBase (
       ASSERT_EFI_ERROR (Status);
     }
 
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 5\r\n", __func__));
+
     mPcdDatabase.DxeDb->SystemSkuId = mPcdDatabase.PeiDb->SystemSkuId;
   } else {
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 6\r\n", __func__));
     mPcdDatabase.PeiDb = AllocateZeroPool (sizeof (PEI_PCD_DATABASE));
     ASSERT (mPcdDatabase.PeiDb != NULL);
   }
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 7\r\n", __func__));
 
   //
   // Initialized the external PCD database local variables
@@ -933,6 +964,8 @@ BuildPcdDxeDataBase (
   mDxeExMapTableEmpty = (mPcdDatabase.DxeDb->ExTokenCount == 0) ? TRUE : FALSE;
   mPeiDatabaseEmpty   = (mPeiLocalTokenCount == 0) ? TRUE : FALSE;
 
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 8\r\n", __func__));
+
   TmpTokenSpaceBufferCount = mPcdDatabase.PeiDb->ExTokenCount + mPcdDatabase.DxeDb->ExTokenCount;
   TmpTokenSpaceBuffer      = (EFI_GUID **)AllocateZeroPool (TmpTokenSpaceBufferCount * sizeof (EFI_GUID *));
 
@@ -942,14 +975,19 @@ BuildPcdDxeDataBase (
   mCallbackFnTable = AllocateZeroPool (mPcdTotalTokenCount * sizeof (LIST_ENTRY));
   ASSERT (mCallbackFnTable != NULL);
 
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 9\r\n", __func__));
+
   //
   // EBC compiler is very choosy. It may report warning about comparison
   // between UINTN and 0 . So we add 1 in each size of the
   // comparison.
   //
   for (Index = 0; Index + 1 < mPcdTotalTokenCount + 1; Index++) {
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 9 index %d\r\n", __func__, Index));
     InitializeListHead (&mCallbackFnTable[Index]);
   }
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 10 done\r\n", __func__));
 }
 
 /**

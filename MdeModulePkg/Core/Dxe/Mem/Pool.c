@@ -9,12 +9,15 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "DxeMain.h"
 #include "Imem.h"
 #include "HeapGuard.h"
+#include <Library/CheriLib.h>
 
 STATIC EFI_LOCK  mPoolMemoryLock = EFI_INITIALIZE_LOCK_VARIABLE (TPL_NOTIFY);
 
 #define POOL_FREE_SIGNATURE  SIGNATURE_32('p','f','r','0')
 typedef struct {
   UINT32        Signature;
+  UINT32        Reserved;
+  UINT32        Reserved1;
   UINT32        Index;
   LIST_ENTRY    Link;
 } POOL_FREE;
@@ -24,6 +27,8 @@ typedef struct {
 typedef struct {
   UINT32             Signature;
   UINT32             Reserved;
+  UINT32             Reserved1;
+  UINT32             Reserved2;
   EFI_MEMORY_TYPE    Type;
   UINTN              Size;
   CHAR8              Data[1];
@@ -35,6 +40,7 @@ typedef struct {
 typedef struct {
   UINT32    Signature;
   UINT32    Reserved;
+  UINT32    Reserved111;
   UINTN     Size;
 } POOL_TAIL;
 
@@ -66,6 +72,7 @@ STATIC CONST UINT16  mPoolSizeTable[] = {
 #define POOL_SIGNATURE  SIGNATURE_32('p','l','s','t')
 typedef struct {
   INTN               Signature;
+  INTN               Reserved;
   UINTN              Used;
   EFI_MEMORY_TYPE    MemoryType;
   LIST_ENTRY         FreeList[MAX_POOL_LIST];
@@ -167,6 +174,9 @@ LookupPoolHead (
     if (Pool == NULL) {
       return NULL;
     }
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a Pool %p\r\n",
+          __func__, Pool));
 
     Pool->Signature  = POOL_SIGNATURE;
     Pool->Used       = 0;
@@ -322,13 +332,13 @@ CoreAllocatePoolPagesI (
 
   if (Buffer != NULL) {
     if (NeedGuard) {
-      SetGuardForMemory ((EFI_PHYSICAL_ADDRESS)(UINTN)Buffer, NoPages);
+      SetGuardForMemory ((EFI_PHYSICAL_ADDRESS)Buffer, NoPages);
     }
 
     ApplyMemoryProtectionPolicy (
       EfiConventionalMemory,
       PoolType,
-      (EFI_PHYSICAL_ADDRESS)(UINTN)Buffer,
+      (EFI_PHYSICAL_ADDRESS)Buffer,
       EFI_PAGES_TO_SIZE (NoPages)
       );
   }
@@ -417,7 +427,7 @@ CoreAllocatePoolI (
     NoPages &= ~(UINTN)(EFI_SIZE_TO_PAGES (Granularity) - 1);
     Head     = CoreAllocatePoolPagesI (PoolType, NoPages, Granularity, NeedGuard);
     if (NeedGuard) {
-      Head = AdjustPoolHeadA ((EFI_PHYSICAL_ADDRESS)(UINTN)Head, NoPages, Size);
+      Head = AdjustPoolHeadA ((EFI_PHYSICAL_ADDRESS)Head, NoPages, Size);
     }
 
     goto Done;
@@ -433,14 +443,31 @@ CoreAllocatePoolI (
     //
     // Check the bins holding larger blocks, and carve one up if needed
     //
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a Pool %p\r\n",
+          __func__, Pool));
+
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list size gran %d\r\n",
+          __func__, SIZE_TO_LIST (Granularity)));
+
     while (++Index < SIZE_TO_LIST (Granularity)) {
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a index %d\r\n",
+          __func__, Index));
+
       if (!IsListEmpty (&Pool->FreeList[Index])) {
+
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list not emp %d\r\n",
+          __func__, Index));
+
         Free = CR (Pool->FreeList[Index].ForwardLink, POOL_FREE, Link, POOL_FREE_SIGNATURE);
         RemoveEntryList (&Free->Link);
         NewPage   = (VOID *)Free;
         MaxOffset = LIST_TO_SIZE (Index);
         goto Carve;
       }
+
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list emp %d\r\n",
+          __func__, Index));
     }
 
     //
@@ -510,6 +537,8 @@ Done:
     Head->Type      = (EFI_MEMORY_TYPE)PoolType;
     Buffer          = Head->Data;
 
+    //DEBUG((DEBUG_INFO | DEBUG_LOAD, "Buffer %p hastail %d\n\r", Buffer, HasPoolTail));
+
     if (HasPoolTail) {
       Tail            = HEAD_TO_TAIL (Head);
       Tail->Signature = POOL_TAIL_SIGNATURE;
@@ -520,6 +549,7 @@ Done:
       Size -= SIZE_OF_POOL_HEAD;
     }
 
+    /* TODO: SetMem issues. */
     DEBUG_CLEAR_MEMORY (Buffer, Size);
 
     DEBUG ((
@@ -715,7 +745,7 @@ CoreFreePoolI (
   }
 
   IsGuarded = IsPoolTypeToGuard (Head->Type) &&
-              IsMemoryGuarded ((EFI_PHYSICAL_ADDRESS)(UINTN)Head);
+              IsMemoryGuarded ((EFI_PHYSICAL_ADDRESS)Head);
   HasPoolTail = !(IsGuarded &&
                   ((PcdGet8 (PcdHeapGuardPropertyMask) & BIT7) == 0));
   PageAsPool = (Head->Signature == POOLPAGE_HEAD_SIGNATURE);
@@ -727,6 +757,7 @@ CoreFreePoolI (
     //
     // Debug
     //
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: signature %x expected %x\n\r", __func__, Tail->Signature, POOL_TAIL_SIGNATURE));
     ASSERT (Tail->Signature == POOL_TAIL_SIGNATURE);
     ASSERT (Head->Size == Tail->Size);
 

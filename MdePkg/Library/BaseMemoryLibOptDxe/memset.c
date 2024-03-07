@@ -33,6 +33,7 @@
 #include <sys/libkern.h>
 #endif
 
+#if 0
 #define CAPABILITY_VERSION
 
 #ifdef CAPABILITY_VERSION
@@ -92,3 +93,4 @@ __CAPSUFFIX(InternalMemZeroMem)(void * __CAP b, UINTN len)
 		*bb++ = 0;
 	return (b);
 }
+#endif

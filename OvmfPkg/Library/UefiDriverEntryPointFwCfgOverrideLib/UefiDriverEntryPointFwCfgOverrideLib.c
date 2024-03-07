@@ -88,6 +88,8 @@ _ModuleEntryPoint (
   RETURN_STATUS              RetStatus;
   BOOLEAN                    Enabled;
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "11111"));
+
   if (_gUefiDriverRevision != 0) {
     //
     // Make sure that the EFI/UEFI spec revision of the platform is >= EFI/UEFI

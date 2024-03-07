@@ -275,24 +275,31 @@ AllocateMemoryMapEntry (
   UINTN       Index;
 
   if (IsListEmpty (&mFreeMemoryMapEntryList)) {
+    DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: refueling list\n\r", __func__));
     //
     // The list is empty, to allocate one page to refuel the list
     //
-    FreeDescriptorEntries = CoreAllocatePoolPages (
+    FreeDescriptorEntries = MakeCap((UINT64)CoreAllocatePoolPages (
                               EfiBootServicesData,
                               EFI_SIZE_TO_PAGES (DEFAULT_PAGE_ALLOCATION_GRANULARITY),
                               DEFAULT_PAGE_ALLOCATION_GRANULARITY,
                               FALSE
-                              );
+                              ));
     if (FreeDescriptorEntries != NULL) {
+      DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: refueling list insert\n\r",
+        __func__));
       //
       // Enque the free memmory map entries into the list
       //
       for (Index = 0; Index < DEFAULT_PAGE_ALLOCATION_GRANULARITY / sizeof (MEMORY_MAP); Index++) {
+        DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: refueling list insert %d\n\r",
+          __func__, Index));
         FreeDescriptorEntries[Index].Signature = MEMORY_MAP_SIGNATURE;
         InsertTailList (&mFreeMemoryMapEntryList, &FreeDescriptorEntries[Index].Link);
       }
     } else {
+      DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: refueling list fail\n\r",
+        __func__));
       return NULL;
     }
   }
@@ -300,10 +307,13 @@ AllocateMemoryMapEntry (
   //
   // dequeue the first descriptor from the list
   //
-  Entry = CR (mFreeMemoryMapEntryList.ForwardLink, MEMORY_MAP, Link, MEMORY_MAP_SIGNATURE);
-  RemoveEntryList (&Entry->Link);
 
-  return Entry;
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: %lx %lx\n\r", __func__, BASE_CR (MakeCap((UINT64)mFreeMemoryMapEntryList.ForwardLink), MEMORY_MAP, Link)->Signature, MEMORY_MAP_SIGNATURE));
+
+  Entry = CR (MakeCap((UINT64)mFreeMemoryMapEntryList.ForwardLink), MEMORY_MAP, Link, MEMORY_MAP_SIGNATURE);
+  RemoveEntryList (MakeCap((UINT64)&Entry->Link));
+
+  return MakeCap((UINT64)Entry);
 }
 
 /**

@@ -130,9 +130,15 @@ PcdDxeInit (
   // Make sure the Pcd Protocol is not already installed in the system
   //
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a\r\n", __func__));
+
   ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gPcdProtocolGuid);
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 1\r\n", __func__));
+
   BuildPcdDxeDataBase ();
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 2\r\n", __func__));
 
   //
   // Install PCD_PROTOCOL to handle dynamic type PCD
@@ -146,12 +152,18 @@ PcdDxeInit (
                   &mEfiPcdInstance,
                   NULL
                   );
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 3\r\n", __func__));
+
   ASSERT_EFI_ERROR (Status);
 
   //
   // Install GET_PCD_INFO_PROTOCOL to handle dynamic type PCD
   // Install EFI_GET_PCD_INFO_PROTOCOL to handle dynamicEx type PCD
   //
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 4\r\n", __func__));
+
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &mPcdHandle,
                   &gGetPcdInfoProtocolGuid,
@@ -160,12 +172,18 @@ PcdDxeInit (
                   &mEfiGetPcdInfoInstance,
                   NULL
                   );
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 5\r\n", __func__));
+
   ASSERT_EFI_ERROR (Status);
 
   //
   // Register callback function upon VariableLockProtocol
   // to lock the variables referenced by DynamicHii PCDs with RO property set in *.dsc.
   //
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 6\r\n", __func__));
+
   EfiCreateProtocolNotifyEvent (
     &gEdkiiVariableLockProtocolGuid,
     TPL_CALLBACK,
@@ -178,6 +196,8 @@ PcdDxeInit (
   // Cache VpdBaseAddress in entry point for the following usage.
   //
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 6\r\n", __func__));
+
   //
   // PcdVpdBaseAddress64 is DynamicEx PCD only. So, DxePcdGet64Ex() is used to get its value.
   //
@@ -186,8 +206,10 @@ PcdDxeInit (
     //
     // PcdVpdBaseAddress64 is not set, get value from PcdVpdBaseAddress.
     //
-    mVpdBaseAddress = (UINTN)PcdGet32 (PcdVpdBaseAddress);
+    mVpdBaseAddress = MakeUCap((UINT64)PcdGet32 (PcdVpdBaseAddress));
   }
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a 7\r\n", __func__));
 
   return Status;
 }

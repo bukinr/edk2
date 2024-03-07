@@ -7,6 +7,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include <Uefi.h>
+#include <Library/CheriLib.h>
 
 #include <Protocol/LoadedImage.h>
 
@@ -89,6 +90,21 @@ _ModuleEntryPoint (
 {
   EFI_STATUS                 Status;
   EFI_LOADED_IMAGE_PROTOCOL  *LoadedImage;
+  VOID* ddc_reg;
+  VOID* dcc_reg;
+  __volatile__ UINT64 addr;
+
+  __asm__ __volatile__("mrs %0, ddc" : "=C" (ddc_reg));
+  __asm__ __volatile__("adr %0, #0" : "=C" (dcc_reg));
+
+  addr = ((UINT64)cheri_getpcc() & ~0xfff) - 0x1000;
+
+#if 1
+  crt_init_globals(NULL, ddc_reg, dcc_reg, addr, 0);
+  cheri_init_capabilities(ddc_reg);
+#endif
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "DriverEntryPoint addr %p\r\n", addr));
 
   if (_gUefiDriverRevision != 0) {
     //
@@ -99,10 +115,14 @@ _ModuleEntryPoint (
     }
   }
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "DriverEntryPoint 1 addr %p\r\n", addr));
+
   //
   // Call constructor for all libraries
   //
   ProcessLibraryConstructorList (ImageHandle, SystemTable);
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "DriverEntryPoint 2 addr %p\r\n", addr));
 
   //
   //  Install unload handler...
@@ -117,10 +137,14 @@ _ModuleEntryPoint (
     LoadedImage->Unload = _DriverUnloadHandler;
   }
 
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "DriverEntryPoint 3 addr %p\r\n", addr));
+
   //
   // Call the driver entry point
   //
   Status = ProcessModuleEntryPointList (ImageHandle, SystemTable);
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "DriverEntryPoint 4 addr %p\r\n", addr));
 
   //
   // If all of the drivers returned errors, then invoke all of the library destructors
@@ -128,6 +152,9 @@ _ModuleEntryPoint (
   if (EFI_ERROR (Status)) {
     ProcessLibraryDestructorList (ImageHandle, SystemTable);
   }
+
+  DEBUG((DEBUG_INFO | DEBUG_LOAD, "DriverEntryPoint addr %p return %d\r\n",
+    addr, Status));
 
   //
   // Return the cummalative return status code from all of the driver entry points

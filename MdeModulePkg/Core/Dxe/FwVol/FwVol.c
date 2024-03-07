@@ -10,6 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "DxeMain.h"
 #include "FwVolDriver.h"
+#include <Library/CheriLib.h>
 
 //
 // Protocol notify related globals
@@ -435,6 +436,7 @@ FvCheck (
   }
 
   FfsHeader    = (EFI_FFS_FILE_HEADER *)ALIGN_POINTER (FfsHeader, 8);
+  FfsHeader = (EFI_FFS_FILE_HEADER *)MakeCap((UINT64)FfsHeader);
   TopFvAddress = FvDevice->EndOfCachedFv;
   while (((UINTN)FfsHeader >= (UINTN)FvDevice->CachedFv) && ((UINTN)FfsHeader <= (UINTN)((UINTN)TopFvAddress - sizeof (EFI_FFS_FILE_HEADER)))) {
     if (FileCached) {
