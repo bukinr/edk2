@@ -40,7 +40,6 @@ typedef struct {
 typedef struct {
   UINT32    Signature;
   UINT32    Reserved;
-  UINT32    Reserved111;
   UINTN     Size;
 } POOL_TAIL;
 
@@ -72,7 +71,6 @@ STATIC CONST UINT16  mPoolSizeTable[] = {
 #define POOL_SIGNATURE  SIGNATURE_32('p','l','s','t')
 typedef struct {
   INTN               Signature;
-  INTN               Reserved;
   UINTN              Used;
   EFI_MEMORY_TYPE    MemoryType;
   LIST_ENTRY         FreeList[MAX_POOL_LIST];
@@ -757,7 +755,7 @@ CoreFreePoolI (
     //
     // Debug
     //
-    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: signature %x expected %x\n\r", __func__, Tail->Signature, POOL_TAIL_SIGNATURE));
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: signature %x expected %x, Head->Size %d Tail->Size %d\n\r", __func__, Tail->Signature, POOL_TAIL_SIGNATURE, Head->Size, Tail->Size));
     ASSERT (Tail->Signature == POOL_TAIL_SIGNATURE);
     ASSERT (Head->Size == Tail->Size);
 

@@ -117,6 +117,8 @@ VECTOR_BASE(ExceptionHandlersStart)
 #endif
 
   .macro  ExceptionEntry, val, sp=SPx
+1:
+  b 1b
   //
   // Our backtrace and register dump code is written in C and so it requires
   // a stack. This makes it difficult to produce meaningful diagnostics when
@@ -168,6 +170,7 @@ VECTOR_BASE(ExceptionHandlersStart)
   mov       x0, #\val
 
   // Jump to our general handler to deal with all the common parts and process the exception.
+
 #if defined(ARM_RELOCATE_VECTORS)
   ldr       x1, =ASM_PFX(CommonExceptionEntry)
   br        x1

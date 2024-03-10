@@ -7,6 +7,7 @@
 **/
 
 #include "PrePeiCore.h"
+#include <Library/CheriLib.h>
 
 VOID
 EFIAPI
@@ -34,8 +35,8 @@ PrimaryMain (
   // Adjust the Temporary Ram as the new Ppi List (Common + Platform Ppi Lists) is created at
   // the base of the primary core stack
   PpiListSize      = ALIGN_VALUE (PpiListSize, CPU_STACK_ALIGNMENT);
-  TemporaryRamBase = (UINTPTR_T)PcdGet64 (PcdCPUCoresStackBase) + PpiListSize;
-  TemporaryRamSize = (UINTPTR_T)PcdGet32 (PcdCPUCorePrimaryStackSize) - PpiListSize;
+  TemporaryRamBase = PcdGet64 (PcdCPUCoresStackBase) + PpiListSize;
+  TemporaryRamSize = PcdGet32 (PcdCPUCorePrimaryStackSize) - PpiListSize;
 
   //
   // Bind this information into the SEC hand-off state
@@ -45,11 +46,11 @@ PrimaryMain (
   SecCoreData.DataSize               = sizeof (EFI_SEC_PEI_HAND_OFF);
   SecCoreData.BootFirmwareVolumeBase = (VOID *)(UINTPTR_T)PcdGet64 (PcdFvBaseAddress);
   SecCoreData.BootFirmwareVolumeSize = PcdGet32 (PcdFvSize);
-  SecCoreData.TemporaryRamBase       = (VOID *)(UINTPTR_T)TemporaryRamBase; // We run on the primary core (and so we use the first stack)
+  SecCoreData.TemporaryRamBase       = (VOID *)MakeCap(TemporaryRamBase); // We run on the primary core (and so we use the first stack)
   SecCoreData.TemporaryRamSize       = TemporaryRamSize;
-  SecCoreData.PeiTemporaryRamBase    = SecCoreData.TemporaryRamBase;
+  SecCoreData.PeiTemporaryRamBase    = MakeCap((UINT64)SecCoreData.TemporaryRamBase);
   SecCoreData.PeiTemporaryRamSize    = ALIGN_VALUE (SecCoreData.TemporaryRamSize / 2, CPU_STACK_ALIGNMENT);
-  SecCoreData.StackBase              = (VOID *)((UINTPTR_T)SecCoreData.TemporaryRamBase + SecCoreData.PeiTemporaryRamSize);
+  SecCoreData.StackBase              = (VOID *)(MakeCap((UINT64)SecCoreData.TemporaryRamBase) + SecCoreData.PeiTemporaryRamSize);
   SecCoreData.StackSize              = (TemporaryRamBase + TemporaryRamSize) - (UINTN)SecCoreData.StackBase;
 
   // Jump to PEI core entry point

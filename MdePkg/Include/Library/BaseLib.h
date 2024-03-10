@@ -99,19 +99,19 @@ typedef struct {
 #if defined (MDE_CPU_AARCH64)
 typedef struct {
   // GP regs
-  UINT64    X19;
-  UINT64    X20;
-  UINT64    X21;
-  UINT64    X22;
-  UINT64    X23;
-  UINT64    X24;
-  UINT64    X25;
-  UINT64    X26;
-  UINT64    X27;
-  UINT64    X28;
-  UINTPTR_T  FP;
-  UINT64    LR;
-  UINT64    IP0;
+  UINTPTR_T    X19;
+  UINTPTR_T    X20;
+  UINTPTR_T    X21;
+  UINTPTR_T    X22;
+  UINTPTR_T    X23;
+  UINTPTR_T    X24;
+  UINTPTR_T    X25;
+  UINTPTR_T    X26;
+  UINTPTR_T    X27;
+  UINTPTR_T    X28;
+  UINTPTR_T    FP;
+  UINTPTR_T    LR;
+  UINTPTR_T    IP0;
 
   // FP regs
   UINT64    D8;
@@ -124,7 +124,7 @@ typedef struct {
   UINT64    D15;
 } BASE_LIBRARY_JUMP_BUFFER;
 
-#define BASE_LIBRARY_JUMP_BUFFER_ALIGNMENT  8
+#define BASE_LIBRARY_JUMP_BUFFER_ALIGNMENT  16
 
 #endif // defined (MDE_CPU_AARCH64)
 

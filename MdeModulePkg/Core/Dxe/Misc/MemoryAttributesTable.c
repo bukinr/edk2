@@ -14,6 +14,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/DxeServicesTableLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiLib.h>
+#include <Library/CheriLib.h>
 
 #include <Guid/EventGroup.h>
 
@@ -112,12 +113,16 @@ InstallMemoryAttributesTable (
   EFI_MEMORY_ATTRIBUTES_TABLE  *MemoryAttributesTable;
   EFI_MEMORY_DESCRIPTOR        *MemoryAttributesEntry;
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a\n", __func__));
+
   if (gMemoryMapTerminated) {
     //
     // Directly return after MemoryMap terminated.
     //
     return;
   }
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 1\n", __func__));
 
   if (!mMemoryAttributesTableEnable) {
     DEBUG ((DEBUG_VERBOSE, "Cannot install Memory Attributes Table "));
@@ -134,6 +139,8 @@ InstallMemoryAttributesTable (
     Status = gBS->InstallConfigurationTable (&gEfiMemoryAttributesTableGuid, (VOID *)(UINTN)MAX_ADDRESS);
     ASSERT_EFI_ERROR (Status);
   }
+
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 2\n", __func__));
 
   MemoryMapSize = 0;
   MemoryMap     = NULL;
@@ -162,6 +169,8 @@ InstallMemoryAttributesTable (
     }
   } while (Status == EFI_BUFFER_TOO_SMALL);
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 3\n", __func__));
+
   MemoryMapStart    = MemoryMap;
   RuntimeEntryCount = 0;
   for (Index = 0; Index < MemoryMapSize/DescriptorSize; Index++) {
@@ -189,6 +198,8 @@ InstallMemoryAttributesTable (
     MemoryAttributesTable->Flags = 0;
   }
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 4\n", __func__));
+
   DEBUG ((DEBUG_VERBOSE, "MemoryAttributesTable:\n"));
   DEBUG ((DEBUG_VERBOSE, "  Version              - 0x%08x\n", MemoryAttributesTable->Version));
   DEBUG ((DEBUG_VERBOSE, "  NumberOfEntries      - 0x%08x\n", MemoryAttributesTable->NumberOfEntries));
@@ -214,6 +225,7 @@ InstallMemoryAttributesTable (
     MemoryMap = NEXT_MEMORY_DESCRIPTOR (MemoryMap, DescriptorSize);
   }
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a 5\n", __func__));
   MemoryMap = MemoryMapStart;
   FreePool (MemoryMap);
 
@@ -1323,7 +1335,7 @@ InsertImageRecord (
   ImageRecord->ImageBase = (EFI_PHYSICAL_ADDRESS)(UINTN)RuntimeImage->ImageBase;
   ImageRecord->ImageSize = RuntimeImage->ImageSize;
 
-  ImageAddress = RuntimeImage->ImageBase;
+  ImageAddress = MakeCap((UINT64)RuntimeImage->ImageBase);
 
   PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageAddress);
   if (PdbPointer != NULL) {
@@ -1333,13 +1345,13 @@ InsertImageRecord (
   //
   // Check PE/COFF image
   //
-  DosHdr             = (EFI_IMAGE_DOS_HEADER *)(UINTPTR_T)ImageAddress;
+  DosHdr             = (EFI_IMAGE_DOS_HEADER *)ImageAddress;
   PeCoffHeaderOffset = 0;
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     PeCoffHeaderOffset = DosHdr->e_lfanew;
   }
 
-  Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINT8 *)(UINTPTR_T)ImageAddress + PeCoffHeaderOffset);
+  Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINT8 *)ImageAddress + PeCoffHeaderOffset);
   if (Hdr.Pe32->Signature != EFI_IMAGE_NT_SIGNATURE) {
     DEBUG ((DEBUG_VERBOSE, "Hdr.Pe32->Signature invalid - 0x%x\n", Hdr.Pe32->Signature));
     // It might be image in SMM.

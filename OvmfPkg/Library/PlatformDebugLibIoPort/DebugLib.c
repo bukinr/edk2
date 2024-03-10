@@ -355,5 +355,6 @@ DebugPrintLevelEnabled (
   IN  CONST UINTN  ErrorLevel
   )
 {
+  return (TRUE);
   return (BOOLEAN)((ErrorLevel & PcdGet32 (PcdFixedDebugPrintErrorLevel)) != 0);
 }
