@@ -12,6 +12,7 @@
 #include <Guid/IdleLoopEvent.h>
 
 #include <Library/MemoryAllocationLib.h>
+#include <Library/CheriLib.h>
 
 BOOLEAN  mIsFlushingGCD;
 
@@ -53,13 +54,13 @@ CpuFlushCpuDataCache (
 {
   switch (FlushType) {
     case EfiCpuFlushTypeWriteBack:
-      WriteBackDataCacheRange ((VOID *)(UINTPTR_T)Start, (UINTN)Length);
+      WriteBackDataCacheRange (MakeCap(Start), (UINTN)Length);
       break;
     case EfiCpuFlushTypeInvalidate:
-      InvalidateDataCacheRange ((VOID *)(UINTPTR_T)Start, (UINTN)Length);
+      InvalidateDataCacheRange (MakeCap(Start), (UINTN)Length);
       break;
     case EfiCpuFlushTypeWriteBackInvalidate:
-      WriteBackInvalidateDataCacheRange ((VOID *)(UINTPTR_T)Start, (UINTN)Length);
+      WriteBackInvalidateDataCacheRange (MakeCap(Start), (UINTN)Length);
       break;
     default:
       return EFI_INVALID_PARAMETER;

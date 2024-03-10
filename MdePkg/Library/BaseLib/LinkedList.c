@@ -72,7 +72,6 @@ InternalBaseLibIsListValid (
   //
   // Test the validity of List and Node
   //
-  List = MakeCap((UINT64)List);
 
   ASSERT (List != NULL);
   ASSERT (List->ForwardLink != NULL);
@@ -87,12 +86,14 @@ InternalBaseLibIsListValid (
     // Exit early if the number of nodes in List >= PcdMaximumLinkedListLength
     //
     do {
+      //DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: Ptr %p Ptr->Forward %p Ptr->Back %p\n", __func__, Ptr, Ptr->ForwardLink, Ptr->BackLink));
       if (Ptr == NULL)
 	while (1) {
 
         };
 
-      Ptr = MakeCap((UINT64)Ptr->ForwardLink);
+      ///Ptr = MakeCap((UINT64)Ptr->ForwardLink);
+      Ptr = Ptr->ForwardLink;
       Count++;
     } while ((Ptr != List) && (Count < PcdGet32 (PcdMaximumLinkedListLength)));
 

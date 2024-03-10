@@ -451,8 +451,8 @@ CoreAllocatePoolI (
           __func__, SIZE_TO_LIST (Granularity)));
 
     while (++Index < SIZE_TO_LIST (Granularity)) {
-      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a index %d\r\n",
-          __func__, Index));
+      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a (pcc %p) index %d\r\n",
+          __func__, cheri_getpcc(), Index));
 
       if (!IsListEmpty (&Pool->FreeList[Index])) {
 

@@ -978,7 +978,8 @@ STATIC_ASSERT (ALIGNOF (__VERIFY_INT32_ENUM_SIZE) == sizeof (__VERIFY_INT32_ENUM
   @return  Rounded value specified by Value.
 
 **/
-#define ALIGN_VARIABLE(Value)  ALIGN_VALUE ((Value), sizeof (UINTPTR_T))
+//#define ALIGN_VARIABLE(Value)  ALIGN_VALUE ((Value), sizeof (UINTPTR_T))
+#define ALIGN_VARIABLE(Value)  ALIGN_VALUE ((Value), sizeof (UINT64))
 
 /**
   Return the maximum of two operands.

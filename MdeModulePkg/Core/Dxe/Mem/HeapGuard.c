@@ -9,6 +9,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "DxeMain.h"
 #include "Imem.h"
 #include "HeapGuard.h"
+#include <Library/CheriLib.h>
 
 //
 // Global to avoid infinite reentrance of memory allocation when updating
@@ -253,9 +254,9 @@ FindGuardedMemoryMap (
       ASSERT_EFI_ERROR (Status);
       ASSERT (MapMemory != 0);
 
-      SetMem ((VOID *)(UINTPTR_T)MapMemory, Size, 0);
+      SetMem (MakeCap(MapMemory), Size, 0);
 
-      *(UINT64 *)(UINTPTR_T)MapMemory = mGuardedMemoryMap;
+      *(UINT64 *)MakeCap(MapMemory) = mGuardedMemoryMap;
       mGuardedMemoryMap           = MapMemory;
     }
 
@@ -284,13 +285,13 @@ FindGuardedMemoryMap (
       ASSERT_EFI_ERROR (Status);
       ASSERT (MapMemory != 0);
 
-      SetMem ((VOID *)(UINTPTR_T)MapMemory, Size, 0);
+      SetMem (MakeCap(MapMemory), Size, 0);
       *GuardMap = MapMemory;
     }
 
     Index    = (UINTN)RShiftU64 (Address, mLevelShift[Level]);
     Index   &= mLevelMask[Level];
-    GuardMap = (UINT64 *)(UINTPTR_T)((*GuardMap) + Index * sizeof (UINT64));
+    GuardMap = (UINT64 *)MakeCap((*GuardMap) + Index * sizeof (UINT64));
   }
 
   BitsToUnitEnd = GUARDED_HEAP_MAP_BITS - GUARDED_HEAP_MAP_BIT_INDEX (Address);
@@ -1023,14 +1024,14 @@ AdjustPoolHeadA (
     //
     // Pool head is put near the head Guard
     //
-    return (VOID *)(UINTPTR_T)Memory;
+    return MakeCap(Memory);
   }
 
   //
   // Pool head is put near the tail Guard
   //
   Size = ALIGN_VALUE (Size, 8);
-  return (VOID *)(UINTPTR_T)(Memory + EFI_PAGES_TO_SIZE (NoPages) - Size);
+  return MakeCap(Memory + EFI_PAGES_TO_SIZE (NoPages) - Size);
 }
 
 /**
@@ -1049,13 +1050,13 @@ AdjustPoolHeadF (
     //
     // Pool head is put near the head Guard
     //
-    return (VOID *)(UINTPTR_T)Memory;
+    return MakeCap(Memory);
   }
 
   //
   // Pool head is put near the tail Guard
   //
-  return (VOID *)(UINTPTR_T)(Memory & ~EFI_PAGE_MASK);
+  return MakeCap(Memory & ~EFI_PAGE_MASK);
 }
 
 /**
@@ -1148,7 +1149,7 @@ SetAllGuardPages (
       Tables[Level] = 0;
       Level        -= 1;
     } else {
-      TableEntry = ((UINT64 *)(UINTPTR_T)(Tables[Level]))[Indices[Level]];
+      TableEntry = ((UINT64 *)MakeCap(Tables[Level]))[Indices[Level]];
       Address    = Addresses[Level];
 
       if (TableEntry == 0) {
@@ -1238,9 +1239,9 @@ GetLastGuardedFreePageAddress (
     // Find the non-NULL entry at largest index.
     //
     for (Index = (INTN)mLevelMask[Level]; Index >= 0; --Index) {
-      if (((UINT64 *)(UINTPTR_T)Map)[Index] != 0) {
+      if (((UINT64 *)MakeCap(Map))[Index] != 0) {
         BaseAddress += MultU64x32 (AddressGranularity, (UINT32)Index);
-        Map          = ((UINT64 *)(UINTPTR_T)Map)[Index];
+        Map          = ((UINT64 *)MakeCap(Map))[Index];
         break;
       }
     }
@@ -1395,7 +1396,7 @@ GuardAllFreedPages (
       Tables[Level] = 0;
       Level        -= 1;
     } else {
-      TableEntry = ((UINT64 *)(UINTPTR_T)(Tables[Level]))[Indices[Level]];
+      TableEntry = ((UINT64 *)MakeCap(Tables[Level]))[Indices[Level]];
       Address    = Addresses[Level];
 
       if (Level < GUARDED_HEAP_MAP_TABLE_DEPTH - 1) {
@@ -1476,12 +1477,12 @@ MergeGuardPages (
   }
 
   Bitmap = 0;
-  Pages  = EFI_SIZE_TO_PAGES ((UINTPTR_T)(MaxAddress - MemoryMapEntry->PhysicalStart));
+  Pages  = EFI_SIZE_TO_PAGES ((UINTN)(MaxAddress - MemoryMapEntry->PhysicalStart));
   Pages -= (INTN)MemoryMapEntry->NumberOfPages;
   while (Pages > 0) {
     if (Bitmap == 0) {
       EndAddress = MemoryMapEntry->PhysicalStart +
-                   EFI_PAGES_TO_SIZE ((UINTPTR_T)MemoryMapEntry->NumberOfPages);
+                   EFI_PAGES_TO_SIZE ((UINTN)MemoryMapEntry->NumberOfPages);
       Bitmap = GetGuardedMemoryBits (EndAddress, GUARDED_HEAP_MAP_ENTRY_BITS);
     }
 
@@ -1707,7 +1708,7 @@ DumpGuardedMemoryBitmap (
         "=========================================\r\n"
         ));
     } else {
-      TableEntry = ((UINT64 *)(UINTPTR_T)Tables[Level])[Indices[Level]];
+      TableEntry = ((UINT64 *)MakeCap(Tables[Level]))[Indices[Level]];
       Address    = Addresses[Level];
 
       if (TableEntry == 0) {

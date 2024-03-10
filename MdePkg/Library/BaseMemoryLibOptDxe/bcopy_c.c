@@ -37,6 +37,7 @@
 #include <cheri/cheric.h>
 #endif
 
+#if 1
 /* memcpy_c */
 
 void * __capability
@@ -126,6 +127,8 @@ __memcpy(void * __capability dst0, const void * __capability src0, __SIZE_TYPE__
 	}
 	return (dst0);
 }
+#endif
+
 #if 0
 __strong_reference(memcpy_c, memmove_c);
 

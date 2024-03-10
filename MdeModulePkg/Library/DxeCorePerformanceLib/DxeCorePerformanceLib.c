@@ -17,6 +17,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "DxeCorePerformanceLibInternal.h"
+#include <Library/CheriLib.h>
 
 //
 // Data for FPDT performance records.
@@ -1498,6 +1499,7 @@ DxeCorePerformanceLibConstructor (
   // Install the protocol interfaces for DXE performance library instance.
   //
   Handle = NULL;
+  gBS = MakeCap((UINT64)gBS);
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &Handle,
                   &gEdkiiPerformanceMeasurementProtocolGuid,

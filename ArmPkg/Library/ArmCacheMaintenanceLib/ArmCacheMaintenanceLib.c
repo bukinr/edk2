@@ -27,8 +27,8 @@ CacheRangeOperation (
   UINTPTR_T  EndAddress;
 
   ArmCacheLineAlignmentMask = LineLength - 1;
-  AlignedAddress            = (UINTPTR_T)MakeUCap((UINT64)Start) - ((UINT64)Start & ArmCacheLineAlignmentMask);
-  EndAddress                = (UINTPTR_T)MakeUCap((UINT64)Start) + Length;
+  AlignedAddress            = MakeUCap((UINT64)Start) - ((UINT64)Start & ArmCacheLineAlignmentMask);
+  EndAddress                = MakeUCap((UINT64)Start) + Length;
 
   // Perform the line operation on an address in each cache line
   while (AlignedAddress < EndAddress) {
