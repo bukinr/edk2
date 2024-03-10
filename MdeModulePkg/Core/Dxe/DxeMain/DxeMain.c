@@ -7,6 +7,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "DxeMain.h"
+#include <Library/CheriLib.h>
 
 //
 // DXE Core Global Variables for Protocols from PEI
@@ -326,15 +327,15 @@ DxeMain (
   // Report DXE Core image information to the PE/COFF Extra Action Library
   //
   ZeroMem (&ImageContext, sizeof (ImageContext));
-  ImageContext.ImageAddress  = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)gDxeCoreLoadedImage->ImageBase;
-  ImageContext.PdbPointer    = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageContext.ImageAddress);
-  ImageContext.SizeOfHeaders = PeCoffGetSizeOfHeaders ((VOID *)(UINTPTR_T)ImageContext.ImageAddress);
-  Status                     = PeCoffLoaderGetEntryPoint ((VOID *)(UINTPTR_T)ImageContext.ImageAddress, &EntryPoint);
+  ImageContext.ImageAddress  = (EFI_PHYSICAL_ADDRESS)MakeCap((UINT64)gDxeCoreLoadedImage->ImageBase);
+  ImageContext.PdbPointer    = PeCoffLoaderGetPdbPointer (MakeCap(ImageContext.ImageAddress));
+  ImageContext.SizeOfHeaders = PeCoffGetSizeOfHeaders (MakeCap(ImageContext.ImageAddress));
+  Status                     = PeCoffLoaderGetEntryPoint (MakeCap(ImageContext.ImageAddress), &EntryPoint);
   if (Status == EFI_SUCCESS) {
-    ImageContext.EntryPoint = (EFI_PHYSICAL_ADDRESS)(UINTPTR_T)EntryPoint;
+    ImageContext.EntryPoint = (EFI_PHYSICAL_ADDRESS)MakeCap((UINT64)EntryPoint);
   }
 
-  ImageContext.Handle    = (VOID *)(UINTPTR_T)gDxeCoreLoadedImage->ImageBase;
+  ImageContext.Handle    = MakeCap((UINT64)gDxeCoreLoadedImage->ImageBase);
   ImageContext.ImageRead = PeCoffLoaderImageReadFromMemory;
   PeCoffLoaderRelocateImageExtraAction (&ImageContext);
 

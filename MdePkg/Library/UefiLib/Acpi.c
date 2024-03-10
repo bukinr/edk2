@@ -9,6 +9,7 @@
 #include "UefiLibInternal.h"
 #include <IndustryStandard/Acpi.h>
 #include <Guid/Acpi.h>
+#include <Library/CheriLib.h>
 
 /**
   This function scans ACPI table in XSDT/RSDT.
@@ -104,13 +105,13 @@ LocateAcpiFacsFromFadt (
   }
 
   if (Fadt->Header.Revision < EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE_REVISION) {
-    Facs = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->FirmwareCtrl;
+    Facs = (EFI_ACPI_COMMON_HEADER *)MakeCap((UINT64)Fadt->FirmwareCtrl);
   } else {
     CopyMem (&Data64, &Fadt->XFirmwareCtrl, sizeof (UINT64));
     if (Data64 != 0) {
-      Facs = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Data64;
+      Facs = (EFI_ACPI_COMMON_HEADER *)MakeCap(Data64);
     } else {
-      Facs = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->FirmwareCtrl;
+      Facs = (EFI_ACPI_COMMON_HEADER *)MakeCap((UINT64)Fadt->FirmwareCtrl);
     }
   }
 
@@ -142,9 +143,9 @@ LocateAcpiDsdtFromFadt (
   } else {
     CopyMem (&Data64, &Fadt->XDsdt, sizeof (UINT64));
     if (Data64 != 0) {
-      Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Data64;
+      Dsdt = (EFI_ACPI_COMMON_HEADER *)MakeCap(Data64);
     } else {
-      Dsdt = (EFI_ACPI_COMMON_HEADER *)(UINTPTR_T)Fadt->Dsdt;
+      Dsdt = (EFI_ACPI_COMMON_HEADER *)MakeCap(Fadt->Dsdt);
     }
   }
 

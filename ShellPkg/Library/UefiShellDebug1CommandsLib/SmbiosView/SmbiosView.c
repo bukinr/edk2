@@ -13,6 +13,7 @@
 #include "SmbiosView.h"
 #include "PrintInfo.h"
 #include "QueryTable.h"
+#include <Library/CheriLib.h>
 
 UINT8                        gShowType                    = SHOW_DETAIL;
 STATIC STRUCTURE_STATISTICS  *mStatisticsTable            = NULL;
@@ -695,7 +696,7 @@ CalculateSmbios64BitStructureCountAndLength (
   *Smbios64TableLength        = 0;
   *NumberOfSmbios64Structures = 0;
 
-  Smbios.Raw = (UINT8 *)(UINTPTR_T)(Smbios64EntryPoint->TableAddress);
+  Smbios.Raw = (UINT8 *)MakeCap(Smbios64EntryPoint->TableAddress);
   while (TRUE) {
     if (Smbios.Hdr->Type == 127) {
       //

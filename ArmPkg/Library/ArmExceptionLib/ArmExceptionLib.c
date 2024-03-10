@@ -13,6 +13,7 @@
 #include <Uefi.h>
 #include <Library/CpuExceptionHandlerLib.h>
 
+#include <Library/CheriLib.h>
 #include <Library/ArmLib.h>
 #include <Library/PcdLib.h>
 #include <Library/CacheMaintenanceLib.h>
@@ -165,7 +166,7 @@ CopyExceptionHandlers (
   //
   Length = (UINTN)ExceptionHandlersEnd - (UINTN)ExceptionHandlersStart;
 
-  VectorBase = (UINT32 *)(UINTPTR_T)BaseAddress;
+  VectorBase = (UINT32 *)MakeCap(BaseAddress);
 
   if (FeaturePcdGet (PcdDebuggerExceptionSupport) == TRUE) {
     // Save existing vector table, in case debugger is already hooked in
@@ -191,7 +192,7 @@ CopyExceptionHandlers (
   }
 
   // Flush Caches since we updated executable stuff
-  InvalidateInstructionCacheRange ((VOID *)(UINTPTR_T)BaseAddress, Length);
+  InvalidateInstructionCacheRange ((VOID *)MakeCap(BaseAddress), Length);
 
   return RETURN_SUCCESS;
 }

@@ -13,6 +13,7 @@
 #include <Chipset/AArch64.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Protocol/DebugSupport.h> // for MAX_AARCH64_EXCEPTION
+#include <Library/CheriLib.h>
 
 UINTN                   gMaxExceptionNumber                                   = MAX_AARCH64_EXCEPTION;
 EFI_EXCEPTION_CALLBACK  gExceptionHandlers[MAX_AARCH64_EXCEPTION + 1]         = { 0 };
@@ -37,7 +38,7 @@ ArchVectorConfig (
 
   // Round down sp by 16 bytes alignment
   RegisterEl0Stack (
-    (VOID *)(((UINTPTR_T)mNewStackBase + EL0_STACK_SIZE) & ~0xFUL)
+    (VOID *)((MakeUCap((UINT64)mNewStackBase) + EL0_STACK_SIZE) & ~0xFUL)
     );
 
   if (ArmReadCurrentEL () == AARCH64_EL2) {
