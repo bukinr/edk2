@@ -1768,9 +1768,9 @@ CoreGetMemorySpaceMap (
       Descriptor = *MemorySpaceMap;
       Link       = mGcdMemorySpaceMap.ForwardLink;
       while (Link != &mGcdMemorySpaceMap) {
-        DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: entry\n", __func__));
+        //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: entry\n", __func__));
 
-        DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: %lx %lx\n\r", __func__, BASE_CR (MakeCap((UINT64)Link), EFI_GCD_MAP_ENTRY, Link)->Signature, EFI_GCD_MAP_SIGNATURE));
+        //DEBUG((DEBUG_INFO | DEBUG_LOAD, "%a: %lx %lx\n\r", __func__, BASE_CR (MakeCap((UINT64)Link), EFI_GCD_MAP_ENTRY, Link)->Signature, EFI_GCD_MAP_SIGNATURE));
 
         Entry = CR (Link, EFI_GCD_MAP_ENTRY, Link, EFI_GCD_MAP_SIGNATURE);
         BuildMemoryDescriptor (Descriptor, Entry);

@@ -173,8 +173,8 @@ LookupPoolHead (
       return NULL;
     }
 
-    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a Pool %p\r\n",
-          __func__, Pool));
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a Pool %p\r\n",
+    //      __func__, Pool));
 
     Pool->Signature  = POOL_SIGNATURE;
     Pool->Used       = 0;
@@ -442,20 +442,20 @@ CoreAllocatePoolI (
     // Check the bins holding larger blocks, and carve one up if needed
     //
 
-    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a Pool %p\r\n",
-          __func__, Pool));
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a Pool %p\r\n",
+    //      __func__, Pool));
 
-    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list size gran %d\r\n",
-          __func__, SIZE_TO_LIST (Granularity)));
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list size gran %d\r\n",
+    //      __func__, SIZE_TO_LIST (Granularity)));
 
     while (++Index < SIZE_TO_LIST (Granularity)) {
-      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a (pcc %p) index %d\r\n",
-          __func__, cheri_getpcc(), Index));
+      //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a (pcc %p) index %d\r\n",
+      //    __func__, cheri_getpcc(), Index));
 
       if (!IsListEmpty (&Pool->FreeList[Index])) {
 
-      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list not emp %d\r\n",
-          __func__, Index));
+      //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list not emp %d\r\n",
+      //    __func__, Index));
 
         Free = CR (Pool->FreeList[Index].ForwardLink, POOL_FREE, Link, POOL_FREE_SIGNATURE);
         RemoveEntryList (&Free->Link);
@@ -464,8 +464,8 @@ CoreAllocatePoolI (
         goto Carve;
       }
 
-      DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list emp %d\r\n",
-          __func__, Index));
+      //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a list emp %d\r\n",
+      //    __func__, Index));
     }
 
     //
@@ -755,7 +755,7 @@ CoreFreePoolI (
     //
     // Debug
     //
-    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: signature %x expected %x, Head->Size %d Tail->Size %d\n\r", __func__, Tail->Signature, POOL_TAIL_SIGNATURE, Head->Size, Tail->Size));
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: signature %x expected %x, Head->Size %d Tail->Size %d\n\r", __func__, Tail->Signature, POOL_TAIL_SIGNATURE, Head->Size, Tail->Size));
     ASSERT (Tail->Signature == POOL_TAIL_SIGNATURE);
     ASSERT (Head->Size == Tail->Size);
 

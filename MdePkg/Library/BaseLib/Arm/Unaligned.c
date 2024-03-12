@@ -217,6 +217,11 @@ ReadUnaligned64 (
   UINT32  LowerBytes;
   UINT32  HigherBytes;
 
+  if (Buffer == 0)
+    while (1) {
+
+    }
+
   ASSERT (Buffer != NULL);
 
   LowerBytes  = ReadUnaligned32 ((UINT32 *)Buffer);

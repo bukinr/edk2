@@ -11,6 +11,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
+#include <Library/CheriLib.h>
 
 #include <Guid/GlobalVariable.h>
 #include <Guid/HardwareErrorVariable.h>
@@ -179,7 +180,13 @@ VariablePropertyGetFunction (
 
   for (Index = 0; Index < mNumberOfVarCheckVariable; Index++) {
     Entry        = (VAR_CHECK_VARIABLE_ENTRY *)mVarCheckVariableTable[Index];
+    Entry = (VOID *)MakeCap((UINT64)Entry);
     VariableName = (CHAR16 *)((UINTPTR_T)Entry + sizeof (*Entry));
+
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: index %d entry %p sizeof(UINTN) %d\n", __func__, Index, Entry, sizeof(UINTN)));
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: index %d entry->guid %p\n", __func__, Index, &Entry->Guid));
+    //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: getting from %p val %lx\n", __func__, &mVarCheckVariableTable[Index], (UINT64)Entry));
+
     if (CompareGuid (&Entry->Guid, Guid) && (StrCmp (VariableName, Name) == 0)) {
       return &Entry->VariableProperty;
     }
@@ -202,26 +209,28 @@ VariablePropertyGetFunction (
 **/
 EFI_STATUS
 VarCheckAddTableEntry (
-  IN OUT UINTN  **Table,
+  IN OUT UINTPTR_T  **Table,
   IN OUT UINTN  *MaxNumber,
   IN OUT UINTN  *CurrentNumber,
   IN UINTN      Entry
   )
 {
-  UINTN  *TempTable;
+  UINTPTR_T  *TempTable;
 
   //
   // Check whether the table is enough to store new entry.
   //
   if (*CurrentNumber == *MaxNumber) {
+    DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: realloc %d %d\n", __func__, *CurrentNumber, *MaxNumber));
     //
     // Reallocate memory for the table.
     //
     TempTable = ReallocateRuntimePool (
-                  *MaxNumber * sizeof (UINTN),
-                  (*MaxNumber + VAR_CHECK_TABLE_SIZE) * sizeof (UINTN),
+                  *MaxNumber * sizeof (UINTPTR_T),
+                  (*MaxNumber + VAR_CHECK_TABLE_SIZE) * sizeof (UINTPTR_T),
                   *Table
                   );
+    TempTable = (VOID *)MakeCap((UINT64)TempTable);
 
     //
     // No enough resource to allocate.
@@ -240,7 +249,9 @@ VarCheckAddTableEntry (
   //
   // Add entry to the table.
   //
-  (*Table)[*CurrentNumber] = Entry;
+  //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: storing into %p val %lx\n", __func__, &((*Table)[*CurrentNumber]), Entry));
+
+  (*Table)[*CurrentNumber] = MakeUCap((UINT64)Entry);
   (*CurrentNumber)++;
 
   return EFI_SUCCESS;
@@ -275,8 +286,9 @@ VarCheckLibRegisterEndOfDxeCallback (
     return EFI_ACCESS_DENIED;
   }
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "VarCheckAddTableEntry cb %p\n", Callback));
   Status = VarCheckAddTableEntry (
-             (UINTN **)&mVarCheckLibEndOfDxeCallback,
+             (UINTPTR_T **)&mVarCheckLibEndOfDxeCallback,
              &mVarCheckLibEndOfDxeCallbackMaxCount,
              &mVarCheckLibEndOfDxeCallbackCount,
              (UINTN)Callback
@@ -408,9 +420,9 @@ VarCheckLibRegisterAddressPointer (
   if (mVarCheckLibEndOfDxe) {
     return EFI_ACCESS_DENIED;
   }
-
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "VarCheckAddTableEntry ap %p\n", AddressPointer));
   Status = VarCheckAddTableEntry (
-             (UINTN **)&mVarCheckLibAddressPointer,
+             (UINTPTR_T **)&mVarCheckLibAddressPointer,
              &mVarCheckLibAddressPointerMaxCount,
              &mVarCheckLibAddressPointerCount,
              (UINTN)AddressPointer
@@ -450,9 +462,9 @@ VarCheckLibRegisterSetVariableCheckHandler (
   if (mVarCheckLibEndOfDxe) {
     return EFI_ACCESS_DENIED;
   }
-
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "VarCheckAddTableEntry handler %p\n", Handler));
   Status =  VarCheckAddTableEntry (
-              (UINTN **)&mVarCheckHandlerTable,
+              (UINTPTR_T **)&mVarCheckHandlerTable,
               &mMaxNumberOfVarCheckHandler,
               &mNumberOfVarCheckHandler,
               (UINTN)Handler
@@ -526,8 +538,9 @@ VarCheckLibVariablePropertySet (
     CopyGuid (&Entry->Guid, Guid);
     CopyMem (&Entry->VariableProperty, VariableProperty, sizeof (*VariableProperty));
 
+  DEBUG((DEBUG_LOAD | DEBUG_INFO, "VarCheckAddTableEntry ent %p\n", Entry));
     Status = VarCheckAddTableEntry (
-               (UINTN **)&mVarCheckVariableTable,
+               (UINTPTR_T **)&mVarCheckVariableTable,
                &mMaxNumberOfVarCheckVariable,
                &mNumberOfVarCheckVariable,
                (UINTN)Entry

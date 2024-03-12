@@ -9,6 +9,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "Variable.h"
+#include <Library/CheriLib.h>
 
 //
 // Module globals
@@ -84,7 +85,7 @@ GetEndPointer (
   //
   // The end of variable store
   //
-  return (VARIABLE_HEADER *)HEADER_ALIGN ((UINTPTR_T)VarStoreHeader + VarStoreHeader->Size);
+  return (VARIABLE_HEADER *)HEADER_ALIGN (MakeUCap((UINT64)VarStoreHeader) + VarStoreHeader->Size);
 }
 
 /**
@@ -229,7 +230,7 @@ GetVariableNamePtr (
   IN BOOLEAN          AuthFlag
   )
 {
-  return (CHAR16 *)((UINTPTR_T)Variable + GetVariableHeaderSize (AuthFlag));
+  return (CHAR16 *)(MakeUCap((UINT64)Variable) + GetVariableHeaderSize (AuthFlag));
 }
 
 /**
@@ -322,7 +323,7 @@ GetNextVariablePtr (
       //
       // Next variable is in spare block.
       //
-      Value = (UINTPTR_T)SpareAddress + ((UINTN)Value - (UINTN)TargetAddress);
+      Value = MakeUCap(SpareAddress) + ((UINTN)Value - (UINTN)TargetAddress);
     }
   }
 

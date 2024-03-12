@@ -207,7 +207,7 @@ NextDevicePathNode (
 {
   ASSERT (Node != NULL);
 
-  DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: node len %d\n", __func__, DevicePathNodeLength (Node)));
+  //DEBUG((DEBUG_LOAD | DEBUG_INFO, "%a: node len %d\n", __func__, DevicePathNodeLength (Node)));
 
   return (EFI_DEVICE_PATH_PROTOCOL *)((UINT8 *)MakeCap((UINT64)Node) + DevicePathNodeLength (Node));
 }
