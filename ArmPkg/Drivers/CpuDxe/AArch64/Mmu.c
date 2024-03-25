@@ -134,7 +134,7 @@ GetFirstPageAttribute (
   UINT64  FirstEntry;
 
   // Get the first entry of the table
-  FirstEntry = *FirstLevelTableAddress;
+  FirstEntry = *(UINT64 *)MakeCap((UINT64)FirstLevelTableAddress);
 
   if ((TableLevel != 3) && ((FirstEntry & TT_TYPE_MASK) == TT_TYPE_TABLE_ENTRY)) {
     // Only valid for Levels 0, 1 and 2
@@ -440,7 +440,7 @@ GetMemoryRegionRec (
   }
 
   // Find the block entry linked to the Base Address
-  BlockEntry = (UINT64 *)(TT_GET_ENTRY_FOR_ADDRESS (TranslationTable, TableLevel, *BaseAddress));
+  BlockEntry = (UINT64 *)MakeCap(TT_GET_ENTRY_FOR_ADDRESS (TranslationTable, TableLevel, *BaseAddress));
   EntryType  = *BlockEntry & TT_TYPE_MASK;
 
   if ((TableLevel < 3) && (EntryType == TT_TYPE_TABLE_ENTRY)) {

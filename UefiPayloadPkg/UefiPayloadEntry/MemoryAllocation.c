@@ -9,6 +9,7 @@
 **/
 
 #include "UefiPayloadEntry.h"
+#include <Library/CheriLib.h>
 
 /**
   Allocates one or more pages of type EfiBootServicesData.
@@ -55,7 +56,7 @@ AllocatePages (
   HobTable->EfiFreeMemoryTop -= Pages * EFI_PAGE_SIZE;
   BuildMemoryAllocationHob (HobTable->EfiFreeMemoryTop, Pages * EFI_PAGE_SIZE, EfiBootServicesData);
 
-  return (VOID *)(UINTN)HobTable->EfiFreeMemoryTop;
+  return (VOID *)MakeCap(HobTable->EfiFreeMemoryTop);
 }
 
 /**

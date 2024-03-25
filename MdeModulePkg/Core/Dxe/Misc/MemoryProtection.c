@@ -32,6 +32,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/DxeServicesTableLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiLib.h>
+#include <Library/CheriLib.h>
 
 #include <Guid/EventGroup.h>
 #include <Guid/MemoryAttributesTable.h>
@@ -433,12 +434,12 @@ ProtectUefiImage (
   //
   // Step 1: record whole region
   //
-  ImageRecord->ImageBase = (EFI_PHYSICAL_ADDRESS)(UINTN)LoadedImage->ImageBase;
+  ImageRecord->ImageBase = (EFI_PHYSICAL_ADDRESS)MakeUCap((UINT64)LoadedImage->ImageBase);
   ImageRecord->ImageSize = LoadedImage->ImageSize;
 
-  ImageAddress = LoadedImage->ImageBase;
+  ImageAddress = MakeCap((UINT64)LoadedImage->ImageBase);
 
-  PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageAddress);
+  PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)ImageAddress);
   if (PdbPointer != NULL) {
     DEBUG ((DEBUG_VERBOSE, "  Image - %a\n", PdbPointer));
   }
@@ -446,13 +447,13 @@ ProtectUefiImage (
   //
   // Check PE/COFF image
   //
-  DosHdr             = (EFI_IMAGE_DOS_HEADER *)(UINTPTR_T)ImageAddress;
+  DosHdr             = (EFI_IMAGE_DOS_HEADER *)ImageAddress;
   PeCoffHeaderOffset = 0;
   if (DosHdr->e_magic == EFI_IMAGE_DOS_SIGNATURE) {
     PeCoffHeaderOffset = DosHdr->e_lfanew;
   }
 
-  Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINT8 *)(UINTPTR_T)ImageAddress + PeCoffHeaderOffset);
+  Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)((UINT8 *)ImageAddress + PeCoffHeaderOffset);
   if (Hdr.Pe32->Signature != EFI_IMAGE_NT_SIGNATURE) {
     DEBUG ((DEBUG_VERBOSE, "Hdr.Pe32->Signature invalid - 0x%x\n", Hdr.Pe32->Signature));
     // It might be image in SMM.
@@ -475,7 +476,7 @@ ProtectUefiImage (
       "!!!!!!!!  ProtectUefiImageCommon - Section Alignment(0x%x) is incorrect  !!!!!!!!\n",
       SectionAlignment
       ));
-    PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)(UINTPTR_T)ImageAddress);
+    PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *)ImageAddress);
     if (PdbPointer != NULL) {
       DEBUG ((DEBUG_VERBOSE, "!!!!!!!!  Image - %a  !!!!!!!!\n", PdbPointer));
     }
@@ -484,7 +485,7 @@ ProtectUefiImage (
   }
 
   Section = (EFI_IMAGE_SECTION_HEADER *)(
-                                         (UINT8 *)(UINTPTR_T)ImageAddress +
+                                         (UINT8 *)ImageAddress +
                                          PeCoffHeaderOffset +
                                          sizeof (UINT32) +
                                          sizeof (EFI_IMAGE_FILE_HEADER) +

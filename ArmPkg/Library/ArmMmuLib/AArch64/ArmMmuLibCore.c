@@ -306,7 +306,7 @@ UpdateRegionMappingRecursive (
         // No table entry exists yet, so we need to allocate a page table
         // for the next level.
         //
-        TranslationTable = AllocatePages (1);
+        TranslationTable = MakeCap((UINT64)AllocatePages (1));
         if (TranslationTable == NULL) {
           return EFI_OUT_OF_RESOURCES;
         }
