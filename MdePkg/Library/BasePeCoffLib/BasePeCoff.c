@@ -919,7 +919,7 @@ PeCoffLoaderImageAddress (
     return NULL;
   }
 
-  return (CHAR8 *)((UINTPTR_T)ImageContext->ImageAddress + Address - TeStrippedOffset);
+  return (CHAR8 *)(MakeUCap(ImageContext->ImageAddress) + Address - TeStrippedOffset);
 }
 
 /**
@@ -1345,7 +1345,7 @@ PeCoffLoaderLoadImage (
                              ImageContext->Handle,
                              0,
                              &ImageContext->SizeOfHeaders,
-                             (VOID *)(UINTPTR_T)ImageContext->ImageAddress
+                             (VOID *)MakeCap(ImageContext->ImageAddress)
                              );
 
     Hdr.Pe32 = (EFI_IMAGE_NT_HEADERS32 *)(MakeUCap((UINT64)ImageContext->ImageAddress) + ImageContext->PeCoffHeaderOffset);
@@ -1769,8 +1769,8 @@ PeCoffLoaderRelocateImageForRuntime (
     return;
   }
 
-  OldBase = (CHAR8 *)((UINTPTR_T)ImageBase);
-  NewBase = (CHAR8 *)((UINTPTR_T)VirtImageBase);
+  OldBase = (CHAR8 *)(MakeCap(ImageBase));
+  NewBase = (CHAR8 *)(MakeCap(VirtImageBase));
   Adjust  = (UINTN)NewBase - (UINTN)OldBase;
 
   ImageContext.ImageAddress = MakeUCap((UINT64)ImageBase);

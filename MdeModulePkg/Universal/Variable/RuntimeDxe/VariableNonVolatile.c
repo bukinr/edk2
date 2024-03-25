@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "VariableNonVolatile.h"
 #include "VariableParsing.h"
+#include <Library/CheriLib.h>
 
 extern VARIABLE_MODULE_GLOBAL  *mVariableModuleGlobal;
 
@@ -319,7 +320,7 @@ InitNonVolatileVariableStore (
   }
 
   mVariableModuleGlobal->VariableGlobal.NonVolatileVariableBase = VariableStoreBase;
-  mNvVariableCache                                              = (VARIABLE_STORE_HEADER *)(UINTPTR_T)VariableStoreBase;
+  mNvVariableCache                                              = (VARIABLE_STORE_HEADER *)MakeCap(VariableStoreBase);
   mVariableModuleGlobal->VariableGlobal.AuthFormat              = (BOOLEAN)(CompareGuid (&mNvVariableCache->Signature, &gEfiAuthenticatedVariableGuid));
 
   mVariableModuleGlobal->MaxVariableSize     = PcdGet32 (PcdMaxVariableSize);
